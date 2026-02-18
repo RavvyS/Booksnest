@@ -6,6 +6,8 @@ const dotenv = require("dotenv");
 const app = express();
 require("dotenv").config();
 
+const authRoutes = require("./routes/authRoutes");
+
 dotenv.config(); // Load environment variables once
 
 const PORT = process.env.PORT || 8070;
@@ -28,6 +30,9 @@ const connection = mongoose.connection;
 connection.once("open", () => {
   console.log("MongoDB connection success!");
 });
+
+
+app.use("/api/auth", authRoutes);
 
 // Start the server
 app.listen(PORT, () => {
