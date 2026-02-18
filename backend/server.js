@@ -7,6 +7,10 @@ const app = express();
 require("dotenv").config();
 
 const authRoutes = require("./routes/authRoutes");
+const commentRoutes = require("./routes/commentRoutes");
+
+
+
 
 dotenv.config(); // Load environment variables once
 
@@ -33,6 +37,7 @@ connection.once("open", () => {
 
 
 app.use("/api/auth", authRoutes);
+app.use("/api/comments", commentRoutes);
 
 // Start the server
 app.listen(PORT, () => {
