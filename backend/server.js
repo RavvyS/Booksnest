@@ -11,7 +11,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Routes Placeholder
+// Load Routes
+const learningMaterials = require('./routes/learningMaterials');
+
+// Use Routes
+app.use('/materials', learningMaterials);
+
 app.get('/', (req, res) => {
     res.send('API is running...');
 });
