@@ -6,8 +6,8 @@ const dotenv = require("dotenv");
 const app = express();
 require("dotenv").config();
 
-const authRoutes = require("./routes/authRoutes");
-const commentRoutes = require("./routes/commentRoutes");
+const authRoutes = require("../routes/authRoutes");
+const commentRoutes = require("../routes/commentRoutes");
 
 
 
