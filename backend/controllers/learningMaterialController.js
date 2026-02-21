@@ -103,3 +103,36 @@ exports.deleteLearningMaterial = async (req, res) => {
         });
     }
 };
+
+// @desc    Approve a learning material
+// @route   PATCH /materials/:id/approve
+// @access  Private (Librarian only)
+exports.approveMaterial = async (req, res) => {
+    try {
+        let material = await LearningMaterial.findById(req.params.id);
+
+        if (!material) {
+            return res.status(404).json({
+                success: false,
+                error: 'Learning material not found'
+            });
+        }
+
+        material = await LearningMaterial.findByIdAndUpdate(
+            req.params.id,
+            { status: 'approved' },
+            { new: true }
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Material approved successfully',
+            data: material
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Server Error'
+        });
+    }
+};
