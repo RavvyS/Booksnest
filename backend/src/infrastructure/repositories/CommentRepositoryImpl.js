@@ -9,7 +9,27 @@ class CommentRepositoryImpl {
   }
 
   async findAll() {
-    return await CommentSchema.find();
+    return await CommentSchema.find().sort({ createdAt: -1 });
+  }
+
+  async findByMaterialId(materialId) {
+    return await CommentSchema.find({ materialId }).sort({ createdAt: -1 });
+  }
+
+  async findById(commentId) {
+    return await CommentSchema.findById(commentId);
+  }
+
+  async update(commentId, data) {
+    return await CommentSchema.findByIdAndUpdate(
+      commentId,
+      { $set: data },
+      { new: true, runValidators: true }
+    );
+  }
+
+  async delete(commentId) {
+    return await CommentSchema.findByIdAndDelete(commentId);
   }
 }
 

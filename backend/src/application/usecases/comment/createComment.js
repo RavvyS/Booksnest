@@ -8,12 +8,16 @@ class CreateComment {
 
   async execute(data) {
 
-    if (!data.content) {
+    if (!data.content || !data.content.trim()) {
       throw new Error("Content is required");
     }
 
+    if (!data.materialId) {
+      throw new Error("materialId is required");
+    }
+
     const comment = new Comment({
-      content: data.content,
+      content: data.content.trim(),
       userId: data.userId,
       materialId: data.materialId,
     });
