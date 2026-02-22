@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 
 const authRoutes = require("./interfaces/routes/AuthRoutes");
 const commentRoutes = require("./interfaces/routes/commentRoutes");
+const learningMaterials = require('../routes/learningMaterials');
 
 dotenv.config();
 
@@ -22,6 +23,8 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/comments", commentRoutes);
+app.use("/materials", learningMaterials);
+
 
 mongoose
   .connect(URL)
