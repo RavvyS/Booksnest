@@ -1,4 +1,4 @@
-const CommentRepositoryImpl = require("../../infrastructure/database/repositories/CommentRepositoryImpl");
+const CommentRepositoryImpl = require("../../infrastructure/repositories/CommentRepositoryImpl");
 const CreateComment = require("../../application/usecases/comment/createComment");
 
 exports.createComment = async (req, res) => {
