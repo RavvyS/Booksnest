@@ -2,8 +2,8 @@ const UserRepository = require("../../infrastructure/repositories/UserRepository
 const HashService = require("../../infrastructure/services/HashService");
 const TokenService = require("../../infrastructure/services/TokenService");
 
-const RegisterUser = require("../../application/use-cases/auth/RegisterUser");
-const LoginUser = require("../../application/use-cases/auth/LoginUser");
+const RegisterUser = require("../../application/usecases/auth/RegisterUser");
+const LoginUser = require("../../application/usecases/auth/LoginUser");
 
 const userRepository = new UserRepository();
 
@@ -18,6 +18,15 @@ const loginUseCase = new LoginUser(
   TokenService
 );
 
+const sanitizeUser = (user) => ({
+  id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  createdAt: user.createdAt,
+  updatedAt: user.updatedAt,
+});
+
 
 exports.register = async (req, res) => {
 
@@ -27,7 +36,7 @@ exports.register = async (req, res) => {
 
     const token = TokenService.generate(user);
 
-    res.json({ user, token });
+    res.status(201).json({ user: sanitizeUser(user), token });
 
   } catch (error) {
 
@@ -44,7 +53,10 @@ exports.login = async (req, res) => {
 
     const result = await loginUseCase.execute(req.body);
 
-    res.json(result);
+    res.json({
+      user: sanitizeUser(result.user),
+      token: result.token,
+    });
 
   } catch (error) {
 
@@ -61,7 +73,11 @@ exports.profile = async (req, res) => {
 
     const user = await userRepository.findById(req.user.id);
 
-    res.json(user);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(sanitizeUser(user));
 
   } catch (error) {
 

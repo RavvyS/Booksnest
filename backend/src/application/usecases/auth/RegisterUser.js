@@ -6,6 +6,9 @@ class RegisterUser {
   }
 
   async execute(data) {
+    if (!data.name || !data.email || !data.password) {
+      throw new Error("Name, email and password are required");
+    }
 
     const existingUser = await this.userRepository.findByEmail(data.email);
 
@@ -15,11 +18,18 @@ class RegisterUser {
 
     const hashedPassword = await this.hashService.hash(data.password);
 
+    const requestedRole = data.role || "reader";
+    const allowedSelfRegisteredRoles = ["reader", "author"];
+
+    if (!allowedSelfRegisteredRoles.includes(requestedRole)) {
+      throw new Error("Invalid role selection");
+    }
+
     const newUser = await this.userRepository.create({
       name: data.name,
       email: data.email,
       password: hashedPassword,
-      role: data.role,
+      role: requestedRole,
     });
 
     return newUser;
