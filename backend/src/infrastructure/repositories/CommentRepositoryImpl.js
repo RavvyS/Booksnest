@@ -1,4 +1,4 @@
-const CommentSchema = require("../schemas/CommentSchema");
+const CommentSchema = require("../database/schemas/CommentSchema");
 
 class CommentRepositoryImpl {
 
