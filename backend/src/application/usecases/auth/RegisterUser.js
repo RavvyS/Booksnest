@@ -18,7 +18,7 @@ class RegisterUser {
 
     const hashedPassword = await this.hashService.hash(data.password);
 
-    const requestedRole = data.role || "reader";
+    const requestedRole = (data.role || "reader").toLowerCase().trim();
     const allowedSelfRegisteredRoles = ["reader", "author"];
 
     if (!allowedSelfRegisteredRoles.includes(requestedRole)) {
