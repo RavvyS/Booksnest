@@ -18,8 +18,8 @@ class RegisterUser {
 
     const hashedPassword = await this.hashService.hash(data.password);
 
-    const requestedRole = data.role || "reader";
-    const allowedSelfRegisteredRoles = ["reader", "author"];
+    const requestedRole = (data.role || "reader").toLowerCase().trim();
+    const allowedSelfRegisteredRoles = ["reader", "author", "librarian"];
 
     if (!allowedSelfRegisteredRoles.includes(requestedRole)) {
       throw new Error("Invalid role selection");

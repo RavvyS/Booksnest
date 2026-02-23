@@ -3,7 +3,10 @@ module.exports = (...allowedRoles) => (req, res, next) => {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  if (!allowedRoles.includes(req.user.role)) {
+  const normalizedAllowedRoles = allowedRoles.map((role) => role.toLowerCase());
+  const normalizedUserRole = req.user.role.toLowerCase();
+
+  if (!normalizedAllowedRoles.includes(normalizedUserRole)) {
     return res.status(403).json({ message: "Forbidden: insufficient role" });
   }
 
