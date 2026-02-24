@@ -29,7 +29,7 @@ exports.createMaterial = async (req, res) => {
 
         res.status(201).json(result);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(400).json({ message: "Failed to create material", error: error.message });
     }
 };
 
@@ -42,7 +42,7 @@ exports.getAllMaterials = async (req, res) => {
 
         res.status(200).json(result);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "Failed to retrieve materials", error: error.message });
     }
 };
 
@@ -54,7 +54,7 @@ exports.getMaterialById = async (req, res) => {
         res.status(200).json(result);
     } catch (error) {
         const status = error.message === "Material not found" ? 404 : 500;
-        res.status(status).json({ message: error.message });
+        res.status(status).json({ message: error.message, error: error.message });
     }
 };
 
@@ -69,7 +69,7 @@ exports.updateMaterial = async (req, res) => {
         res.status(200).json(result);
     } catch (error) {
         const status = error.message === "Material not found" ? 404 : 400;
-        res.status(status).json({ message: error.message });
+        res.status(status).json({ message: "Failed to update material", error: error.message });
     }
 };
 
@@ -81,7 +81,7 @@ exports.deleteMaterial = async (req, res) => {
         res.status(200).json(result);
     } catch (error) {
         const status = error.message === "Material not found" ? 404 : 500;
-        res.status(status).json({ message: error.message });
+        res.status(status).json({ message: "Failed to delete material", error: error.message });
     }
 };
 
@@ -96,7 +96,7 @@ exports.approveMaterial = async (req, res) => {
         res.status(200).json(result);
     } catch (error) {
         const status = error.message === "Material not found" ? 404 : 400;
-        res.status(status).json({ message: error.message });
+        res.status(status).json({ message: "Failed to update material status", error: error.message });
     }
 };
 
@@ -106,6 +106,6 @@ exports.getPendingMaterials = async (req, res) => {
         const result = await getPendingUseCase.execute();
         res.status(200).json(result);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "Failed to retrieve pending materials", error: error.message });
     }
 };
