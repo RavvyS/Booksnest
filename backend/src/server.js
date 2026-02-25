@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 
 const authRoutes = require("./interfaces/routes/AuthRoutes");
 const commentRoutes = require("./interfaces/routes/commentRoutes");
+const categoryRoutes = require("./interfaces/routes/categoryRoutes");
 
 dotenv.config();
 
@@ -16,12 +17,13 @@ app.use(
   cors({
     origin: "http://localhost:3000",
     credentials: true,
-  })
+  }),
 );
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/comments", commentRoutes);
+app.use("/api/categories", categoryRoutes);
 
 mongoose
   .connect(URL)
