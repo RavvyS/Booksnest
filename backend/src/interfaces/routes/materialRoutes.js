@@ -7,6 +7,14 @@ const RoleMiddleware = require("../middleware/RoleMiddleware");
 // Public: Get all approved materials (optionally filter by category)
 router.get("/", MaterialController.getAllMaterials);
 
+// Protected: Get all pending materials (librarian only)
+router.get(
+    "/pending",
+    AuthMiddleware,
+    RoleMiddleware("librarian"),
+    MaterialController.getPendingMaterials
+);
+
 // Public: Get material by ID
 router.get("/:id", MaterialController.getMaterialById);
 
@@ -32,6 +40,14 @@ router.delete(
     AuthMiddleware,
     RoleMiddleware("author", "librarian"),
     MaterialController.deleteMaterial
+);
+
+// Protected: Approve or reject a material (librarian only)
+router.patch(
+    "/:id/approve",
+    AuthMiddleware,
+    RoleMiddleware("librarian"),
+    MaterialController.approveMaterial
 );
 
 module.exports = router;
