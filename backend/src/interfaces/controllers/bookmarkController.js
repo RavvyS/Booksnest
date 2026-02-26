@@ -1,8 +1,8 @@
 const BookmarkRepositoryImpl = require("../../infrastructure/repositories/BookmarkRepositoryImpl");
-const CreateBookmark = require("../../application/usecases/CreateBookmark");
-const DeleteBookmark = require("../../application/usecases/DeleteBookmark");
-const GetBookmarks = require("../../application/usecases/GetBookmarks");
-const UpdateBookmark = require("../../application/usecases/UpdateBookmark");
+const CreateBookmark = require("../../application/usecases/bookmark/CreateBookmark");
+const DeleteBookmark = require("../../application/usecases/bookmark/DeleteBookmark");
+const GetBookmarks = require("../../application/usecases/bookmark/GetBookmarks");
+const UpdateBookmark = require("../../application/usecases/bookmark/UpdateBookmark");
 
 const repository = new BookmarkRepositoryImpl();
 const createUseCase = new CreateBookmark(repository);
