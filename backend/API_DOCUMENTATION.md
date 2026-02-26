@@ -1,7 +1,8 @@
 # Booksnest Backend API (Postman)
 
 ## Files
-- Collection: `backend/postman/Booksnest-Backend.postman_collection.json`
+- Collection (Auth + Comments): `backend/postman/Booksnest-Backend.postman_collection.json`
+- Collection (Learning Materials): `backend/postman/learning-materials.json`
 - Environment: `backend/postman/Booksnest-Backend.postman_environment.json`
 
 ## Import Into Postman
@@ -18,6 +19,8 @@ npm start
 Base URL in env is `http://localhost:8070`.
 
 ## Recommended Run Order (Collection)
+
+### Auth & Comments
 1. `Auth/Register Reader`
 2. `Auth/Register Author`
 3. `Auth/Register Librarian`
@@ -29,6 +32,21 @@ Base URL in env is `http://localhost:8070`.
 9. `Comments/Update Comment (Owner Reader)`
 10. `Comments/Update Comment (Non-Owner Author, expect 403)`
 11. `Comments/Delete Comment (Librarian override)`
+
+### Learning Materials (use `learning-materials.json` collection)
+12. `Auth/Register Author` *(skip if already done)*
+13. `Auth/Register Librarian` *(skip if already done)*
+14. `Auth/Login Author` → saves `authorToken` automatically
+15. `Auth/Login Librarian` → saves `librarianToken` automatically
+16. `Learning Materials/POST - Create Material (Author)` → saves `materialId` automatically
+17. `Learning Materials/GET - Pending Materials (Librarian only)` → confirms pending status
+18. `Learning Materials/PATCH - Approve Material (Librarian only)` → status becomes `"approved"`
+19. `Learning Materials/GET - All Approved Materials (Public)` → material now appears
+20. `Learning Materials/GET - Filter by Category (Public)` → `?category=Education`
+21. `Learning Materials/GET - Material by ID (Public)`
+22. `Learning Materials/PATCH - Approve as Author (expect 403)` → role protection test
+23. `Learning Materials/PUT - Update Material (Author)`
+24. `Learning Materials/DELETE - Delete Material (Author)`
 
 ## Environment Variables Used
 - `baseUrl`
