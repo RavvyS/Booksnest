@@ -1,3 +1,6 @@
+
+//  Declares repository contract methods expected by the domain layer.
+
 class CommentRepository {
   async save(comment) {
     throw new Error("Not implemented");

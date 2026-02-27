@@ -1,3 +1,5 @@
+//  Defines HTTP routes and middleware chain for this module.
+
 const router = require("express").Router();
 
 const BookController = require("../controllers/BookController");

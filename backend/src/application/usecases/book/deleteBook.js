@@ -1,3 +1,6 @@
+
+//  Implements a single business use case with domain-focused rules.
+
 class DeleteBook {
   constructor(bookRepository) {
     this.bookRepository = bookRepository;

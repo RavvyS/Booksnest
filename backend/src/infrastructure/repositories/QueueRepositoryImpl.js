@@ -1,3 +1,5 @@
+//  Implements persistence operations against MongoDB models.
+
 const QueueRepository = require("../../domain/repositories/QueueRepository");
 const QueueRequestModel = require("../database/schemas/QueueRequestSchema");
 const QueueRequest = require("../../domain/entities/QueueRequest");

@@ -1,3 +1,5 @@
+//  Implements persistence operations against MongoDB models.
+
 const CategoryRepository = require("../../domain/repositories/CategoryRepository");
 const CategoryModel = require("../database/schemas/CategorySchema");
 const Category = require("../../domain/entities/Category");

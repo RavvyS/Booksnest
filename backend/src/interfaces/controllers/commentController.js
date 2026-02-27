@@ -1,3 +1,5 @@
+//  Handles HTTP request/response mapping and delegates business logic to use cases.
+
 const CommentRepositoryImpl = require("../../infrastructure/repositories/CommentRepositoryImpl");
 const CreateComment = require("../../application/usecases/comment/createComment");
 const GetComments = require("../../application/usecases/comment/getComments");
