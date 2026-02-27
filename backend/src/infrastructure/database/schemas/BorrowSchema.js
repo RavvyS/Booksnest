@@ -1,3 +1,6 @@
+
+//  Defines the Mongoose schema for this collection.
+
 const mongoose = require("mongoose");
 
 const BorrowSchema = new mongoose.Schema(

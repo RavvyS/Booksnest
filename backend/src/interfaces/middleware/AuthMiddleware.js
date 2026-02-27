@@ -1,3 +1,5 @@
+//  Applies cross-cutting request validation and authorization checks.
+
 const TokenService = require("../../infrastructure/services/TokenService");
 const UserRepository = require("../../infrastructure/repositories/UserRepository");
 

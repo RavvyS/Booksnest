@@ -1,3 +1,6 @@
+
+//  Implements a single business use case with domain-focused rules.
+
 const mongoose = require("mongoose");
 const BORROW_PERIOD_DAYS = 14;
 

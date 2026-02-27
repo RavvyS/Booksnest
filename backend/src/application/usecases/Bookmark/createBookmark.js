@@ -1,3 +1,6 @@
+
+//  Implements a single business use case with domain-focused rules.
+
 const Bookmark = require("../../../domain/entities/Bookmark");
 
 class CreateBookmark {

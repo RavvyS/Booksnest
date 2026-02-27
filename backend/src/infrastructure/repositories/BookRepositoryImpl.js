@@ -1,3 +1,5 @@
+//  Implements persistence operations against MongoDB models.
+
 const BookRepository = require("../../domain/repositories/BookRepository");
 const BookModel = require("../database/schemas/BookSchema");
 const Book = require("../../domain/entities/Book");

@@ -1,3 +1,6 @@
+
+//  Generates dynamic test data for Artillery performance scenarios.
+
 function setUniqueUser(context, events, done) {
   const stamp = `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
   context.vars.name = `Perf User ${stamp}`;

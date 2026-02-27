@@ -1,3 +1,5 @@
+//  Handles HTTP request/response mapping and delegates business logic to use cases.
+
 const CategoryRepositoryImpl = require("../../infrastructure/repositories/CategoryRepositoryImpl");
 const CreateCategory = require("../../application/usecases/category/createCategory");
 const GetCategories = require("../../application/usecases/category/getCategories");

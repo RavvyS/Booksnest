@@ -1,3 +1,6 @@
+
+//  Declares repository contract methods expected by the domain layer.
+
 class BookRepository {
   async create(book) {
     throw new Error("Method not implemented");

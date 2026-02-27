@@ -1,3 +1,5 @@
+//  Handles HTTP request/response mapping and delegates business logic to use cases.
+
 const BookRepositoryImpl = require("../../infrastructure/repositories/BookRepositoryImpl");
 const BorrowRepositoryImpl = require("../../infrastructure/repositories/BorrowRepositoryImpl");
 const QueueRepositoryImpl = require("../../infrastructure/repositories/QueueRepositoryImpl");
