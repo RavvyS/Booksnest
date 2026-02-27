@@ -1,0 +1,91 @@
+config:
+  target: "http://localhost:8070"
+  processor: "./processor.js"
+  phases:
+    - duration: 20
+      arrivalRate: 5
+      name: smoke
+    - duration: 45
+      arrivalRate: 15
+      name: moderate
+    - duration: 60
+      arrivalRate: 30
+      name: peak
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  ensure:
+    p95: 700
+    maxErrorRate: 5
+
+scenarios:
+  - name: auth-flow-register-login-profile
+    weight: 45
+    flow:
+      - function: setUniqueUser
+      - post:
+          url: "/api/auth/register"
+          json:
+            name: "{{ name }}"
+            email: "{{ email }}"
+            password: "{{ password }}"
+            role: "reader"
+          capture:
+            - json: "$.token"
+              as: token
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/auth/profile"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
+
+  - name: comments-public-read
+    weight: 35
+    flow:
+      - get:
+          url: "/api/comments"
+          expect:
+            - statusCode: 200
+
+  - name: comments-protected-create
+    weight: 15
+    flow:
+      - function: setUniqueUser
+      - post:
+          url: "/api/auth/register"
+          json:
+            name: "{{ name }}"
+            email: "{{ email }}"
+            password: "{{ password }}"
+            role: "reader"
+          capture:
+            - json: "$.token"
+              as: token
+      - post:
+          url: "/api/comments"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            content: "Load test comment"
+            materialId: "perf-material"
+          expect:
+            - statusCode: 201
+
+  - name: auth-error-scenario
+    weight: 5
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "does-not-exist@example.com"
+            password: "wrong-password"
+          expect:
+            - statusCode: 400
