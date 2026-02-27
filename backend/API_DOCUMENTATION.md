@@ -3,6 +3,8 @@
 ## Files
 
 - Collection: `backend/postman/Booksnest-Backend.postman_collection.json`
+- Collection (Auth + Comments): `backend/postman/Booksnest-Backend.postman_collection.json`
+- Collection (Learning Materials): `backend/postman/learning-materials.json`
 - Environment: `backend/postman/Booksnest-Backend.postman_environment.json`
 
 ## Import Into Postman
@@ -23,6 +25,7 @@ Base URL in env is `http://localhost:8070`.
 
 ## Recommended Run Order (Collection)
 
+### Auth & Comments
 1. `Auth/Register Reader`
 2. `Auth/Register Author`
 3. `Auth/Register Librarian`
@@ -52,6 +55,21 @@ Base URL in env is `http://localhost:8070`.
 27. `Comments/Update Comment (Non-Owner Author, expect 403)`
 28. `Comments/Delete Comment (Librarian override)`
 29. `Categories/Delete Category (Librarian)`
+
+### Learning Materials (use `learning-materials.json` collection)
+12. `Auth/Register Author` *(skip if already done)*
+13. `Auth/Register Librarian` *(skip if already done)*
+14. `Auth/Login Author` → saves `authorToken` automatically
+15. `Auth/Login Librarian` → saves `librarianToken` automatically
+16. `Learning Materials/POST - Create Material (Author)` → saves `materialId` automatically
+17. `Learning Materials/GET - Pending Materials (Librarian only)` → confirms pending status
+18. `Learning Materials/PATCH - Approve Material (Librarian only)` → status becomes `"approved"`
+19. `Learning Materials/GET - All Approved Materials (Public)` → material now appears
+20. `Learning Materials/GET - Filter by Category (Public)` → `?category=Education`
+21. `Learning Materials/GET - Material by ID (Public)`
+22. `Learning Materials/PATCH - Approve as Author (expect 403)` → role protection test
+23. `Learning Materials/PUT - Update Material (Author)`
+24. `Learning Materials/DELETE - Delete Material (Author)`
 
 ## Environment Variables Used
 
@@ -112,6 +130,44 @@ The `/api/books/:bookId/read` endpoint enforces:
 - PDF is streamed directly — no file URL is ever exposed
 
 Access automatically expires when `dueDate` passes, with no cron job needed.
+### Learning Materials
+- `GET /api/materials` — Public. Returns all **approved** materials. Optional: `?category=Education`
+- `GET /api/materials/pending` — Librarian only. Returns all **pending** materials awaiting review.
+- `GET /api/materials/:id` — Public. Returns a single material by ID. Returns `404` if not found.
+- `POST /api/materials` — Author/Librarian only. Creates a new material. Status defaults to `"pending"`.
+- `PUT /api/materials/:id` — Author/Librarian only. Updates material fields (status change blocked here).
+- `DELETE /api/materials/:id` — Author/Librarian only. Deletes a material by ID.
+- `PATCH /api/materials/:id/approve` — Librarian only. Approves or rejects a material.
+
+#### POST /api/materials — Request Body
+```json
+{
+  "title": "Introduction to SDG 4",
+  "description": "A learning resource about quality education.",
+  "contentUrl": "https://example.com/sdg4-intro",
+  "category": "Education",
+  "author": "Test Author"
+}
+```
+
+#### PATCH /api/materials/:id/approve — Request Body
+```json
+{
+  "status": "approved"
+}
+```
+> Valid values: `"approved"` or `"rejected"`
+
+#### Role Summary
+| Endpoint | Reader | Author | Librarian |
+|---|---|---|---|
+| GET /api/materials | ✅ | ✅ | ✅ |
+| GET /api/materials/:id | ✅ | ✅ | ✅ |
+| GET /api/materials/pending | ❌ | ❌ | ✅ |
+| POST /api/materials | ❌ | ✅ | ✅ |
+| PUT /api/materials/:id | ❌ | ✅ | ✅ |
+| DELETE /api/materials/:id | ❌ | ✅ | ✅ |
+| PATCH /api/materials/:id/approve | ❌ | ❌ | ✅ |
 
 ## Notes
 
@@ -122,3 +178,6 @@ Access automatically expires when `dueDate` passes, with no cron job needed.
 - Non-owner update by author should return `403`.
 - Borrow/Return operations use MongoDB transactions for atomicity.
 - Only one active borrow per user per book is allowed.
+- All protected routes require `Authorization: Bearer <token>` header.
+- Materials are only publicly visible after a librarian sets `status: "approved"`.
+
