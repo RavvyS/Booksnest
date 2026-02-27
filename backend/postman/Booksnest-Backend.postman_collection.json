@@ -44,9 +44,7 @@
           ],
           "request": {
             "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Reader One\",\n  \"email\": \"{{readerEmail}}\",\n  \"password\": \"{{password}}\",\n  \"role\": \"reader\"\n}"
@@ -76,9 +74,7 @@
           ],
           "request": {
             "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Author One\",\n  \"email\": \"{{authorEmail}}\",\n  \"password\": \"{{password}}\",\n  \"role\": \"author\"\n}"
@@ -108,9 +104,7 @@
           ],
           "request": {
             "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Librarian One\",\n  \"email\": \"{{librarianEmail}}\",\n  \"password\": \"{{password}}\",\n  \"role\": \"librarian\"\n}"
@@ -140,9 +134,7 @@
           ],
           "request": {
             "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"{{readerEmail}}\",\n  \"password\": \"{{password}}\"\n}"
@@ -172,9 +164,7 @@
           ],
           "request": {
             "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"{{librarianEmail}}\",\n  \"password\": \"{{password}}\"\n}"
@@ -249,9 +239,7 @@
               "raw": "{{baseUrl}}/api/comments?materialId={{materialId}}",
               "host": ["{{baseUrl}}"],
               "path": ["api", "comments"],
-              "query": [
-                { "key": "materialId", "value": "{{materialId}}" }
-              ]
+              "query": [{ "key": "materialId", "value": "{{materialId}}" }]
             }
           },
           "response": []
@@ -307,6 +295,345 @@
               "raw": "{{baseUrl}}/api/comments/{{commentId}}",
               "host": ["{{baseUrl}}"],
               "path": ["api", "comments", "{{commentId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Get All Categories (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Category By ID (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/categories/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories", "{{categoryId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Category (Librarian)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "const data = pm.response.json();",
+                  "if (data.id) pm.environment.set('categoryId', data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{librarianToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Science Fiction\",\n  \"description\": \"Science fiction and futuristic literature\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Category (Librarian)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{librarianToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sci-Fi & Fantasy\",\n  \"description\": \"Science fiction and fantasy literature\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/categories/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories", "{{categoryId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Category (Librarian)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{librarianToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/categories/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories", "{{categoryId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Category (Reader, expect 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Unauthorized Category\",\n  \"description\": \"Should fail - reader cannot create categories\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Books",
+      "item": [
+        {
+          "name": "Create Book with PDF (Librarian)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "const data = pm.response.json();",
+                  "if (data.id) pm.environment.set('bookId', data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{librarianToken}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "title", "value": "Clean Code", "type": "text" },
+                { "key": "author", "value": "Robert C. Martin", "type": "text" },
+                { "key": "isbn", "value": "978-0-13-235088-4", "type": "text" },
+                { "key": "totalCopies", "value": "2", "type": "text" },
+                { "key": "description", "value": "A handbook of agile software craftsmanship", "type": "text" },
+                { "key": "file", "type": "file", "src": "" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/books",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Books (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/books",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Book By ID (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/books/{{bookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books", "{{bookId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Read Book PDF (Reader, valid borrow)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/books/{{bookId}}/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books", "{{bookId}}", "read"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Read Book PDF (No borrow, expect 403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authorToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/books/{{bookId}}/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books", "{{bookId}}", "read"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Book (Librarian)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{librarianToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Clean Code (2nd Edition)\",\n  \"author\": \"Robert C. Martin\",\n  \"isbn\": \"978-0-13-235088-4\",\n  \"description\": \"Updated handbook of agile software craftsmanship\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/books/{{bookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books", "{{bookId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Book (Reader, expect 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Unauthorized Book\",\n  \"author\": \"Test\",\n  \"isbn\": \"000-0-00-000000-0\",\n  \"totalCopies\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/books",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Borrows",
+      "item": [
+        {
+          "name": "Borrow Book (Reader)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows/borrow/{{bookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows", "borrow", "{{bookId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Borrow Same Book Again (Reader, expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows/borrow/{{bookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows", "borrow", "{{bookId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Borrows (Reader)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows/my-borrows",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows", "my-borrows"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Return Book (Reader)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows/return/{{bookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows", "return", "{{bookId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Return Book Again (Reader, expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows/return/{{bookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows", "return", "{{bookId}}"]
             }
           },
           "response": []
