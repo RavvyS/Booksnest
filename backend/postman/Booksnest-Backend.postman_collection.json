@@ -419,6 +419,226 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Books",
+      "item": [
+        {
+          "name": "Create Book with PDF (Librarian)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "const data = pm.response.json();",
+                  "if (data.id) pm.environment.set('bookId', data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{librarianToken}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "title", "value": "Clean Code", "type": "text" },
+                { "key": "author", "value": "Robert C. Martin", "type": "text" },
+                { "key": "isbn", "value": "978-0-13-235088-4", "type": "text" },
+                { "key": "totalCopies", "value": "2", "type": "text" },
+                { "key": "description", "value": "A handbook of agile software craftsmanship", "type": "text" },
+                { "key": "file", "type": "file", "src": "" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/books",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Books (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/books",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Book By ID (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/books/{{bookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books", "{{bookId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Read Book PDF (Reader, valid borrow)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/books/{{bookId}}/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books", "{{bookId}}", "read"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Read Book PDF (No borrow, expect 403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authorToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/books/{{bookId}}/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books", "{{bookId}}", "read"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Book (Librarian)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{librarianToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Clean Code (2nd Edition)\",\n  \"author\": \"Robert C. Martin\",\n  \"isbn\": \"978-0-13-235088-4\",\n  \"description\": \"Updated handbook of agile software craftsmanship\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/books/{{bookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books", "{{bookId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Book (Reader, expect 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Unauthorized Book\",\n  \"author\": \"Test\",\n  \"isbn\": \"000-0-00-000000-0\",\n  \"totalCopies\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/books",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Borrows",
+      "item": [
+        {
+          "name": "Borrow Book (Reader)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows/borrow/{{bookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows", "borrow", "{{bookId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Borrow Same Book Again (Reader, expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows/borrow/{{bookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows", "borrow", "{{bookId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Borrows (Reader)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows/my-borrows",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows", "my-borrows"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Return Book (Reader)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows/return/{{bookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows", "return", "{{bookId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Return Book Again (Reader, expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows/return/{{bookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows", "return", "{{bookId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }

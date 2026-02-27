@@ -6,6 +6,8 @@ const dotenv = require("dotenv");
 const authRoutes = require("./interfaces/routes/AuthRoutes");
 const commentRoutes = require("./interfaces/routes/commentRoutes");
 const categoryRoutes = require("./interfaces/routes/categoryRoutes");
+const bookRoutes = require("./interfaces/routes/bookRoutes");
+const borrowRoutes = require("./interfaces/routes/borrowRoutes");
 
 dotenv.config();
 
@@ -24,6 +26,8 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/books", bookRoutes);
+app.use("/api/borrows", borrowRoutes);
 
 mongoose
   .connect(URL)
