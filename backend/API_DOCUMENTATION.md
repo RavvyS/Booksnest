@@ -112,6 +112,10 @@ Base URL in env is `http://localhost:8070`.
 - `POST /api/borrows/borrow/:bookId` (any authenticated user)
 - `POST /api/borrows/return/:bookId` (any authenticated user)
 - `GET /api/borrows/my-borrows` (any authenticated user)
+- `POST /api/borrows/queue/:bookId` (reader only, create queue request when no copies remain)
+- `GET /api/borrows/queue/my` (reader only, list my queue requests)
+- `PUT /api/borrows/queue/:requestId` (reader only, update pending queue request)
+- `DELETE /api/borrows/queue/:requestId` (reader only, cancel pending queue request)
 
 ### Comments
 
@@ -178,6 +182,6 @@ Access automatically expires when `dueDate` passes, with no cron job needed.
 - Non-owner update by author should return `403`.
 - Borrow/Return operations use MongoDB transactions for atomicity.
 - Only one active borrow per user per book is allowed.
+- Queue requests are FIFO by creation time; when a book is returned and a queue exists, the next reader is auto-assigned.
 - All protected routes require `Authorization: Bearer <token>` header.
 - Materials are only publicly visible after a librarian sets `status: "approved"`.
-
