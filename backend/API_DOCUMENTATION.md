@@ -1,3 +1,33 @@
+## Additional Testing Requirements (Backend Only)
+
+### 1. Unit Testing
+- Implement unit tests for individual components and functions to validate behavior in isolation.
+- Recommended scope in this codebase:
+  - Application use cases in `src/application/usecases/*`
+  - Pure utility/service logic without DB/network dependencies
+- Test location: `tests/unit/`
+- Command: `npm run test:unit`
+
+### 2. Integration Testing
+- Conduct integration tests to ensure different parts of the backend work together seamlessly.
+- Must include interactions between:
+  - Routes/controllers
+  - Services/middleware
+  - MongoDB (using in-memory Mongo for automated test runs)
+- Test API endpoints for success and error scenarios (invalid payloads, auth failures, not found, invalid credentials).
+- Test location: `tests/integration/`
+- Command: `npm run test:integration`
+
+### 3. Performance Testing
+- Evaluate API performance under varying load to ensure concurrent requests are handled with acceptable latency.
+- Use Artillery for Express API load testing.
+- Config location: `artillery/auth-load.yml`
+- Command: `npm run test:performance`
+
+### Quick Run Summary
+- `npm test` → run full Jest test suite
+- `npm run test:all` → run unit + integration tests
+
 # Booksnest Backend API (Postman)
 
 ## Files
@@ -112,6 +142,10 @@ Base URL in env is `http://localhost:8070`.
 - `POST /api/borrows/borrow/:bookId` (any authenticated user)
 - `POST /api/borrows/return/:bookId` (any authenticated user)
 - `GET /api/borrows/my-borrows` (any authenticated user)
+- `POST /api/borrows/queue/:bookId` (reader only, create queue request when no copies remain)
+- `GET /api/borrows/queue/my` (reader only, list my queue requests)
+- `PUT /api/borrows/queue/:requestId` (reader only, update pending queue request)
+- `DELETE /api/borrows/queue/:requestId` (reader only, cancel pending queue request)
 
 ### Comments
 
@@ -178,6 +212,6 @@ Access automatically expires when `dueDate` passes, with no cron job needed.
 - Non-owner update by author should return `403`.
 - Borrow/Return operations use MongoDB transactions for atomicity.
 - Only one active borrow per user per book is allowed.
+- Queue requests are FIFO by creation time; when a book is returned and a queue exists, the next reader is auto-assigned.
 - All protected routes require `Authorization: Bearer <token>` header.
 - Materials are only publicly visible after a librarian sets `status: "approved"`.
-

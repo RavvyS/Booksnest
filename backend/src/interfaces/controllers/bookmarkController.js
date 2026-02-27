@@ -1,8 +1,8 @@
 const BookmarkRepositoryImpl = require("../../infrastructure/repositories/BookmarkRepositoryImpl");
-const CreateBookmark = require("../../application/usecases/bookmark/CreateBookmark");
-const DeleteBookmark = require("../../application/usecases/bookmark/DeleteBookmark");
-const GetBookmarks = require("../../application/usecases/bookmark/GetBookmarks");
-const UpdateBookmark = require("../../application/usecases/bookmark/UpdateBookmark");
+const CreateBookmark = require("../../application/usecases/Bookmark/createBookmark");
+const DeleteBookmark = require("../../application/usecases/Bookmark/deleteBookmark");
+const GetBookmarks = require("../../application/usecases/Bookmark/getBookmarks");
+const UpdateBookmark = require("../../application/usecases/Bookmark/updateBookmark");
 
 const repository = new BookmarkRepositoryImpl();
 const createUseCase = new CreateBookmark(repository);
@@ -28,7 +28,7 @@ exports.createBookmark = async (req, res) => {
 };
 
 // Delete a bookmark by ID------------------------------------------------
-exports.GetBookmarks = async (req,res) =>{
+exports.getBookmarks = async (req,res) =>{
     try{
         const result = await getUseCase.execute({
             userId: req.query.userId,
@@ -41,7 +41,7 @@ exports.GetBookmarks = async (req,res) =>{
 
 
 // update a bookmark by ID
-exports.UpdateBookmark = async (req,res) =>{
+exports.updateBookmark = async (req,res) =>{
     try{
         const result = await updateUseCase.execute({
             id: req.params.id,
@@ -59,7 +59,7 @@ exports.deleteBookmark = async (req, res) => {
     try {
         const result = await deleteUseCase.execute({    
             id: req.params.id,
-            userId: req.user.userId//-----------------------------------------
+            userId: req.user.id
         });
         res.status(204).send();
     } catch (error) {
@@ -67,6 +67,5 @@ exports.deleteBookmark = async (req, res) => {
         res.status(status).json({ message: error.message });
     }   
 };
-
 
 

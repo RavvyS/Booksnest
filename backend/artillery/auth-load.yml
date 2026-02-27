@@ -1,0 +1,30 @@
+config:
+  target: "http://localhost:8070"
+  processor: "./processor.js"
+  phases:
+    - duration: 30
+      arrivalRate: 5
+      name: warm-up
+    - duration: 60
+      arrivalRate: 20
+      name: sustained-load
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  ensure:
+    p95: 500
+    maxErrorRate: 5
+
+scenarios:
+  - name: register-load
+    flow:
+      - function: setUniqueUser
+      - post:
+          url: "/api/auth/register"
+          json:
+            name: "{{ name }}"
+            email: "{{ email }}"
+            password: "{{ password }}"
+            role: "reader"
+          expect:
+            - statusCode: 201

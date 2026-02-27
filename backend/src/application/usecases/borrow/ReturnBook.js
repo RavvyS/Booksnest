@@ -1,9 +1,11 @@
 const mongoose = require("mongoose");
+const BORROW_PERIOD_DAYS = 14;
 
 class ReturnBook {
-  constructor(borrowRepository, bookRepository) {
+  constructor(borrowRepository, bookRepository, queueRepository) {
     this.borrowRepository = borrowRepository;
     this.bookRepository = bookRepository;
+    this.queueRepository = queueRepository;
   }
 
   /**
@@ -51,12 +53,15 @@ class ReturnBook {
         throw new Error("Failed to increment book stock");
       }
 
+      const autoAssigned = await this.assignNextQueuedBorrow(bookId, session);
+
       // Step 4: Commit transaction
       await session.commitTransaction();
 
       return {
         message: "Book returned successfully",
         borrow: updatedBorrow,
+        autoAssigned,
       };
     } catch (error) {
       // Abort transaction — rolls back both changes
@@ -64,6 +69,63 @@ class ReturnBook {
       throw error;
     } finally {
       session.endSession();
+    }
+  }
+
+  async assignNextQueuedBorrow(bookId, session) {
+    if (!this.queueRepository) return null;
+
+    while (true) {
+      const nextQueueRequest = await this.queueRepository.claimNextPending(
+        bookId,
+        session,
+      );
+      if (!nextQueueRequest) return null;
+
+      const existingBorrow = await this.borrowRepository.findActiveBorrow(
+        nextQueueRequest.userId,
+        bookId,
+      );
+
+      if (existingBorrow) {
+        await this.queueRepository.markCancelledBySystem(
+          nextQueueRequest.id,
+          "User already has an active borrow for this book",
+          session,
+        );
+        continue;
+      }
+
+      const decrementedBook = await this.bookRepository.atomicDecrementStock(
+        bookId,
+        session,
+      );
+      if (!decrementedBook) {
+        await this.queueRepository.releaseToPending(nextQueueRequest.id, session);
+        return null;
+      }
+
+      const now = new Date();
+      const dueDate = new Date(now);
+      dueDate.setDate(dueDate.getDate() + BORROW_PERIOD_DAYS);
+
+      const borrow = await this.borrowRepository.create(
+        {
+          userId: nextQueueRequest.userId,
+          bookId,
+          borrowedAt: now,
+          dueDate,
+        },
+        session,
+      );
+
+      await this.queueRepository.markFulfilled(nextQueueRequest.id, borrow.id, session);
+
+      return {
+        queueRequestId: nextQueueRequest.id,
+        userId: nextQueueRequest.userId,
+        borrow,
+      };
     }
   }
 }
