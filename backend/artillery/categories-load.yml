@@ -1,0 +1,70 @@
+config:
+  target: "http://localhost:8070"
+  processor: "./processor.js"
+  phases:
+    - duration: 20
+      arrivalRate: 5
+      name: warm-up
+    - duration: 40
+      arrivalRate: 15
+      name: sustained-category-traffic
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  ensure:
+    p95: 600
+    maxErrorRate: 5
+
+scenarios:
+  - name: public-list-categories
+    weight: 40
+    flow:
+      - get:
+          url: "/api/categories"
+          expect:
+            - statusCode: 200
+
+  - name: librarian-manage-categories
+    weight: 60
+    flow:
+      - function: setUniqueUser
+      - post:
+          url: "/api/auth/register"
+          json:
+            name: "{{ name }}"
+            email: "{{ email }}"
+            password: "{{ password }}"
+            role: "librarian"
+          capture:
+            - json: "$.token"
+              as: token
+      - post:
+          url: "/api/categories"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            name: "Perf Category {{ name }}"
+            description: "Category created during performance test"
+          capture:
+            - json: "$.id"
+              as: categoryId
+      - get:
+          url: "/api/categories"
+          expect:
+            - statusCode: 200
+      - put:
+          url: "/api/categories/{{ categoryId }}"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            name: "Updated Perf Category {{ name }}"
+            description: "Updated description"
+          expect:
+            - statusCode: 200
+      - delete:
+          url: "/api/categories/{{ categoryId }}"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
+
