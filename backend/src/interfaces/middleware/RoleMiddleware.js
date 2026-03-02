@@ -1,3 +1,5 @@
+//  Applies cross-cutting request validation and authorization checks.
+
 module.exports = (...allowedRoles) => (req, res, next) => {
   if (!req.user || !req.user.role) {
     return res.status(401).json({ message: "Unauthorized" });

@@ -1,3 +1,5 @@
+// Covers isolated unit behavior for a single module.
+
 const RegisterUser = require("../../src/application/usecases/auth/RegisterUser");
 
 describe("RegisterUser use case", () => {

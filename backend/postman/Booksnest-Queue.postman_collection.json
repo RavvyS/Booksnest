@@ -1,0 +1,286 @@
+{
+  "info": {
+    "_postman_id": "5f57e0a4-b2a3-4c7b-9f7c-ef0d8f4132f4",
+    "name": "Booksnest Queue API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Queue component API tests (backend only): create, list, update, cancel queue requests."
+  },
+  "item": [
+    {
+      "name": "Auth (Reader)",
+      "item": [
+        {
+          "name": "Register Reader (optional)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 or 400 (already exists)', function () {",
+                  "  pm.expect([201, 400]).to.include(pm.response.code);",
+                  "});",
+                  "if (pm.response.code === 201) {",
+                  "  const data = pm.response.json();",
+                  "  if (data.token) pm.environment.set('readerToken', data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Queue Reader\",\n  \"email\": \"{{readerEmail}}\",\n  \"password\": \"{{password}}\",\n  \"role\": \"reader\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Reader",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "if (data.token) pm.environment.set('readerToken', data.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{readerEmail}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Queue Requests",
+      "item": [
+        {
+          "name": "Create Queue Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "const data = pm.response.json();",
+                  "const id = data.id || data._id;",
+                  "if (id) pm.environment.set('queueRequestId', id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Need this book for upcoming assignment\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows/queue/{{queueBookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows", "queue", "{{queueBookId}}"]
+            },
+            "description": "`queueBookId` must reference a book with `availableCopies = 0`."
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Queue Requests",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.test('Response is an array', function () { pm.expect(Array.isArray(data)).to.eql(true); });",
+                  "if (Array.isArray(data) && data.length > 0) {",
+                  "  const first = data[0];",
+                  "  const id = first.id || first._id;",
+                  "  if (id) pm.environment.set('queueRequestId', id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows/queue/my",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows", "queue", "my"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Queue Request Note",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "const newNote = 'Updated note from Postman';",
+                  "pm.test('Note updated', function () {",
+                  "  pm.expect((data.note || '').trim()).to.eql(newNote);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Updated note from Postman\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows/queue/{{queueRequestId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows", "queue", "{{queueRequestId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Queue Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.test('Cancelled confirmation exists', function () {",
+                  "  pm.expect(data.message).to.eql('Queue request cancelled');",
+                  "});",
+                  "if (data.queueRequest && (data.queueRequest.id || data.queueRequest._id)) {",
+                  "  pm.environment.set('queueRequestId', data.queueRequest.id || data.queueRequest._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows/queue/{{queueRequestId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows", "queue", "{{queueRequestId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Negative Cases",
+      "item": [
+        {
+          "name": "Create Queue Request - Missing Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 401', function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"No token test\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/borrows/queue/{{queueBookId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrows", "queue", "{{queueBookId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8070"
+    },
+    {
+      "key": "readerEmail",
+      "value": "queue.reader@test.com"
+    },
+    {
+      "key": "password",
+      "value": "pass123"
+    },
+    {
+      "key": "readerToken",
+      "value": ""
+    },
+    {
+      "key": "queueBookId",
+      "value": ""
+    },
+    {
+      "key": "queueRequestId",
+      "value": ""
+    }
+  ]
+}

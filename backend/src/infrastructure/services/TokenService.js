@@ -1,3 +1,5 @@
+//  Provides a reusable infrastructure-level service utility.
+
 const jwt = require("jsonwebtoken");
 
 class TokenService {

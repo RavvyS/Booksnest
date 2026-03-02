@@ -1,3 +1,6 @@
+
+//  Implements a single business use case with domain-focused rules.
+
 const Category = require("../../../domain/entities/Category");
 
 class CreateCategory {

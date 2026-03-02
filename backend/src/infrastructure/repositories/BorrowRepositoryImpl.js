@@ -1,3 +1,5 @@
+//  Implements persistence operations against MongoDB models.
+
 const BorrowRepository = require("../../domain/repositories/BorrowRepository");
 const BorrowModel = require("../database/schemas/BorrowSchema");
 const Borrow = require("../../domain/entities/Borrow");

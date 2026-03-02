@@ -1,3 +1,6 @@
+
+//  Implements a single business use case with domain-focused rules.
+
 class CreateQueueRequest {
   constructor(queueRepository, bookRepository, borrowRepository) {
     this.queueRepository = queueRepository;

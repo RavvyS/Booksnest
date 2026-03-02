@@ -1,3 +1,5 @@
+//  Defines the Mongoose schema for this collection.
+
 const mongoose = require("mongoose");
 
 const learningMaterialSchema = new mongoose.Schema(

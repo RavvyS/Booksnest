@@ -1,3 +1,5 @@
+//  Handles HTTP request/response mapping and delegates business logic to use cases.
+
 const UserRepository = require("../../infrastructure/repositories/UserRepository");
 const HashService = require("../../infrastructure/services/HashService");
 const TokenService = require("../../infrastructure/services/TokenService");

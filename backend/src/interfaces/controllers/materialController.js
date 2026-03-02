@@ -1,3 +1,5 @@
+//  Handles HTTP request/response mapping and delegates business logic to use cases.
+
 const LearningMaterialRepositoryImpl = require("../../infrastructure/repositories/LearningMaterialRepositoryImpl");
 const CreateMaterial = require("../../application/usecases/materials/CreateMaterial");
 const GetAllMaterials = require("../../application/usecases/materials/GetAllMaterials");

@@ -1,3 +1,5 @@
+//  Covers isolated unit behavior for a single module.
+
 const RoleMiddleware = require("../../src/interfaces/middleware/RoleMiddleware");
 
 describe("RoleMiddleware", () => {

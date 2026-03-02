@@ -1,3 +1,5 @@
+//  Implements persistence operations against MongoDB models.
+
 const BookmarkSchema = require("../database/schemas/BookmarkSchema");
 
 class BookmarkRepositoryImpl {

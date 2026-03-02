@@ -1,3 +1,6 @@
+
+//  Represents a core domain entity used by application logic.
+
 class Bookmark {
     constructor({ id, userId, materialId, materialTitle, materialContentUrl, note, createdAt}) {
         this.id = id;

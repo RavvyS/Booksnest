@@ -1,3 +1,5 @@
+//  Implements persistence operations against MongoDB models.
+
 const CommentSchema = require("../database/schemas/CommentSchema");
 
 class CommentRepositoryImpl {

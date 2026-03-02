@@ -1,3 +1,5 @@
+//  Implements persistence operations against MongoDB models.
+
 const UserModel = require("../database/UserModel");
 
 class UserRepository {

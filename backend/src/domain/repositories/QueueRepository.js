@@ -1,3 +1,6 @@
+
+//  Declares repository contract methods expected by the domain layer.
+
 class QueueRepository {
   async create(queueData, session) {
     throw new Error("Method not implemented");

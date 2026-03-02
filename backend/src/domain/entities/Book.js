@@ -1,3 +1,6 @@
+
+//  Represents a core domain entity used by application logic.
+
 class Book {
   constructor({
     id,

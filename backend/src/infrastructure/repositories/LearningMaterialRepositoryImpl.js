@@ -1,3 +1,5 @@
+//  Implements persistence operations against MongoDB models.
+
 const LearningMaterialSchema = require("../database/schemas/LearningMaterialSchema");
 
 class LearningMaterialRepositoryImpl {

@@ -1,3 +1,5 @@
+//  Handles HTTP request/response mapping and delegates business logic to use cases.
+
 const BookmarkRepositoryImpl = require("../../infrastructure/repositories/BookmarkRepositoryImpl");
 const CreateBookmark = require("../../application/usecases/Bookmark/createBookmark");
 const DeleteBookmark = require("../../application/usecases/Bookmark/deleteBookmark");

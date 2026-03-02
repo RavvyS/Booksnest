@@ -1,3 +1,5 @@
+//  Handles HTTP request/response mapping and delegates business logic to use cases.
+
 const path = require("path");
 const fs = require("fs");
 

@@ -1,3 +1,6 @@
+
+//  Implements a single business use case with domain-focused rules.
+
 class UpdateBookmark {
   constructor( bookmarkRepository ) {
     this.bookmarkRepository = bookmarkRepository;

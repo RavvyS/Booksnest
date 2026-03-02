@@ -1,3 +1,6 @@
+
+//  Implements a single business use case with domain-focused rules.
+
 const Comment = require("../../../domain/entities/Comment");
 
 class CreateComment {

@@ -1,3 +1,6 @@
+
+//  Represents a core domain entity used by application logic.
+
 class LearningMaterial {
   constructor({ id, title, description, contentUrl, category, author, status, createdAt, updatedAt }) {
     this.id = id;

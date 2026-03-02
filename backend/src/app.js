@@ -1,3 +1,6 @@
+
+//  Builds and configures the Express application with all API routes.
+
 const express = require("express");
 const cors = require("cors");
 

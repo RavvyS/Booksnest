@@ -1,3 +1,5 @@
+//  Covers API integration behavior across routes, middleware, and data layer.
+
 const request = require("supertest");
 const mongoose = require("mongoose");
 const { MongoMemoryServer } = require("mongodb-memory-server");
