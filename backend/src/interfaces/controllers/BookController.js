@@ -10,6 +10,7 @@ const GetBooks = require("../../application/usecases/book/getBooks");
 const UpdateBook = require("../../application/usecases/book/updateBook");
 const DeleteBook = require("../../application/usecases/book/deleteBook");
 const ReadBook = require("../../application/usecases/book/ReadBook");
+const ApproveBook = require("../../application/usecases/book/ApproveBook");
 
 const bookRepository = new BookRepositoryImpl();
 const borrowRepository = new BorrowRepositoryImpl();
@@ -18,6 +19,7 @@ const getUseCase = new GetBooks(bookRepository);
 const updateUseCase = new UpdateBook(bookRepository);
 const deleteUseCase = new DeleteBook(bookRepository);
 const readUseCase = new ReadBook(borrowRepository, bookRepository);
+const approveUseCase = new ApproveBook(bookRepository);
 
 exports.createBook = async (req, res) => {
   try {
@@ -25,6 +27,8 @@ exports.createBook = async (req, res) => {
       title: req.body.title,
       author: req.body.author,
       isbn: req.body.isbn,
+      type: req.body.type,
+      uploadedBy: req.user.id,
       categoryId: req.body.categoryId,
       description: req.body.description,
       totalCopies: Number(req.body.totalCopies),
@@ -112,6 +116,37 @@ exports.readBook = async (req, res) => {
     fileStream.pipe(res);
   } catch (error) {
     const status = error.message.includes("Access denied") ? 403 : 400;
+    res.status(status).json({ message: error.message });
+  }
+};
+
+exports.getMyBooks = async (req, res) => {
+  try {
+    const result = await getUseCase.executeByUploader(req.user.id);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+exports.getPendingBooks = async (req, res) => {
+  try {
+    const result = await getUseCase.executePending();
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+exports.approveBook = async (req, res) => {
+  try {
+    const result = await approveUseCase.execute({
+      id: req.params.bookId,
+      status: req.body.status,
+    });
+    res.json(result);
+  } catch (error) {
+    const status = error.message === "Book not found" ? 404 : 400;
     res.status(status).json({ message: error.message });
   }
 };

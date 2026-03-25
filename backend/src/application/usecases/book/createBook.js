@@ -25,6 +25,10 @@ class CreateBook {
     ) {
       throw new Error("Total copies must be at least 1");
     }
+    const validTypes = ["book", "magazine", "journal"];
+    if (!bookData.type || !validTypes.includes(bookData.type)) {
+      throw new Error(`Book type must be one of: ${validTypes.join(", ")}`);
+    }
 
     // Check for duplicate ISBN
     const existing = await this.bookRepository.findByIsbn(bookData.isbn);
@@ -36,6 +40,9 @@ class CreateBook {
       title: bookData.title,
       author: bookData.author,
       isbn: bookData.isbn,
+      type: bookData.type,
+      status: "pending",
+      uploadedBy: bookData.uploadedBy,
       categoryId: bookData.categoryId || null,
       description: bookData.description || "",
       filePath: bookData.filePath || null,
