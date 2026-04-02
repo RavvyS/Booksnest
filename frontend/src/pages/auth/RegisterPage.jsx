@@ -15,8 +15,10 @@ import {
   Select,
 } from '@mui/material';
 import authApi from '../../api/authApi';
+import { useAuth } from '../../context/AuthContext';
 
 const RegisterPage = () => {
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -37,8 +39,13 @@ const RegisterPage = () => {
     setLoading(true);
 
     try {
-      await authApi.register(formData);
-      navigate('/login');
+      const data = await authApi.register(formData);
+      if (data.token) {
+        login(data.token);
+        navigate('/home');
+      } else {
+        navigate('/login');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to register. Please try again.');
     } finally {
