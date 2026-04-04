@@ -15,6 +15,8 @@ class TokenService {
     return jwt.sign(
       {
         id: user._id || user.id,
+        name: user.name,
+        email: user.email,
         role: user.role,
       },
       process.env.JWT_SECRET,
