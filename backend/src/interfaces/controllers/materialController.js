@@ -25,6 +25,7 @@ exports.createMaterial = async (req, res) => {
             title: req.body.title,
             description: req.body.description,
             contentUrl: req.body.contentUrl,
+            type: req.body.type,
             category: req.body.category,
             author: req.body.author,
         });
@@ -71,7 +72,7 @@ exports.updateMaterial = async (req, res) => {
         res.status(200).json(result);
     } catch (error) {
         const status = error.message === "Material not found" ? 404 : 400;
-        res.status(status).json({ message: "Failed to update material", error: error.message });
+        res.status(status).json({ message: error.message });
     }
 };
 
