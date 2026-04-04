@@ -18,6 +18,11 @@ const learningMaterialSchema = new mongoose.Schema(
             required: [true, "Content URL is required"],
             trim: true,
         },
+        type: {
+            type: String,
+            enum: ["video", "audio"],
+            required: [true, "Material type is required"],
+        },
         category: {
             type: String,
             trim: true,
@@ -39,3 +44,4 @@ const learningMaterialSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model("LearningMaterial", learningMaterialSchema);
+
