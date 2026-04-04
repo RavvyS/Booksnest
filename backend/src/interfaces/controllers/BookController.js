@@ -11,6 +11,7 @@ const UpdateBook = require("../../application/usecases/book/updateBook");
 const DeleteBook = require("../../application/usecases/book/deleteBook");
 const ReadBook = require("../../application/usecases/book/ReadBook");
 const ApproveBook = require("../../application/usecases/book/ApproveBook");
+const bookSearchService = require("../../infrastructure/services/BookSearchService");
 
 const bookRepository = new BookRepositoryImpl();
 const borrowRepository = new BorrowRepositoryImpl();
@@ -33,6 +34,7 @@ exports.createBook = async (req, res) => {
       description: req.body.description,
       totalCopies: Number(req.body.totalCopies),
       filePath: req.file ? req.file.path : null,
+      coverImage: req.body.coverImage || null,
     });
 
     res.status(201).json(result);
@@ -148,5 +150,28 @@ exports.approveBook = async (req, res) => {
   } catch (error) {
     const status = error.message === "Book not found" ? 404 : 400;
     res.status(status).json({ message: error.message });
+  }
+};
+
+exports.searchExternal = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) {
+      return res.status(400).json({ message: "Search query is required" });
+    }
+    const results = await bookSearchService.search(q);
+    res.json(results);
+  } catch (error) {
+    res.status(500).json({ message: "External search failed", error: error.message });
+  }
+};
+
+exports.getFreeExternalBooks = async (req, res) => {
+  try {
+    const { subject } = req.query;
+    const results = await bookSearchService.searchFreeBooks(subject || "fiction");
+    res.json(results);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch free books", error: error.message });
   }
 };

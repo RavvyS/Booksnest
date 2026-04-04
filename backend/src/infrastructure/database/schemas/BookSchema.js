@@ -60,6 +60,10 @@ const BookSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    coverImage: {
+      type: String, // Dynamic URL or relative path
+      default: null,
+    },
     totalCopies: {
       type: Number,
       required: [true, "Total copies is required"],

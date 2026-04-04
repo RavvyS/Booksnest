@@ -27,6 +27,14 @@ const booksApi = {
     const response = await apiClient.delete(`/books/${id}`);
     return response.data;
   },
+  searchExternal: async (query) => {
+    const response = await apiClient.get(`/books/search-external?q=${query}`);
+    return response.data;
+  },
+  getFreeExternalBooks: async (subject = 'fiction') => {
+    const response = await apiClient.get(`/books/external/free?subject=${subject}`);
+    return response.data;
+  },
 };
 
 export default booksApi;

@@ -46,6 +46,7 @@ class CreateBook {
       categoryId: bookData.categoryId || null,
       description: bookData.description || "",
       filePath: bookData.filePath || null,
+      coverImage: bookData.coverImage || null,
       totalCopies: bookData.totalCopies,
       availableCopies: bookData.totalCopies,
     });

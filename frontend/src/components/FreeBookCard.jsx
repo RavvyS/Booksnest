@@ -6,21 +6,12 @@ import {
   Typography,
   CardActionArea,
   Box,
-  Chip,
+  Rating,
+  Button
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
-const BookCard = ({ book }) => {
-  const navigate = useNavigate();
-
-  // Base URL for backend static files if needed
-  const baseUrl = 'http://localhost:8070';
-  
-  // Resolve image source
-  const imageSrc = book.coverImage 
-    ? (book.coverImage.startsWith('http') ? book.coverImage : `${baseUrl}/${book.coverImage}`)
-    : `https://images.unsplash.com/photo-1543004471-24b9a3dc73ef?q=80&w=400&auto=format&fit=crop&sig=${book._id || 'default'}`;
-
+const FreeBookCard = ({ book }) => {
   return (
     <Card 
       sx={{ 
@@ -37,13 +28,15 @@ const BookCard = ({ book }) => {
       }}
     >
       <CardActionArea 
-        onClick={() => navigate(`/books/${book._id}`)}
+        href={book.previewLink}
+        target="_blank"
+        rel="noopener noreferrer"
         sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
       >
         <CardMedia
           component="img"
           height="280"
-          image={imageSrc}
+          image={book.thumbnail || 'https://via.placeholder.com/400x600?text=No+Preview'}
           alt={book.title}
           sx={{ 
             objectFit: 'cover',
@@ -53,17 +46,10 @@ const BookCard = ({ book }) => {
         />
         <CardContent sx={{ flexGrow: 1, width: '100%', display: 'flex', flexDirection: 'column' }}>
           <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Chip 
-              label={book.availableCopies > 0 ? 'Available' : 'Out of Stock'} 
-              color={book.availableCopies > 0 ? 'success' : 'error'} 
-              size="small" 
-              variant="outlined" 
-            />
-            {book.availableCopies > 0 && (
-              <Typography variant="caption" color="textSecondary">
-                {book.availableCopies} left
-              </Typography>
-            )}
+             <Typography variant="overline" color="primary" fontWeight="bold">
+              Free E-Book
+            </Typography>
+            {book.rating > 0 && <Rating value={book.rating} readOnly size="small" precision={0.5} />}
           </Box>
           <Typography 
             gutterBottom 
@@ -85,10 +71,19 @@ const BookCard = ({ book }) => {
           <Typography variant="body2" color="textSecondary" noWrap sx={{ mb: 'auto' }}>
             {book.author}
           </Typography>
+          <Button 
+            variant="outlined" 
+            size="small" 
+            fullWidth 
+            endIcon={<OpenInNewIcon />}
+            sx={{ mt: 1 }}
+          >
+            Read Free
+          </Button>
         </CardContent>
       </CardActionArea>
     </Card>
   );
 };
 
-export default BookCard;
+export default FreeBookCard;

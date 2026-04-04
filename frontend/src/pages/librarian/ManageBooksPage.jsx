@@ -24,7 +24,17 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import SearchIcon from '@mui/icons-material/Search';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { 
+  InputAdornment, 
+  List, 
+  ListItem, 
+  ListItemText, 
+  ListItemAvatar, 
+  Avatar, 
+  Divider 
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import booksApi from '../../api/booksApi';
 
@@ -42,8 +52,38 @@ const ManageBooksPage = () => {
     availableCopies: 1,
   });
   const [file, setFile] = useState(null);
+  const [searchText, setSearchText] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [message, setMessage] = useState({ text: '', type: 'success' });
   const navigate = useNavigate();
+
+  const handleSearchExternal = async () => {
+    if (!searchText) return;
+    setSearchLoading(true);
+    try {
+      const data = await booksApi.searchExternal(searchText);
+      setSearchResults(data);
+    } catch (err) {
+      setMessage({ text: 'Search failed. Try again.', type: 'error' });
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleSelectBook = (book) => {
+    setFormData({
+      title: book.title,
+      author: book.author,
+      isbn: book.isbn,
+      description: book.description || '',
+      coverImage: book.thumbnail || '',
+      totalCopies: 1,
+      availableCopies: 1,
+    });
+    setSearchResults([]);
+    setSearchText('');
+  };
 
   const fetchBooks = async () => {
     try {
@@ -61,6 +101,8 @@ const ManageBooksPage = () => {
   }, []);
 
   const handleOpen = (book = null) => {
+    setSearchResults([]);
+    setSearchText('');
     if (book) {
       setEditId(book._id);
       setFormData({
@@ -185,7 +227,67 @@ const ManageBooksPage = () => {
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>{editId ? 'Edit Book' : 'Add New Book'}</DialogTitle>
         <form onSubmit={handleSubmit}>
-          <DialogContent>
+          <DialogContent sx={{ pt: 1 }}>
+            {!editId && (
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="overline" color="textSecondary" sx={{ mb: 1, display: 'block' }}>
+                  Auto-fill from Google Books
+                </Typography>
+                <TextField
+                  fullWidth
+                  size="small"
+                  placeholder="Search by Title or ISBN..."
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleSearchExternal())}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={handleSearchExternal} edge="end" disabled={searchLoading}>
+                          {searchLoading ? <CircularProgress size={20} /> : <SearchIcon />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ mb: searchResults.length > 0 ? 1 : 0 }}
+                />
+                
+                {searchResults.length > 0 && (
+                  <Paper variant="outlined" sx={{ maxHeight: 200, overflow: 'auto', borderRadius: 1 }}>
+                    <List dense>
+                      {searchResults.map((res, idx) => (
+                        <React.Fragment key={idx}>
+                          <ListItem 
+                            button 
+                            onClick={() => handleSelectBook(res)}
+                            sx={{ '&:hover': { bgcolor: 'action.hover' } }}
+                          >
+                            <ListItemAvatar>
+                              <Avatar 
+                                variant="rounded" 
+                                src={res.thumbnail} 
+                                sx={{ width: 32, height: 48 }}
+                              >
+                                <SearchIcon fontSize="small" />
+                              </Avatar>
+                            </ListItemAvatar>
+                            <ListItemText 
+                              primary={res.title} 
+                              secondary={res.author} 
+                              primaryTypographyProps={{ noWrap: true, variant: 'body2', fontWeight: 'bold' }}
+                              secondaryTypographyProps={{ noWrap: true, variant: 'caption' }}
+                            />
+                          </ListItem>
+                          {idx < searchResults.length - 1 && <Divider />}
+                        </React.Fragment>
+                      ))}
+                    </List>
+                  </Paper>
+                )}
+                <Divider sx={{ mt: 3, mb: 1 }} />
+              </Box>
+            )}
+
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField fullWidth label="Book Title" name="title" required value={formData.title} onChange={handleChange} />
