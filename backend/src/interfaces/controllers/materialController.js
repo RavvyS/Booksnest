@@ -111,28 +111,3 @@ exports.getPendingMaterials = async (req, res) => {
         res.status(500).json({ message: "Failed to retrieve pending materials", error: error.message });
     }
 };
-
-// PATCH /api/materials/:id/approve
-exports.approveMaterial = async (req, res) => {
-    try {
-        const result = await approveUseCase.execute({
-            id: req.params.id,
-            status: req.body.status,
-        });
-
-        res.status(200).json(result);
-    } catch (error) {
-        const status = error.message === "Material not found" ? 404 : 400;
-        res.status(status).json({ message: error.message });
-    }
-};
-
-// GET /api/materials/pending (librarian view)
-exports.getPendingMaterials = async (req, res) => {
-    try {
-        const result = await getPendingUseCase.execute();
-        res.status(200).json(result);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};

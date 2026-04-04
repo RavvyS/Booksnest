@@ -8,19 +8,42 @@ const RoleMiddleware = require("../middleware/RoleMiddleware");
 const { upload } = require("../../infrastructure/services/multerBookUpload");
 
 // Public routes
+// Protected routes (Librarian/Author)
+router.post(
+  "/",
+  AuthMiddleware,
+  RoleMiddleware("author", "librarian"),
+  upload.single("file"),
+  BookController.createBook,
+);
+
+router.get(
+  "/my-books",
+  AuthMiddleware,
+  RoleMiddleware("author"),
+  BookController.getMyBooks,
+);
+
+router.get(
+  "/pending",
+  AuthMiddleware,
+  RoleMiddleware("librarian"),
+  BookController.getPendingBooks,
+);
+
+// Public routes
 router.get("/", BookController.getAllBooks);
 router.get("/:bookId", BookController.getBookById);
 
 // Secure read route (any authenticated user with valid borrow)
 router.get("/:bookId/read", AuthMiddleware, BookController.readBook);
 
-// Protected routes (Librarian only)
-router.post(
-  "/",
+// Librarian only routes
+router.patch(
+  "/:bookId/approve",
   AuthMiddleware,
   RoleMiddleware("librarian"),
-  upload.single("file"),
-  BookController.createBook,
+  BookController.approveBook,
 );
 
 router.put(

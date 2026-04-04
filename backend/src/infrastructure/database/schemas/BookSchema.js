@@ -24,6 +24,29 @@ const BookSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
+    type: {
+      type: String,
+      required: [true, "Book type is required"],
+      enum: {
+        values: ["book", "magazine", "journal"],
+        message: "{VALUE} is not a valid book type",
+      },
+      default: "book",
+    },
+    status: {
+      type: String,
+      required: [true, "Status is required"],
+      enum: {
+        values: ["pending", "approved", "rejected"],
+        message: "{VALUE} is not a valid status",
+      },
+      default: "pending",
+    },
+    uploadedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Uploader is required"],
+    },
     categoryId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
