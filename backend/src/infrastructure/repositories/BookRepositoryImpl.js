@@ -11,6 +11,9 @@ class BookRepositoryImpl extends BookRepository {
       title: doc.title,
       author: doc.author,
       isbn: doc.isbn,
+      type: doc.type,
+      status: doc.status,
+      uploadedBy: doc.uploadedBy ? doc.uploadedBy.toString() : null,
       categoryId: doc.categoryId ? doc.categoryId.toString() : null,
       description: doc.description,
       filePath: doc.filePath || null,
@@ -26,6 +29,9 @@ class BookRepositoryImpl extends BookRepository {
       title: book.title,
       author: book.author,
       isbn: book.isbn,
+      type: book.type,
+      status: "pending",
+      uploadedBy: book.uploadedBy,
       categoryId: book.categoryId || undefined,
       description: book.description,
       filePath: book.filePath || null,
@@ -37,8 +43,32 @@ class BookRepositoryImpl extends BookRepository {
   }
 
   async findAll() {
-    const books = await BookModel.find().sort({ title: 1 });
+    return await this.findAllApproved();
+  }
+
+  async findAllApproved() {
+    const books = await BookModel.find({ status: "approved" }).sort({ title: 1 });
     return books.map((b) => this._toEntity(b));
+  }
+
+  async findAllPending() {
+    const books = await BookModel.find({ status: "pending" }).sort({ createdAt: -1 });
+    return books.map((b) => this._toEntity(b));
+  }
+
+  async findByUploader(userId) {
+    const books = await BookModel.find({ uploadedBy: userId }).sort({ createdAt: -1 });
+    return books.map((b) => this._toEntity(b));
+  }
+
+  async approve(id, status) {
+    const updated = await BookModel.findByIdAndUpdate(
+      id,
+      { $set: { status } },
+      { new: true, runValidators: true },
+    );
+    if (!updated) return null;
+    return this._toEntity(updated);
   }
 
   async findById(id) {

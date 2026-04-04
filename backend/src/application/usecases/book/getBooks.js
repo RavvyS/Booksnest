@@ -7,7 +7,18 @@ class GetBooks {
   }
 
   async execute() {
-    return await this.bookRepository.findAll();
+    return await this.bookRepository.findAllApproved();
+  }
+
+  async executePending() {
+    return await this.bookRepository.findAllPending();
+  }
+
+  async executeByUploader(userId) {
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
+    return await this.bookRepository.findByUploader(userId);
   }
 
   async executeById(id) {
