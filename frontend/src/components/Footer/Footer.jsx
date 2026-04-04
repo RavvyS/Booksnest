@@ -1,62 +1,110 @@
 import React from 'react';
-import '../Footer/footer.css';
-import BrownImage from '../../assets/Brown.png'; // Correct relative path to the image
+import { Box, Container, Grid, Typography, Link, IconButton, Divider } from '@mui/material';
+import FacebookIcon from '@mui/icons-material/Facebook';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import InstagramIcon from '@mui/icons-material/Instagram';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 
-function Footer() {
+const Footer = () => {
   return (
-    <>
-      <footer className="footer">
-        <div className="footer-left">
-          <img src={BrownImage} alt="logo" />
-          <p>Lorem ipsum dolor sit amet consectetur. Nullam aliquam tellus.</p>
-          <div className="social">
-            <a href="#" aria-label="Facebook"><i className="fab fa-facebook-f"></i></a>
-            <a href="#" aria-label="Twitter"><i className="fab fa-twitter"></i></a>
-            <a href="#" aria-label="YouTube"><i className="fab fa-youtube"></i></a>
-            <a href="#" aria-label="Instagram"><i className="fab fa-instagram"></i></a>
-            <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
-          </div>
+    <Box
+      component="footer"
+      sx={{
+        bgcolor: '#1E293B',
+        color: 'white',
+        py: 6,
+        mt: 'auto',
+      }}
+    >
+      <Container maxWidth="lg">
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={4}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+              <AutoStoriesIcon color="primary" />
+              <Typography variant="h5" color="white" fontWeight="bold">
+                Book Nest
+              </Typography>
+            </Box>
+            <Typography variant="body2" sx={{ color: '#94A3B8', mb: 2, pr: 4 }}>
+              Empowering communities with free access to digital books and community-driven learning materials. Explore, borrow, and contribute today.
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <IconButton size="small" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
+                <FacebookIcon />
+              </IconButton>
+              <IconButton size="small" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
+                <TwitterIcon />
+              </IconButton>
+              <IconButton size="small" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
+                <InstagramIcon />
+              </IconButton>
+              <IconButton size="small" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
+                <LinkedInIcon />
+              </IconButton>
+            </Box>
+          </Grid>
+          
+          <Grid item xs={12} sm={6} md={2.6}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Explore
+            </Typography>
+            <Link href="/books" color="inherit" underline="hover" sx={{ display: 'block', mb: 1, color: '#94A3B8' }}>
+              Digital Books
+            </Link>
+            <Link href="/materials" color="inherit" underline="hover" sx={{ display: 'block', mb: 1, color: '#94A3B8' }}>
+              Learning Materials
+            </Link>
+            <Link href="/home" color="inherit" underline="hover" sx={{ display: 'block', mb: 1, color: '#94A3B8' }}>
+              Featured Content
+            </Link>
+          </Grid>
 
-        </div>
-        <ul className="footer-right">
-          <li>
-            <h2>Quick Link</h2>
-            <ul className="box">
-              <li><a href='#'>Home</a></li>
-              <li><a href='#'>My Shelf</a></li>
-              <li><a href='#'>Contribute</a></li>
-              <li><a href='#'>Events</a></li>
-              <li><a href='#'>Announcements</a></li>
-            </ul>
-          </li>
+          <Grid item xs={12} sm={6} md={2.6}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Community
+            </Typography>
+            <Link href="/register" color="inherit" underline="hover" sx={{ display: 'block', mb: 1, color: '#94A3B8' }}>
+              Become a Member
+            </Link>
+            <Link href="/register" color="inherit" underline="hover" sx={{ display: 'block', mb: 1, color: '#94A3B8' }}>
+              Upload Resources
+            </Link>
+            <Link href="/login" color="inherit" underline="hover" sx={{ display: 'block', mb: 1, color: '#94A3B8' }}>
+              User Login
+            </Link>
+          </Grid>
 
-          <li className='features'>
-            <h2></h2>
-            <ul className="box">
-              <li><a href='#'>About Us</a></li>
-              <li><a href='#'>Barrowing policy</a></li>
-              <li><a href='#'>Privecy Policy</a></li>
-              <li><a href='#'>Contact Us</a></li>
-              <li><a href='#'>My Account</a></li>
-              <li><a href='#'>Privecy Policy</a></li>
-            </ul>
-          </li>
-
-          <li className='features'>
-            <h2>Address</h2>
-            <ul className="box">
-              <li><a href='#'>127, Pitipana</a></li>
-              <li><a href='#'>Thalagala Rd, Homagama</a></li>
-              <li><a href='#'>Sri Lanka</a></li>
-            </ul>
-          </li>
-        </ul>
-        <div className="footer-bottom">
-          <p> Brown INC © 2024. All rights reserved. </p>
-        </div>
-      </footer>
-    </>
+          <Grid item xs={12} sm={6} md={2.8}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Contact Us
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#94A3B8', mb: 1 }}>
+              Colombo, Sri Lanka
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#94A3B8', mb: 1 }}>
+              support@booksnest.com
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#94A3B8' }}>
+              +94 11 234 5678
+            </Typography>
+          </Grid>
+        </Grid>
+        
+        <Divider sx={{ my: 4, borderColor: '#334155' }} />
+        
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#94A3B8' }}>
+          <Typography variant="caption">
+            &copy; {new Date().getFullYear()} Book Nest Digital Library. All rights reserved.
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 3 }}>
+            <Link href="#" color="inherit" variant="caption" underline="hover">Privacy Policy</Link>
+            <Link href="#" color="inherit" variant="caption" underline="hover">Terms of Service</Link>
+          </Box>
+        </Box>
+      </Container>
+    </Box>
   );
-}
+};
 
 export default Footer;
