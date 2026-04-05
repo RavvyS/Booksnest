@@ -8,6 +8,7 @@ class Book {
     author,
     isbn,
     categoryId,
+    category,
     description,
     filePath,
     totalCopies,
@@ -20,6 +21,7 @@ class Book {
     this.author = author;
     this.isbn = isbn;
     this.categoryId = categoryId;
+    this.category = category; // populated category object
     this.description = description;
     this.filePath = filePath || null;
     this.totalCopies = totalCopies;

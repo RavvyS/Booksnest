@@ -169,16 +169,22 @@ function ResponsiveAppBar({ onLogout }) {
 
             <Button
               href="/login"
+              variant="contained"
               sx={{
                 my: 2,
-                color: "#434343",
+                backgroundColor: "#0653B8",
+                color: "#FFFFFF",
                 display: "block",
                 fontWeight: "bold",
-                marginLeft: "-8px",
-                marginRight: "16px",
+                borderRadius: "10px",
+                px: 3,
+                marginLeft: "8px",
+                '&:hover': {
+                  backgroundColor: "#054191",
+                },
               }}
             >
-              Login
+              Sign In
             </Button>
           </Box>
 

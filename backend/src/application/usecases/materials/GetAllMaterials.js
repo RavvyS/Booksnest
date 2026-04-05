@@ -6,9 +6,9 @@ class GetAllMaterials {
         this.repository = repository;
     }
 
-    async execute({ category } = {}) {
-        if (category) {
-            return await this.repository.findByCategory(category);
+    async execute({ categoryId } = {}) {
+        if (categoryId) {
+            return await this.repository.findByCategory(categoryId);
         }
         return await this.repository.findAllApproved();
     }

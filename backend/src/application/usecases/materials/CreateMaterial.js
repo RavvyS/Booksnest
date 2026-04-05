@@ -22,11 +22,15 @@ class CreateMaterial {
             throw new Error("Author is required");
         }
 
+        if (!data.categoryId) {
+            throw new Error("Category ID is required");
+        }
+
         const material = new LearningMaterial({
             title: data.title.trim(),
             description: data.description || "",
             contentUrl: data.contentUrl.trim(),
-            category: data.category || "",
+            categoryId: data.categoryId,
             author: data.author.trim(),
             status: "pending",
         });

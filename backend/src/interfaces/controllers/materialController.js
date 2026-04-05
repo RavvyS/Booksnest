@@ -25,7 +25,7 @@ exports.createMaterial = async (req, res) => {
             title: req.body.title,
             description: req.body.description,
             contentUrl: req.body.contentUrl,
-            category: req.body.category,
+            categoryId: req.body.categoryId,
             author: req.body.author,
         });
 
@@ -39,7 +39,7 @@ exports.createMaterial = async (req, res) => {
 exports.getAllMaterials = async (req, res) => {
     try {
         const result = await getAllUseCase.execute({
-            category: req.query.category,
+            categoryId: req.query.categoryId,
         });
 
         res.status(200).json(result);
@@ -112,27 +112,3 @@ exports.getPendingMaterials = async (req, res) => {
     }
 };
 
-// PATCH /api/materials/:id/approve
-exports.approveMaterial = async (req, res) => {
-    try {
-        const result = await approveUseCase.execute({
-            id: req.params.id,
-            status: req.body.status,
-        });
-
-        res.status(200).json(result);
-    } catch (error) {
-        const status = error.message === "Material not found" ? 404 : 400;
-        res.status(status).json({ message: error.message });
-    }
-};
-
-// GET /api/materials/pending (librarian view)
-exports.getPendingMaterials = async (req, res) => {
-    try {
-        const result = await getPendingUseCase.execute();
-        res.status(200).json(result);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};

@@ -3,15 +3,21 @@
 const BookRepository = require("../../domain/repositories/BookRepository");
 const BookModel = require("../database/schemas/BookSchema");
 const Book = require("../../domain/entities/Book");
+const mongoose = require("mongoose");
 
 class BookRepositoryImpl extends BookRepository {
   _toEntity(doc) {
+    const categoryData = doc.categoryId && typeof doc.categoryId === 'object' && doc.categoryId._id 
+      ? { id: doc.categoryId._id.toString(), name: doc.categoryId.name, description: doc.categoryId.description }
+      : null;
+
     return new Book({
       id: doc._id.toString(),
       title: doc.title,
       author: doc.author,
       isbn: doc.isbn,
-      categoryId: doc.categoryId ? doc.categoryId.toString() : null,
+      categoryId: doc.categoryId ? (doc.categoryId._id ? doc.categoryId._id.toString() : doc.categoryId.toString()) : null,
+      category: categoryData,
       description: doc.description,
       filePath: doc.filePath || null,
       totalCopies: doc.totalCopies,
@@ -36,13 +42,17 @@ class BookRepositoryImpl extends BookRepository {
     return this._toEntity(saved);
   }
 
-  async findAll() {
-    const books = await BookModel.find().sort({ title: 1 });
+  async findAll(categoryId = null) {
+    let filter = {};
+    if (categoryId && mongoose.Types.ObjectId.isValid(categoryId)) {
+      filter.categoryId = new mongoose.Types.ObjectId(categoryId);
+    }
+    const books = await BookModel.find(filter).populate("categoryId").sort({ title: 1 });
     return books.map((b) => this._toEntity(b));
   }
 
   async findById(id) {
-    const book = await BookModel.findById(id);
+    const book = await BookModel.findById(id).populate("categoryId");
     if (!book) return null;
     return this._toEntity(book);
   }
@@ -68,7 +78,7 @@ class BookRepositoryImpl extends BookRepository {
       id,
       updateFields,
       { new: true, runValidators: true },
-    );
+    ).populate("categoryId");
     if (!updated) return null;
     return this._toEntity(updated);
   }

@@ -6,8 +6,8 @@ class GetBooks {
     this.bookRepository = bookRepository;
   }
 
-  async execute() {
-    return await this.bookRepository.findAll();
+  async execute(categoryId = null) {
+    return await this.bookRepository.findAll(categoryId);
   }
 
   async executeById(id) {

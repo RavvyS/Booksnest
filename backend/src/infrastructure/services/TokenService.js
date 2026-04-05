@@ -29,6 +29,24 @@ class TokenService {
     return jwt.verify(token, process.env.JWT_SECRET);
   }
 
+  generateReadToken(userId, bookId) {
+    this.ensureSecret();
+    return jwt.sign(
+      { userId, bookId, type: "read_pdf" },
+      process.env.JWT_SECRET,
+      { expiresIn: "2h" }
+    );
+  }
+
+  verifyReadToken(token) {
+    this.ensureSecret();
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.type !== "read_pdf") {
+      throw new Error("Invalid token type");
+    }
+    return decoded;
+  }
+
 }
 
 module.exports = new TokenService();

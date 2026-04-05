@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { styled } from '@mui/material/styles';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
-import { Card, CardContent, CardMedia, Typography, Grid } from '@mui/material';
-import { Link } from "react-router-dom";
+import { Card, CardContent, CardMedia, Typography, Grid, Box, Chip } from '@mui/material';
+import { Link, useNavigate } from "react-router-dom";
+import bookService from "../../services/bookService";
+import categoryService from "../../services/categoryService";
 
 
 // Search bar styles
@@ -40,21 +41,26 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 function MainHome() {
-
-
   const [books, setBooks] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch books from the backend
-    axios
-      .get("http://localhost:5000/api/books") // Update with your API endpoint
-      .then((response) => {
-        setBooks(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching books:", error);
-      });
+    fetchData();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      const [booksData, catsData] = await Promise.all([
+        bookService.getAllBooks(),
+        categoryService.getAll(),
+      ]);
+      setBooks(booksData.slice(0, 7)); // Just show a few for "New Arrivals"
+      setCategories(catsData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
  
 
   const handleBookClick = (bookId) => {
@@ -90,6 +96,75 @@ function MainHome() {
               font-weight: bold;
               color: #333;
               margin-left: -20px
+            }
+          `}
+        </style>
+      </div>
+
+      <div className="categories-section">
+        <h2 className="section-title">Browse by Category</h2>
+        <div className="categories-container">
+          <div 
+            className="category-chip all-chip"
+            onClick={() => navigate('/books')}
+          >
+            All
+          </div>
+          {categories.map((cat) => (
+            <div 
+              key={cat.id || cat._id} 
+              className="category-chip"
+              onClick={() => navigate(`/books?category=${cat.id || cat._id}`)}
+            >
+              {cat.name}
+            </div>
+          ))}
+        </div>
+        <style>
+          {`
+            .categories-section {
+              max-width: 1680px;
+              margin: 2rem auto;
+              padding: 0 2rem;
+            }
+            .section-title {
+              font-size: 1.5rem;
+              font-weight: 600;
+              margin-bottom: 1.5rem;
+              color: #1a237e;
+            }
+            .categories-container {
+              display: flex;
+              gap: 1rem;
+              overflow-x: auto;
+              padding-bottom: 1rem;
+              scrollbar-width: none;
+            }
+            .categories-container::-webkit-scrollbar {
+              display: none;
+            }
+            .category-chip {
+              padding: 0.8rem 1.5rem;
+              background: white;
+              border: 1px solid #e0e0e0;
+              border-radius: 12px;
+              font-weight: 500;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              white-space: nowrap;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            }
+            .category-chip:hover {
+              background: #0c399b;
+              color: white;
+              border-color: #0c399b;
+              transform: translateY(-2px);
+              box-shadow: 0 4px 12px rgba(12, 57, 155, 0.2);
+            }
+            .all-chip {
+              background: #e8f0fe;
+              color: #0c399b;
+              border-color: #d2e3fc;
             }
           `}
         </style>
@@ -195,7 +270,7 @@ function MainHome() {
                 </Typography>
               </CardContent>
               <div style={{ textAlign: 'left', padding: '10px'  }}>
-                <span style={{ fontWeight: 'bold' }}>{book.genre}</span>
+                <span style={{ fontWeight: 'bold' }}>{book.category?.name || book.genre || "General"}</span>
                 <span style={{ fontWeight: 'normal', marginLeft:'70px' }}>{book.publishedYear}</span>
               </div>
             </Card>

@@ -1,6 +1,7 @@
 //  Implements persistence operations against MongoDB models.
 
 const LearningMaterialSchema = require("../database/schemas/LearningMaterialSchema");
+const mongoose = require("mongoose");
 
 class LearningMaterialRepositoryImpl {
 
@@ -11,23 +12,27 @@ class LearningMaterialRepositoryImpl {
     }
 
     async findAllApproved() {
-        return await LearningMaterialSchema.find({ status: "approved" }).sort({ createdAt: -1 });
+        return await LearningMaterialSchema.find({ status: "approved" }).populate("categoryId").sort({ createdAt: -1 });
     }
 
     async findAllPending() {
-        return await LearningMaterialSchema.find({ status: "pending" }).sort({ createdAt: -1 });
+        return await LearningMaterialSchema.find({ status: "pending" }).populate("categoryId").sort({ createdAt: -1 });
     }
 
     async findAll() {
-        return await LearningMaterialSchema.find().sort({ createdAt: -1 });
+        return await LearningMaterialSchema.find().populate("categoryId").sort({ createdAt: -1 });
     }
 
     async findById(id) {
-        return await LearningMaterialSchema.findById(id);
+        return await LearningMaterialSchema.findById(id).populate("categoryId");
     }
 
-    async findByCategory(category) {
-        return await LearningMaterialSchema.find({ status: "approved", category }).sort({ createdAt: -1 });
+    async findByCategory(categoryId) {
+        let filter = { status: "approved" };
+        if (categoryId && mongoose.Types.ObjectId.isValid(categoryId)) {
+            filter.categoryId = new mongoose.Types.ObjectId(categoryId);
+        }
+        return await LearningMaterialSchema.find(filter).populate("categoryId").sort({ createdAt: -1 });
     }
 
     async update(id, data) {

@@ -3,51 +3,22 @@
     "_postman_id": "b1d5ddf4-b5da-4b3a-8a09-2f6f46f3d0af",
     "name": "Booksnest Backend API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Role-based auth and comment CRUD endpoints for Booksnest backend."
+    "description": "Comprehensive API collection for Booksnest Library Management System."
   },
   "item": [
-    {
-      "name": "Health",
-      "item": [
-        {
-          "name": "Get Public Comments",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/comments",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "comments"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
     {
       "name": "Auth",
       "item": [
         {
-          "name": "Register Reader",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
-                  "const data = pm.response.json();",
-                  "if (data.token) pm.environment.set('readerToken', data.token);"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
+          "name": "Register",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Reader One\",\n  \"email\": \"{{readerEmail}}\",\n  \"password\": \"{{password}}\",\n  \"role\": \"reader\"\n}"
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"reader\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/register",
@@ -58,15 +29,14 @@
           "response": []
         },
         {
-          "name": "Register Author",
+          "name": "Login",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
                   "const data = pm.response.json();",
-                  "if (data.token) pm.environment.set('authorToken', data.token);"
+                  "if (data.token) pm.environment.set('token', data.token);"
                 ],
                 "type": "text/javascript"
               }
@@ -74,70 +44,12 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Author One\",\n  \"email\": \"{{authorEmail}}\",\n  \"password\": \"{{password}}\",\n  \"role\": \"author\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "register"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Register Librarian",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
-                  "const data = pm.response.json();",
-                  "if (data.token) pm.environment.set('librarianToken', data.token);"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Librarian One\",\n  \"email\": \"{{librarianEmail}}\",\n  \"password\": \"{{password}}\",\n  \"role\": \"librarian\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "register"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Login Reader",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
-                  "const data = pm.response.json();",
-                  "if (data.token) pm.environment.set('readerToken', data.token);"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"{{readerEmail}}\",\n  \"password\": \"{{password}}\"\n}"
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/login",
@@ -148,41 +60,11 @@
           "response": []
         },
         {
-          "name": "Login Librarian",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
-                  "const data = pm.response.json();",
-                  "if (data.token) pm.environment.set('librarianToken', data.token);"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"{{librarianEmail}}\",\n  \"password\": \"{{password}}\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "login"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Profile (Reader)",
+          "name": "Get Profile",
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
               "raw": "{{baseUrl}}/api/auth/profile",
@@ -195,263 +77,68 @@
       ]
     },
     {
-      "name": "Comments",
-      "item": [
-        {
-          "name": "Create Comment (Reader)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
-                  "const data = pm.response.json();",
-                  "if (data._id) pm.environment.set('commentId', data._id);"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"content\": \"Great resource!\",\n  \"materialId\": \"{{materialId}}\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/comments",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "comments"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Comments By Material",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/comments?materialId={{materialId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "comments"],
-              "query": [{ "key": "materialId", "value": "{{materialId}}" }]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update Comment (Owner Reader)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"content\": \"Updated by owner\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/comments/{{commentId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "comments", "{{commentId}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update Comment (Non-Owner Author, expect 403)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{authorToken}}" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"content\": \"Trying unauthorized update\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/comments/{{commentId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "comments", "{{commentId}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete Comment (Librarian override)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{librarianToken}}" }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/comments/{{commentId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "comments", "{{commentId}}"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Categories",
-      "item": [
-        {
-          "name": "Get All Categories (Public)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/categories",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "categories"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Category By ID (Public)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/categories/{{categoryId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "categories", "{{categoryId}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create Category (Librarian)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
-                  "const data = pm.response.json();",
-                  "if (data.id) pm.environment.set('categoryId', data.id);"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{librarianToken}}" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Science Fiction\",\n  \"description\": \"Science fiction and futuristic literature\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/categories",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "categories"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update Category (Librarian)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{librarianToken}}" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Sci-Fi & Fantasy\",\n  \"description\": \"Science fiction and fantasy literature\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/categories/{{categoryId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "categories", "{{categoryId}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete Category (Librarian)",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{librarianToken}}" }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/categories/{{categoryId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "categories", "{{categoryId}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create Category (Reader, expect 403)",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Unauthorized Category\",\n  \"description\": \"Should fail - reader cannot create categories\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/categories",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "categories"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
       "name": "Books",
       "item": [
         {
-          "name": "Create Book with PDF (Librarian)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
-                  "const data = pm.response.json();",
-                  "if (data.id) pm.environment.set('bookId', data.id);"
-                ],
-                "type": "text/javascript"
-              }
+          "name": "Get All Books",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/books",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books"]
             }
-          ],
+          },
+          "response": []
+        },
+        {
+          "name": "Get Book By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/books/:bookId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books", ":bookId"],
+              "variable": [{ "key": "bookId", "value": "" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Read Book PDF",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/books/:bookId/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "books", ":bookId", "read"],
+              "variable": [{ "key": "bookId", "value": "" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Book",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{librarianToken}}" }
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
               "mode": "formdata",
               "formdata": [
-                { "key": "title", "value": "Clean Code", "type": "text" },
-                { "key": "author", "value": "Robert C. Martin", "type": "text" },
-                { "key": "isbn", "value": "978-0-13-235088-4", "type": "text" },
-                { "key": "totalCopies", "value": "2", "type": "text" },
-                { "key": "description", "value": "A handbook of agile software craftsmanship", "type": "text" },
-                { "key": "file", "type": "file", "src": "" }
+                { "key": "title", "value": "", "type": "text" },
+                { "key": "author", "value": "", "type": "text" },
+                { "key": "isbn", "value": "", "type": "text" },
+                { "key": "categoryId", "value": "", "type": "text" },
+                { "key": "description", "value": "", "type": "text" },
+                { "key": "totalCopies", "value": "1", "type": "text" },
+                { "key": "file", "type": "file", "src": [] }
               ]
             },
             "url": {
@@ -463,97 +150,38 @@
           "response": []
         },
         {
-          "name": "Get All Books (Public)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/books",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "books"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Book By ID (Public)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/books/{{bookId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "books", "{{bookId}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Read Book PDF (Reader, valid borrow)",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/books/{{bookId}}/read",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "books", "{{bookId}}", "read"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Read Book PDF (No borrow, expect 403)",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{authorToken}}" }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/books/{{bookId}}/read",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "books", "{{bookId}}", "read"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update Book (Librarian)",
+          "name": "Update Book",
           "request": {
             "method": "PUT",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{librarianToken}}" }
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Clean Code (2nd Edition)\",\n  \"author\": \"Robert C. Martin\",\n  \"isbn\": \"978-0-13-235088-4\",\n  \"description\": \"Updated handbook of agile software craftsmanship\"\n}"
+              "raw": "{\n  \"title\": \"Updated Title\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/books/{{bookId}}",
+              "raw": "{{baseUrl}}/api/books/:bookId",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "books", "{{bookId}}"]
+              "path": ["api", "books", ":bookId"],
+              "variable": [{ "key": "bookId", "value": "" }]
             }
           },
           "response": []
         },
         {
-          "name": "Create Book (Reader, expect 403)",
+          "name": "Delete Book",
           "request": {
-            "method": "POST",
+            "method": "DELETE",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"title\": \"Unauthorized Book\",\n  \"author\": \"Test\",\n  \"isbn\": \"000-0-00-000000-0\",\n  \"totalCopies\": 1\n}"
-            },
             "url": {
-              "raw": "{{baseUrl}}/api/books",
+              "raw": "{{baseUrl}}/api/books/:bookId",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "books"]
+              "path": ["api", "books", ":bookId"],
+              "variable": [{ "key": "bookId", "value": "" }]
             }
           },
           "response": []
@@ -564,41 +192,43 @@
       "name": "Borrows",
       "item": [
         {
-          "name": "Borrow Book (Reader)",
+          "name": "Borrow Book",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/borrows/borrow/{{bookId}}",
+              "raw": "{{baseUrl}}/api/borrows/borrow/:bookId",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "borrows", "borrow", "{{bookId}}"]
+              "path": ["api", "borrows", "borrow", ":bookId"],
+              "variable": [{ "key": "bookId", "value": "" }]
             }
           },
           "response": []
         },
         {
-          "name": "Borrow Same Book Again (Reader, expect 400)",
+          "name": "Return Book",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/borrows/borrow/{{bookId}}",
+              "raw": "{{baseUrl}}/api/borrows/return/:bookId",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "borrows", "borrow", "{{bookId}}"]
+              "path": ["api", "borrows", "return", ":bookId"],
+              "variable": [{ "key": "bookId", "value": "" }]
             }
           },
           "response": []
         },
         {
-          "name": "Get My Borrows (Reader)",
+          "name": "Get My Borrows",
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
               "raw": "{{baseUrl}}/api/borrows/my-borrows",
@@ -607,38 +237,451 @@
             }
           },
           "response": []
-        },
+        }
+      ]
+    },
+    {
+      "name": "Queues",
+      "item": [
         {
-          "name": "Return Book (Reader)",
+          "name": "Queue - Join",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/borrows/return/{{bookId}}",
+              "raw": "{{baseUrl}}/api/queues/:bookId",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "borrows", "return", "{{bookId}}"]
+              "path": ["api", "queues", ":bookId"],
+              "variable": [{ "key": "bookId", "value": "" }]
             }
           },
           "response": []
         },
         {
-          "name": "Return Book Again (Reader, expect 400)",
+          "name": "Queue - My Requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/queues/my",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "queues", "my"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Queue - Update Request",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Updated note\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/queues/:requestId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "queues", ":requestId"],
+              "variable": [{ "key": "requestId", "value": "" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Queue - Cancel Request",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/queues/:requestId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "queues", ":requestId"],
+              "variable": [{ "key": "requestId", "value": "" }]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Materials",
+      "item": [
+        {
+          "name": "Get All Approved Materials",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/materials",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "materials"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pending Materials",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/materials/pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "materials", "pending"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Material By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/materials/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "materials", ":id"],
+              "variable": [{ "key": "id", "value": "" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Material",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Sample Material\",\n  \"description\": \"Description\",\n  \"category\": \"Technology\",\n  \"contentUrl\": \"https://example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/materials",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "materials"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Material",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Material\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/materials/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "materials", ":id"],
+              "variable": [{ "key": "id", "value": "" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Material",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/borrows/return/{{bookId}}",
+              "raw": "{{baseUrl}}/api/materials/:id",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "borrows", "return", "{{bookId}}"]
+              "path": ["api", "materials", ":id"],
+              "variable": [{ "key": "id", "value": "" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Material",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"approved\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/materials/:id/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "materials", ":id", "approve"],
+              "variable": [{ "key": "id", "value": "" }]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Bookmarks",
+      "item": [
+        {
+          "name": "Get Bookmarks",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookmarks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookmarks"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Bookmark",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookId\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bookmarks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookmarks"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Bookmark",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"My note\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bookmarks/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookmarks", ":id"],
+              "variable": [{ "key": "id", "value": "" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Bookmark",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookmarks/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookmarks", ":id"],
+              "variable": [{ "key": "id", "value": "" }]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Category By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/categories/:categoryId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories", ":categoryId"],
+              "variable": [{ "key": "categoryId", "value": "" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sci-Fi\",\n  \"description\": \"Science Fiction\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sci-Fi & Fantasy\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/categories/:categoryId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories", ":categoryId"],
+              "variable": [{ "key": "categoryId", "value": "" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/categories/:categoryId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories", ":categoryId"],
+              "variable": [{ "key": "categoryId", "value": "" }]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "Get All Comments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "comments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Great!\",\n  \"materialId\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "comments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Comment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Updated comment\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/comments/:commentId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "comments", ":commentId"],
+              "variable": [{ "key": "commentId", "value": "" }]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/comments/:commentId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "comments", ":commentId"],
+              "variable": [{ "key": "commentId", "value": "" }]
             }
           },
           "response": []
         }
       ]
     }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8070", "type": "string" },
+    { "key": "token", "value": "", "type": "string" }
   ]
 }

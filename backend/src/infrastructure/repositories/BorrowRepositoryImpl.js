@@ -6,10 +6,21 @@ const Borrow = require("../../domain/entities/Borrow");
 
 class BorrowRepositoryImpl extends BorrowRepository {
   _toEntity(doc) {
+    let bookId = doc.bookId;
+    if (doc.bookId && typeof doc.bookId === "object" && doc.bookId._id) {
+      // If populated
+      bookId = {
+        id: doc.bookId._id.toString(),
+        title: doc.bookId.title,
+      };
+    } else if (doc.bookId) {
+      bookId = doc.bookId.toString();
+    }
+
     return new Borrow({
       id: doc._id.toString(),
       userId: doc.userId.toString(),
-      bookId: doc.bookId.toString(),
+      bookId: bookId,
       borrowedAt: doc.borrowedAt,
       dueDate: doc.dueDate,
       returnedAt: doc.returnedAt,
@@ -70,9 +81,9 @@ class BorrowRepositoryImpl extends BorrowRepository {
   }
 
   async findByUser(userId) {
-    const borrows = await BorrowModel.find({ userId }).sort({
-      borrowedAt: -1,
-    });
+    const borrows = await BorrowModel.find({ userId })
+      .populate("bookId")
+      .sort({ borrowedAt: -1 });
     return borrows.map((b) => this._toEntity(b));
   }
 
