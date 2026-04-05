@@ -7,6 +7,9 @@ class Book {
     title,
     author,
     isbn,
+    type,
+    status,
+    uploadedBy,
     categoryId,
     description,
     filePath,
@@ -19,6 +22,9 @@ class Book {
     this.title = title;
     this.author = author;
     this.isbn = isbn;
+    this.type = type;
+    this.status = status || "pending";
+    this.uploadedBy = uploadedBy;
     this.categoryId = categoryId;
     this.description = description;
     this.filePath = filePath || null;

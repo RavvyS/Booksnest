@@ -10,6 +10,22 @@ class BookRepository {
     throw new Error("Method not implemented");
   }
 
+  async findAllApproved() {
+    throw new Error("Method not implemented");
+  }
+
+  async findAllPending() {
+    throw new Error("Method not implemented");
+  }
+
+  async findByUploader(userId) {
+    throw new Error("Method not implemented");
+  }
+
+  async approve(id, status) {
+    throw new Error("Method not implemented");
+  }
+
   async findById(id) {
     throw new Error("Method not implemented");
   }

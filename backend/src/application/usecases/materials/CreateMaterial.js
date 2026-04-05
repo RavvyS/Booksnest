@@ -3,6 +3,8 @@
 
 const LearningMaterial = require("../../../domain/entities/LearningMaterial");
 
+const VALID_TYPES = ["video", "audio"];
+
 class CreateMaterial {
 
     constructor(repository) {
@@ -22,10 +24,15 @@ class CreateMaterial {
             throw new Error("Author is required");
         }
 
+        if (!data.type || !VALID_TYPES.includes(data.type)) {
+            throw new Error(`Material type is required and must be one of: ${VALID_TYPES.join(", ")}`);
+        }
+
         const material = new LearningMaterial({
             title: data.title.trim(),
             description: data.description || "",
             contentUrl: data.contentUrl.trim(),
+            type: data.type,
             category: data.category || "",
             author: data.author.trim(),
             status: "pending",

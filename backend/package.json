@@ -16,7 +16,8 @@
     "test:performance:categories": "artillery run artillery/categories-load.yml",
     "test:performance:borrows": "artillery run artillery/borrows-load.yml",
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon src/server.js",
+    "seed": "node src/seed.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -38,6 +39,6 @@
     "jest": "^29.7.0",
     "minimatch": "^9.0.5",
     "mongodb-memory-server": "^10.1.4",
-    "supertest": "^7.1.1"
+    "supertest": "^7.2.2"
   }
 }

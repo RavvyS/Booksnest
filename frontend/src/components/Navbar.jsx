@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom"; // Import navigate hook
+import { useNavigate, Link } from "react-router-dom";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -12,203 +12,165 @@ import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import Avatar from "@mui/material/Avatar";
+import { useAuth } from "../context/AuthContext";
 import logo from "../assets/logo.png";
 
-const pages = ["Home", "About", "Contribute", "Announcements"];
-const loggedInActions = ["Profile", "Logout"];
-
 function ResponsiveAppBar() {
+  const { user, isAuthenticated, logout } = useAuth();
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
-  const navigate = useNavigate(); // Initialize navigate
-  
+  const navigate = useNavigate();
+
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
   };
-
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
   };
-
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
   };
-
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
 
   const handleLogout = () => {
-    handleCloseUserMenu(); // Close the user menu
-    localStorage.removeItem("authToken"); // Clear authentication token
-    navigate("/login"); // Redirect to login form
+    handleCloseUserMenu();
+    logout();
+    navigate("/");
   };
 
+  const getNavLinks = () => {
+    const links = [
+      { label: "Home", path: "/home" },
+      { label: "Materials", path: "/materials" },
+      { label: "Books", path: "/books" },
+    ];
 
-  const isLoggedIn = true;
+    if (!isAuthenticated) return links;
+
+    if (user.role === "reader") {
+      links.push(
+        { label: "Bookmarks", path: "/reader/bookmarks" },
+        { label: "Borrows", path: "/reader/borrows" }
+      );
+    } else if (user.role === "author") {
+      links.push(
+        { label: "Dashboard", path: "/author/dashboard" },
+        { label: "My Materials", path: "/author/materials" }
+      );
+    } else if (user.role === "librarian") {
+      links.push(
+        { label: "Dashboard", path: "/librarian/dashboard" },
+        { label: "Pending Review", path: "/librarian/pending" },
+        { label: "Manage Books", path: "/librarian/books" },
+        { label: "Manage Categories", path: "/librarian/categories" }
+      );
+    }
+
+    return links;
+  };
+
+  const navLinks = getNavLinks();
 
   return (
     <AppBar
       position="static"
       sx={{
         backgroundColor: "#FFFFFF",
-        boxShadow: "none", // Remove default MUI AppBar shadow
-        borderBottom: "1px solid #e0e0e0", // Optional: Add a bottom border if needed
+        boxShadow: "none",
+        borderBottom: "1px solid #e0e0e0",
       }}
     >
-      <Container
-        maxWidth={false}
-        disableGutters
-        sx={{
-          margin: 0,
-          padding: '0 30px',
-        }}
-      >
-        <Toolbar
-          disableGutters
-          sx={{
-            width: "100%",
-            margin: 0,
-            padding: 0,
-          }}
-        >
+      <Container maxWidth="xl">
+        <Toolbar disableGutters>
           {/* Logo */}
           <Box
-            component="img"
-            src={logo}
-            alt="Library Logo"
-            sx={{
-              display: { xs: "none", md: "flex" },
-              height: 40,
-              mr: 1,
-            }}
-          />
-          <Typography
-            variant="h6"
-            noWrap
-            component="a"
-            href="/"
-            sx={{
-              mr: 2,
-              display: { xs: "none", md: "flex" },
-              fontFamily: "'Montserrat Alternates', sans-serif ",
-              fontWeight: 700,
-              letterSpacing: ".0rem",
-              color: "#0653B8",
-              textDecoration: "none",
-            }}
+            component={Link}
+            to="/"
+            sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", textDecoration: "none" }}
           >
-            Book Nest
-          </Typography>
+            <Box component="img" src={logo} alt="Logo" sx={{ height: 40, mr: 1 }} />
+            <Typography
+              variant="h6"
+              noWrap
+              sx={{
+                fontFamily: "'Montserrat Alternates', sans-serif",
+                fontWeight: 700,
+                color: "#0653B8",
+              }}
+            >
+              Book Nest
+            </Typography>
+          </Box>
 
           {/* Mobile Menu */}
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
-            <IconButton
-              size="large"
-              aria-label="menu"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleOpenNavMenu}
-              color="#0653B8"
-            >
+            <IconButton size="large" onClick={handleOpenNavMenu} color="primary">
               <MenuIcon />
             </IconButton>
             <Menu
-              id="menu-appbar"
               anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "left",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "left",
-              }}
               open={Boolean(anchorElNav)}
               onClose={handleCloseNavMenu}
               sx={{ display: { xs: "block", md: "none" } }}
             >
-              {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography textAlign="center">{page}</Typography>
+              {navLinks.map((link) => (
+                <MenuItem key={link.path} onClick={() => { handleCloseNavMenu(); navigate(link.path); }}>
+                  <Typography textAlign="center">{link.label}</Typography>
                 </MenuItem>
               ))}
             </Menu>
           </Box>
 
           {/* Desktop Menu */}
-          <Box
-            sx={{
-              flexGrow: 1,
-              display: { xs: "none", md: "flex" },
-              marginLeft: "20px",
-              gap: "16px",
-            }}
-          >
-            {pages.map((page) => (
+          <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" }, ml: 4 }}>
+            {navLinks.map((link) => (
               <Button
-                key={page}
-                href={`/${page.toLowerCase()}`}
-                sx={{ my: 2, color: "#434343", display: "block" }}
+                key={link.path}
+                component={Link}
+                to={link.path}
+                sx={{ my: 2, color: "#434343", display: "block", mx: 1 }}
               >
-                {page}
+                {link.label}
               </Button>
             ))}
-            <Button
-              href="/myshelf"
-              sx={{
-                my: 2,
-                color: "#434343",
-                display: "block",
-                fontWeight: "bold",
-                marginLeft: "auto",
-                marginRight: "16px",
-              }}
-            >
-              My Shelf
-            </Button>
-
-            
           </Box>
 
-          {/* User Avatar */}
-          {isLoggedIn && (
-            <Box sx={{ flexGrow: 0 }}>
-              <Tooltip title="Open settings">
-                <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                  <Avatar alt="User Avatar" src="/static/images/avatar/1.jpg" />
-                </IconButton>
-              </Tooltip>
-              <Menu
-                sx={{ mt: "45px" }}
-                id="menu-appbar"
-                anchorEl={anchorElUser}
-                anchorOrigin={{
-                  vertical: "top",
-                  horizontal: "right",
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "right",
-                }}
-                open={Boolean(anchorElUser)}
-                onClose={handleCloseUserMenu}
-              >
-                {loggedInActions.map((action) => (
-                  <MenuItem
-                    key={action}
-                    onClick={
-                      action === "Logout" ? handleLogout : handleCloseUserMenu
-                    }
-                  >
-                    <Typography textAlign="center">{action}</Typography>
+          {/* User Section */}
+          <Box sx={{ flexGrow: 0 }}>
+            {isAuthenticated ? (
+              <>
+                <Tooltip title="Open settings">
+                  <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                    <Avatar alt={user?.name}>{user?.name?.charAt(0) || 'U'}</Avatar>
+                  </IconButton>
+                </Tooltip>
+                <Menu
+                  sx={{ mt: "45px" }}
+                  anchorEl={anchorElUser}
+                  open={Boolean(anchorElUser)}
+                  onClose={handleCloseUserMenu}
+                >
+                  <MenuItem onClick={() => { handleCloseUserMenu(); navigate(`/${user.role}/profile`); }}>
+                    <Typography textAlign="center">Profile</Typography>
                   </MenuItem>
-                ))}
-              </Menu>
-            </Box>
-          )}
+                  <MenuItem onClick={handleLogout}>
+                    <Typography textAlign="center">Logout</Typography>
+                  </MenuItem>
+                </Menu>
+              </>
+            ) : (
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Button component={Link} to="/login" variant="outlined" color="primary">
+                  Login
+                </Button>
+                <Button component={Link} to="/register" variant="contained" color="primary">
+                  Register
+                </Button>
+              </Box>
+            )}
+          </Box>
         </Toolbar>
       </Container>
     </AppBar>
