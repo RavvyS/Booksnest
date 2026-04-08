@@ -6,6 +6,8 @@ import {
   Grid,
   CircularProgress,
   Button,
+  Paper,
+  Chip,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import booksApi from '../api/booksApi';
@@ -134,15 +136,23 @@ const Home = () => {
       {/* Hero Section */}
       <Box
         sx={{
-          bgcolor: 'primary.main',
           color: 'white',
-          py: 8,
+          py: { xs: 7, md: 9 },
           mb: 6,
           textAlign: 'center',
-          background: 'linear-gradient(135deg, #0653B8 0%, #0093E9 100%)',
+          background: 'linear-gradient(135deg, #043A82 0%, #0653B8 50%, #0093E9 100%)',
         }}
       >
         <Container maxWidth="md">
+          <Chip
+            label="Digital Library"
+            sx={{
+              mb: 2,
+              bgcolor: 'rgba(255,255,255,0.14)',
+              color: 'white',
+              fontWeight: 700,
+            }}
+          />
           <Typography variant="h2" component="h1" gutterBottom fontWeight="bold">
             Welcome to Book Nest
           </Typography>
@@ -175,31 +185,46 @@ const Home = () => {
 
       {/* Featured Books Section */}
       <Container maxWidth="lg">
-        <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h4" component="h2" fontWeight="bold">
-            Featured Books
-          </Typography>
-          <Link to="/books" style={{ textDecoration: 'none' }}>
-            <Typography variant="button" color="primary" fontWeight="bold">
+        <Paper
+          elevation={0}
+          sx={{
+            mb: 4,
+            p: { xs: 2.5, md: 3 },
+            borderRadius: 4,
+            border: '1px solid',
+            borderColor: 'divider',
+            background: 'linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)',
+          }}
+        >
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+            <Box>
+              <Typography variant="h4" component="h2" fontWeight="bold">
+                Featured Books
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Hand-picked library titles available inside Book Nest.
+              </Typography>
+            </Box>
+            <Button component={Link} to="/books" variant="outlined">
               View All
-            </Typography>
-          </Link>
-        </Box>
+            </Button>
+          </Box>
+        </Paper>
 
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}>
             <CircularProgress />
           </Box>
         ) : (
-          <Grid container spacing={4} sx={{ mb: 8 }}>
+          <Grid container spacing={3} sx={{ mb: 8 }}>
             {books.length > 0 ? (
               books.map((book) => (
-                <Grid item key={book.id} xs={12} sm={6} md={3}>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={book._id || book.id}>
                   <BookCard book={book} />
                 </Grid>
               ))
             ) : (
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Typography variant="body1" align="center" color="textSecondary">
                   No books available at the moment. Check back later!
                 </Typography>
@@ -210,27 +235,39 @@ const Home = () => {
 
         {/* Free Collection Section */}
         <Box sx={{ pt: 4, mb: 4 }}>
-          <Typography variant="h4" component="h2" fontWeight="bold" sx={{ mb: 4 }}>
-            Free Collection 📚
-            <Typography component="span" variant="body1" color="textSecondary" sx={{ ml: 2, display: { xs: 'block', sm: 'inline' } }}>
-              Read for free via Google Books
+          <Paper
+            elevation={0}
+            sx={{
+              mb: 4,
+              p: { xs: 2.5, md: 3 },
+              borderRadius: 4,
+              border: '1px solid',
+              borderColor: 'divider',
+              background: 'linear-gradient(180deg, #ffffff 0%, #f7fcff 100%)',
+            }}
+          >
+            <Typography variant="h4" component="h2" fontWeight="bold" sx={{ mb: 0.5 }}>
+              Free Collection
             </Typography>
-          </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Read open-access books from Google Books without leaving the learning flow.
+            </Typography>
+          </Paper>
 
           {freeLoading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}>
               <CircularProgress />
             </Box>
           ) : (
-            <Grid container spacing={4}>
+            <Grid container spacing={3}>
               {freeBooks.length > 0 ? (
                 freeBooks.map((book, index) => (
-                  <Grid item key={`${book.id}-${index}`} xs={12} sm={6} md={3}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }} key={`${book.id}-${index}`}>
                     <FreeBookCard book={book} />
                   </Grid>
                 ))
               ) : (
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Typography variant="body1" align="center" color="textSecondary">
                     Failed to load free collection. Please try again later.
                   </Typography>
@@ -242,27 +279,39 @@ const Home = () => {
 
         {/* Classics Collection Section */}
         <Box sx={{ pt: 4 }}>
-          <Typography variant="h4" component="h2" fontWeight="bold" sx={{ mb: 4 }}>
-            Classics Collection 🏛️
-            <Typography component="span" variant="body1" color="textSecondary" sx={{ ml: 2, display: { xs: 'block', sm: 'inline' } }}>
-              Explore timeless classics via Open Library
+          <Paper
+            elevation={0}
+            sx={{
+              mb: 4,
+              p: { xs: 2.5, md: 3 },
+              borderRadius: 4,
+              border: '1px solid',
+              borderColor: 'divider',
+              background: 'linear-gradient(180deg, #ffffff 0%, #fffaf3 100%)',
+            }}
+          >
+            <Typography variant="h4" component="h2" fontWeight="bold" sx={{ mb: 0.5 }}>
+              Classics Collection
             </Typography>
-          </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Explore timeless public-domain reads from Open Library.
+            </Typography>
+          </Paper>
 
           {classicLoading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}>
               <CircularProgress />
             </Box>
           ) : (
-            <Grid container spacing={4}>
+            <Grid container spacing={3}>
               {classicBooks.length > 0 ? (
                 classicBooks.map((book, index) => (
-                  <Grid item key={`classic-${book.id}-${index}`} xs={12} sm={6} md={3}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }} key={`classic-${book.id}-${index}`}>
                     <FreeBookCard book={book} />
                   </Grid>
                 ))
               ) : (
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Typography variant="body1" align="center" color="textSecondary">
                     Failed to load classics collection. Please try again later.
                   </Typography>

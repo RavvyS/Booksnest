@@ -17,6 +17,14 @@ router.get(
     MaterialController.getPendingMaterials
 );
 
+// Protected: Get current author's own materials
+router.get(
+    "/my",
+    AuthMiddleware,
+    RoleMiddleware("author"),
+    MaterialController.getMyMaterials
+);
+
 // Public: Get material by ID
 router.get("/:id", MaterialController.getMaterialById);
 

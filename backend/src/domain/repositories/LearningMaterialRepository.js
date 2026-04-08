@@ -26,6 +26,10 @@ class LearningMaterialRepository {
         throw new Error("Method not implemented");
     }
 
+    async findByOwner(owner) {
+        throw new Error("Method not implemented");
+    }
+
     async update(id, data) {
         throw new Error("Method not implemented");
     }

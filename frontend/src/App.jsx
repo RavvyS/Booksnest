@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Box } from '@mui/material';
+import './App.css';
 
 // Public Pages
 import Landing from './pages/Landing';
@@ -51,7 +52,7 @@ const App = () => {
           <Route path="/books/:id" element={<BookDetailPage />} />
 
           {/* Reader Routes */}
-          <Route element={<ProtectedRoute allowedRoles={['reader', 'author', 'librarian']} />}>
+          <Route element={<ProtectedRoute allowedRoles={['reader']} />}>
             <Route path="/reader/bookmarks" element={<BookmarksPage />} />
             <Route path="/reader/borrows" element={<BorrowsPage />} />
             <Route path="/reader/profile" element={<ReaderProfilePage />} />

@@ -32,6 +32,11 @@ const learningMaterialSchema = new mongoose.Schema(
             required: [true, "Author is required"],
             trim: true,
         },
+        createdBy: {
+            type: String,
+            required: [true, "Creator is required"],
+            trim: true,
+        },
         status: {
             type: String,
             enum: ["pending", "approved", "rejected"],
@@ -44,4 +49,3 @@ const learningMaterialSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model("LearningMaterial", learningMaterialSchema);
-
