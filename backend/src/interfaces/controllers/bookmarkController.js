@@ -25,32 +25,36 @@ exports.createBookmark = async (req, res) => {
         });
         res.status(201).json(result);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(400).json({ message: error.message });
     }
 };
 
 // Delete a bookmark by ID------------------------------------------------
-exports.getBookmarks = async (req,res) =>{
-    try{
+exports.getBookmarks = async (req, res) => {
+    try {
         const result = await getUseCase.execute({
             userId: req.user.id,
         });
         res.json(result);
-    } catch(error){
+    } catch (error) {
         res.status(400).json({ error: error.message });
     }
 };
 
 
 // update a bookmark by ID
-exports.updateBookmark = async (req,res) =>{
-    try{
+exports.updateBookmark = async (req, res) => {
+    try {
         const result = await updateUseCase.execute({
             id: req.params.id,
-            note: req.body.note
+            userId: req.user.id,
+            note: req.body.note,
+            isFavorite: req.body.isFavorite,
+            isCompleted: req.body.isCompleted,
+            lastViewed: req.body.lastViewed
         });
         res.json(result);
-    } catch(error){
+    } catch (error) {
         const status = error.message === "Material not found" ? 404 : 400;
         res.status(status).json({ message: error.message });
     }
@@ -59,7 +63,7 @@ exports.updateBookmark = async (req,res) =>{
 // Delete a bookmark by ID
 exports.deleteBookmark = async (req, res) => {
     try {
-        const result = await deleteUseCase.execute({    
+        const result = await deleteUseCase.execute({
             id: req.params.id,
             userId: req.user.id
         });
@@ -67,7 +71,7 @@ exports.deleteBookmark = async (req, res) => {
     } catch (error) {
         const status = error.message === "Bookmark not found" ? 404 : 400;
         res.status(status).json({ message: error.message });
-    }   
+    }
 };
 
 

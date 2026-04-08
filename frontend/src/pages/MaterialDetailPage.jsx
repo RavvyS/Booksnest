@@ -19,6 +19,7 @@ import materialsApi from '../api/materialsApi';
 import bookmarksApi from '../api/bookmarksApi';
 import { useAuth } from '../context/AuthContext';
 import CommentSection from '../components/CommentSection';
+import { toast } from 'react-toastify';
 
 const MaterialDetailPage = () => {
   const { id } = useParams();
@@ -30,10 +31,19 @@ const MaterialDetailPage = () => {
   const [isBookmarked, setIsBookmarked] = useState(false);
 
   useEffect(() => {
-    const fetchMaterial = async () => {
+    const fetchMaterialAndBookmark = async () => {
       try {
         const data = await materialsApi.getById(id);
         setMaterial(data);
+
+        // Check if bookmarked
+        if (isAuthenticated) {
+          const allBookmarks = await bookmarksApi.getAll();
+          const existing = allBookmarks.find(b => b.materialId === id);
+          if (existing) {
+            setIsBookmarked(true);
+          }
+        }
       } catch (err) {
         setError('Failed to load material details.');
         console.error(err);
@@ -41,33 +51,22 @@ const MaterialDetailPage = () => {
         setLoading(false);
       }
     };
-    fetchMaterial();
-  }, [id]);
+    fetchMaterialAndBookmark();
+  }, [id, isAuthenticated]);
 
-  const handleBookmark = async () => {
+  const handleBookmark = () => {
     if (!isAuthenticated) {
-      navigate('/login');
+      toast.info('Please login to bookmark this material');
       return;
     }
 
-    try {
-      if (isBookmarked) {
-        // Find and delete the bookmark
-        const allBookmarks = await bookmarksApi.getAll();
-        const existing = allBookmarks.find(b => b.materialId === id);
-        if (existing) await bookmarksApi.delete(existing._id);
-        setIsBookmarked(false);
-      } else {
-        await bookmarksApi.create({
-          materialId: id,
-          materialTitle: material.title,
-          materialContentUrl: material.contentUrl,
-        });
-        setIsBookmarked(true);
-      }
-    } catch (err) {
-      console.error('Bookmark error', err);
+    if (isBookmarked) {
+      toast.warning('This material is already bookmarked');
+      return;
     }
+
+    // Navigate to create page and pass material data
+    navigate(`/reader/bookmarks/create/${id}`, { state: { material } });
   };
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
@@ -102,9 +101,10 @@ const MaterialDetailPage = () => {
             variant={isBookmarked ? "contained" : "outlined"} 
             color="primary"
             onClick={handleBookmark}
+            disabled={isBookmarked && isAuthenticated}
             startIcon={isBookmarked ? <BookmarkIcon /> : <BookmarkBorderIcon />}
           >
-            {isBookmarked ? 'Bookmarked' : 'Bookmark'}
+            {isBookmarked && isAuthenticated ? 'Bookmarked' : 'Bookmark'}
           </Button>
         </Box>
 

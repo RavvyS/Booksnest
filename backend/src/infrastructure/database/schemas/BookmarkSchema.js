@@ -27,10 +27,33 @@ const bookmarkSchema = new mongoose.Schema(
             required: true,
             //ref: 'Material'
         },
+        category: {
+            type: String,
+            required: false,
+            trim: true,
+            default: null
+        },
+        itemType: {
+            type: String,
+            enum: ['book', 'material'],
+            default: 'material'
+        },
         note: {
             type: String,   
             required: false,
             trim: true
+        },
+        isFavorite: {
+            type: Boolean,
+            default: false
+        },
+        isCompleted: {
+            type: Boolean,
+            default: false
+        },
+        lastViewed: {
+            type: Date,
+            default: null
         }
     },
 

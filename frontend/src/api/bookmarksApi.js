@@ -9,8 +9,8 @@ const bookmarksApi = {
     const response = await apiClient.post('/bookmarks', data);
     return response.data;
   },
-  update: async (id, note) => {
-    const response = await apiClient.put(`/bookmarks/${id}`, { note });
+  update: async (id, data) => {
+    const response = await apiClient.put(`/bookmarks/${id}`, data);
     return response.data;
   },
   delete: async (id) => {

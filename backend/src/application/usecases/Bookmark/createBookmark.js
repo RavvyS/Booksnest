@@ -4,7 +4,7 @@
 const Bookmark = require("../../../domain/entities/Bookmark");
 
 class CreateBookmark {
-    constructor({ bookmarkRepository }) {
+    constructor(bookmarkRepository) {
         this.bookmarkRepository = bookmarkRepository;
     }
 
@@ -27,15 +27,20 @@ class CreateBookmark {
             throw new Error("Content URL is required");
         }
         */
-      
-    
+
+
 
         const bookmark = new Bookmark({
             userId: data.userId,
             materialId: data.materialId,
             materialTitle: data.materialTitle,
             materialContentUrl: data.materialContentUrl,
-            note: data.note.trim()
+            category: data.category || null,
+            type: data.itemType || 'material',
+            note: data.note ? data.note.trim() : '',
+            isFavorite: data.isFavorite || false,
+            isCompleted: data.isCompleted || false,
+            lastViewed: data.lastViewed || null
         });
 
 

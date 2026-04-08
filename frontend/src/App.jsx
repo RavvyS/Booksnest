@@ -2,6 +2,8 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Box } from '@mui/material';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Public Pages
 import Landing from './pages/Landing';
@@ -15,6 +17,7 @@ import BookDetailPage from './pages/BookDetailPage';
 
 // Reader Pages
 import BookmarksPage from './pages/reader/BookmarksPage';
+import BookmarkCreatePage from './pages/reader/BookmarkCreatePage';
 import BorrowsPage from './pages/reader/BorrowsPage';
 import ReaderProfilePage from './pages/reader/ProfilePage';
 
@@ -53,6 +56,7 @@ const App = () => {
           {/* Reader Routes */}
           <Route element={<ProtectedRoute allowedRoles={['reader', 'author', 'librarian']} />}>
             <Route path="/reader/bookmarks" element={<BookmarksPage />} />
+            <Route path="/reader/bookmarks/create/:id" element={<BookmarkCreatePage />} />
             <Route path="/reader/borrows" element={<BorrowsPage />} />
             <Route path="/reader/profile" element={<ReaderProfilePage />} />
           </Route>
@@ -80,6 +84,7 @@ const App = () => {
         </Routes>
       </Box>
       <Footer />
+      <ToastContainer position="bottom-right" autoClose={3000} />
     </Box>
   );
 };
