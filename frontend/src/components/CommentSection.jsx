@@ -19,6 +19,7 @@ import commentsApi from '../api/commentsApi';
 
 const CommentSection = ({ materialId, bookId }) => {
   const { user, isAuthenticated } = useAuth();
+  const canPostComments = isAuthenticated && user?.role === 'reader';
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [editingId, setEditingId] = useState(null);
@@ -81,7 +82,7 @@ const CommentSection = ({ materialId, bookId }) => {
         Comments ({comments.length})
       </Typography>
 
-      {isAuthenticated ? (
+      {canPostComments ? (
         <Paper elevation={0} sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 2, mb: 4 }}>
           <form onSubmit={handleSubmit}>
             <TextField
@@ -99,6 +100,10 @@ const CommentSection = ({ materialId, bookId }) => {
             </Button>
           </form>
         </Paper>
+      ) : isAuthenticated ? (
+        <Typography variant="body1" color="textSecondary" sx={{ mb: 4 }}>
+          Only readers can add comments.
+        </Typography>
       ) : (
         <Typography variant="body1" color="textSecondary" sx={{ mb: 4 }}>
           Please login to join the conversation.

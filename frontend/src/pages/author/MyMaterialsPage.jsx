@@ -31,7 +31,7 @@ const MyMaterialsPage = () => {
 
   const fetchMaterials = async () => {
     try {
-      const data = await materialsApi.getAll();
+      const data = await materialsApi.getMine();
       setMaterials(data);
     } catch (err) {
       console.error('Failed to fetch author materials', err);

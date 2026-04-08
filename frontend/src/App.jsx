@@ -2,8 +2,12 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Box } from '@mui/material';
+<<<<<<< HEAD
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+=======
+import './App.css';
+>>>>>>> 2e5dc54665f60f171ad735db6e7aa3f3d16ccba8
 
 // Public Pages
 import Landing from './pages/Landing';
@@ -54,7 +58,7 @@ const App = () => {
           <Route path="/books/:id" element={<BookDetailPage />} />
 
           {/* Reader Routes */}
-          <Route element={<ProtectedRoute allowedRoles={['reader', 'author', 'librarian']} />}>
+          <Route element={<ProtectedRoute allowedRoles={['reader']} />}>
             <Route path="/reader/bookmarks" element={<BookmarksPage />} />
             <Route path="/reader/bookmarks/create/:id" element={<BookmarkCreatePage />} />
             <Route path="/reader/borrows" element={<BorrowsPage />} />
