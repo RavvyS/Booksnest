@@ -14,21 +14,21 @@ router.get("/", AuthMiddleware, BookmarkController.getBookmarks);
 router.post(
     "/",
     AuthMiddleware,
-    RoleMiddleware("reader", "author", "librarian"),
+    RoleMiddleware("reader"),
     BookmarkController.createBookmark
 );
 
 router.put(
     "/:id",
     AuthMiddleware,
-    RoleMiddleware("reader", "author", "librarian"),
+    RoleMiddleware("reader"),
     BookmarkController.updateBookmark
 );
 
 router.delete(
     "/:id",
     AuthMiddleware,
-    RoleMiddleware("reader", "author", "librarian"),
+    RoleMiddleware("reader"),
     BookmarkController.deleteBookmark
 );
 

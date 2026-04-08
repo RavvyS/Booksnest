@@ -7,96 +7,329 @@ import {
   Paper,
   Button,
   CircularProgress,
+  Chip,
+  Divider,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import libraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PendingIcon from '@mui/icons-material/Pending';
+import CancelIcon from '@mui/icons-material/Cancel';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import InsightsIcon from '@mui/icons-material/Insights';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import { useNavigate } from 'react-router-dom';
 import materialsApi from '../../api/materialsApi';
 
 const AuthorDashboard = () => {
-  const [stats, setStats] = useState({ total: 0, approved: 0, pending: 0 });
+  const [stats, setStats] = useState({ total: 0, approved: 0, pending: 0, rejected: 0 });
+  const [recentMaterials, setRecentMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const data = await materialsApi.getAll();
-        // In a real app, the API should return only the author's materials
-        // or a separate stats endpoint should be used.
+        const data = await materialsApi.getMine();
         setStats({
           total: data.length,
-          approved: data.filter(m => m.status === 'approved').length,
-          pending: data.filter(m => m.status === 'pending').length,
+          approved: data.filter((m) => m.status === 'approved').length,
+          pending: data.filter((m) => m.status === 'pending').length,
+          rejected: data.filter((m) => m.status === 'rejected').length,
         });
+        setRecentMaterials(data.slice(0, 3));
       } catch (err) {
         console.error('Failed to fetch author stats', err);
       } finally {
         setLoading(false);
       }
     };
+
     fetchStats();
   }, []);
 
-  const StatCard = ({ title, value, icon, color }) => (
-    <Paper elevation={2} sx={{ p: 3, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-      <Box sx={{ p: 1.5, bgcolor: `${color}.light`, borderRadius: 1.5, color: `${color}.main` }}>
-        {icon}
+  const getStatusColor = (status) => {
+    if (status === 'approved') return 'success';
+    if (status === 'pending') return 'warning';
+    if (status === 'rejected') return 'error';
+    return 'default';
+  };
+
+  const StatCard = ({ title, value, icon, accent, helper }) => (
+    <Paper
+      elevation={3}
+      sx={{
+        p: 3,
+        borderRadius: 4,
+        height: '100%',
+        background: `linear-gradient(180deg, #ffffff 0%, ${accent}12 100%)`,
+      }}
+    >
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+        <Box
+          sx={{
+            width: 54,
+            height: 54,
+            borderRadius: 3,
+            display: 'grid',
+            placeItems: 'center',
+            bgcolor: `${accent}22`,
+            color: accent,
+          }}
+        >
+          {icon}
+        </Box>
+        <Typography variant="h3" fontWeight="bold">
+          {value}
+        </Typography>
       </Box>
-      <Box>
-        <Typography variant="h4" fontWeight="bold">{value}</Typography>
-        <Typography variant="body2" color="textSecondary">{title}</Typography>
-      </Box>
+      <Typography variant="h6" fontWeight="bold" gutterBottom>
+        {title}
+      </Typography>
+      <Typography variant="body2" color="text.secondary">
+        {helper}
+      </Typography>
     </Paper>
   );
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
 
   return (
-    <Container maxWidth="lg" sx={{ py: 6 }}>
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Box>
-          <Typography variant="h3" fontWeight="bold" color="primary">Author Dashboard</Typography>
-          <Typography variant="body1" color="textSecondary">Manage your contributions to the digital library.</Typography>
-        </Box>
-        <Button 
-          variant="contained" 
-          startIcon={<AddIcon />} 
-          onClick={() => navigate('/author/materials/create')}
-          size="large"
+    <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+      <Box
+        sx={{
+          mb: 4,
+          borderRadius: 5,
+          p: { xs: 3, md: 4 },
+          color: 'white',
+          background: 'linear-gradient(135deg, #043A82 0%, #0653B8 55%, #0093E9 100%)',
+          boxShadow: '0 24px 50px rgba(6, 83, 184, 0.22)',
+        }}
+      >
+        <Chip
+          label="Author Workspace"
+          sx={{
+            mb: 2,
+            bgcolor: 'rgba(255,255,255,0.16)',
+            color: 'white',
+            fontWeight: 700,
+          }}
+        />
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            justifyContent: 'space-between',
+            gap: 3,
+            alignItems: { xs: 'flex-start', md: 'center' },
+          }}
         >
-          Upload Material
-        </Button>
+          <Box>
+            <Typography variant="h3" sx={{ mb: 1 }}>
+              Author Dashboard
+            </Typography>
+            <Typography sx={{ maxWidth: 700, color: 'rgba(255,255,255,0.86)' }}>
+              Track your submissions, monitor approval progress, and keep your library contributions organized in one place.
+            </Typography>
+          </Box>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => navigate('/author/materials/create')}
+            size="large"
+            sx={{
+              bgcolor: 'white',
+              color: 'primary.main',
+              '&:hover': { bgcolor: '#eef5ff' },
+            }}
+          >
+            Upload Material
+          </Button>
+        </Box>
       </Box>
 
-      <Grid container spacing={3} sx={{ mb: 6 }}>
-        <Grid item xs={12} sm={4}>
-          <StatCard title="Total Uploads" value={stats.total} icon={<libraryBooksIcon />} color="primary" />
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+          <StatCard
+            title="Total Uploads"
+            value={stats.total}
+            icon={<AutoStoriesIcon />}
+            accent="#0653B8"
+            helper="Everything you have submitted to the library."
+          />
         </Grid>
-        <Grid item xs={12} sm={4}>
-          <StatCard title="Approved" value={stats.approved} icon={<CheckCircleIcon />} color="success" />
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+          <StatCard
+            title="Approved"
+            value={stats.approved}
+            icon={<CheckCircleIcon />}
+            accent="#10B981"
+            helper="Resources currently visible to readers and guests."
+          />
         </Grid>
-        <Grid item xs={12} sm={4}>
-          <StatCard title="Pending Review" value={stats.pending} icon={<PendingIcon />} color="warning" />
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+          <StatCard
+            title="Pending Review"
+            value={stats.pending}
+            icon={<PendingIcon />}
+            accent="#F59E0B"
+            helper="Submissions waiting for librarian review."
+          />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+          <StatCard
+            title="Rejected"
+            value={stats.rejected}
+            icon={<CancelIcon />}
+            accent="#EF4444"
+            helper="Items that may need edits before resubmission."
+          />
         </Grid>
       </Grid>
 
-      <Box sx={{ textAlign: 'center', py: 8, bgcolor: '#f5f5f5', borderRadius: 4 }}>
-        <Typography variant="h5" fontWeight="bold" gutterBottom>
-          Ready to share your knowledge?
-        </Typography>
-        <Typography variant="body1" color="textSecondary" sx={{ mb: 3 }}>
-          Upload articles, research, or resources to help others in the community.
-        </Typography>
-        <Button 
-          variant="outlined" 
-          onClick={() => navigate('/author/materials')}
-        >
-          View My Materials
-        </Button>
-      </Box>
+      <Grid container spacing={3}>
+        <Grid size={{ xs: 12, md: 7 }}>
+          <Paper elevation={3} sx={{ p: { xs: 3, md: 4 }, borderRadius: 4, height: '100%' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Box>
+                <Typography variant="h5" fontWeight="bold">
+                  Recent Submissions
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Your latest materials and their current review status.
+                </Typography>
+              </Box>
+              <Button endIcon={<ArrowForwardIcon />} onClick={() => navigate('/author/materials')}>
+                View All
+              </Button>
+            </Box>
+
+            <Divider sx={{ mb: 2 }} />
+
+            {recentMaterials.length > 0 ? (
+              <Box sx={{ display: 'grid', gap: 2 }}>
+                {recentMaterials.map((material) => (
+                  <Paper
+                    key={material._id}
+                    variant="outlined"
+                    sx={{ p: 2.5, borderRadius: 3, borderColor: 'divider' }}
+                  >
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, alignItems: 'flex-start' }}>
+                      <Box>
+                        <Typography variant="h6" fontWeight="bold">
+                          {material.title}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 1 }}>
+                          {material.description?.slice(0, 120) || 'No description added yet.'}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {material.category || 'General'} • {new Date(material.createdAt).toLocaleDateString()}
+                        </Typography>
+                      </Box>
+                      <Chip
+                        label={material.status}
+                        color={getStatusColor(material.status)}
+                        size="small"
+                        sx={{ textTransform: 'capitalize' }}
+                      />
+                    </Box>
+                  </Paper>
+                ))}
+              </Box>
+            ) : (
+              <Box
+                sx={{
+                  borderRadius: 4,
+                  p: 5,
+                  textAlign: 'center',
+                  bgcolor: '#f8fbff',
+                  border: '1px dashed #b8cff2',
+                }}
+              >
+                <Typography variant="h6" fontWeight="bold" gutterBottom>
+                  No materials uploaded yet
+                </Typography>
+                <Typography color="text.secondary" sx={{ mb: 2 }}>
+                  Start building your author profile by publishing your first learning resource.
+                </Typography>
+                <Button variant="contained" onClick={() => navigate('/author/materials/create')}>
+                  Upload First Material
+                </Button>
+              </Box>
+            )}
+          </Paper>
+        </Grid>
+
+        <Grid size={{ xs: 12, md: 5 }}>
+          <Paper
+            elevation={3}
+            sx={{
+              p: { xs: 3, md: 4 },
+              borderRadius: 4,
+              height: '100%',
+              background: 'linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)',
+            }}
+          >
+            <Typography variant="h5" fontWeight="bold" gutterBottom>
+              Author Actions
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Stay on top of your workflow with a quick review of what to do next.
+            </Typography>
+
+            <Box sx={{ display: 'grid', gap: 2.5 }}>
+              <Box sx={{ display: 'flex', gap: 1.5 }}>
+                <TaskAltIcon color="primary" />
+                <Box>
+                  <Typography fontWeight="bold">Submit polished resources</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Clear titles, working links, and strong descriptions help materials get approved faster.
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Box sx={{ display: 'flex', gap: 1.5 }}>
+                <InsightsIcon color="primary" />
+                <Box>
+                  <Typography fontWeight="bold">Monitor approval progress</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Check pending and rejected items regularly so you can make updates when needed.
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Box sx={{ display: 'flex', gap: 1.5 }}>
+                <AutoStoriesIcon color="primary" />
+                <Box>
+                  <Typography fontWeight="bold">Grow your collection</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Keep your profile active by adding valuable resources across multiple categories.
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+
+            <Divider sx={{ my: 3 }} />
+
+            <Box sx={{ display: 'grid', gap: 2 }}>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => navigate('/author/materials/create')}
+              >
+                Upload New Material
+              </Button>
+              <Button
+                variant="outlined"
+                endIcon={<ArrowForwardIcon />}
+                onClick={() => navigate('/author/materials')}
+              >
+                Open My Materials
+              </Button>
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
     </Container>
   );
 };

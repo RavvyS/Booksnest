@@ -7,6 +7,7 @@ import {
   CardActionArea,
   Box,
   Chip,
+  Stack,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
@@ -24,15 +25,19 @@ const BookCard = ({ book }) => {
   return (
     <Card 
       sx={{ 
-        height: '460px', 
+        height: '100%', 
         display: 'flex', 
         flexDirection: 'column',
-        borderRadius: 3,
+        borderRadius: 4,
         overflow: 'hidden',
-        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+        border: '1px solid',
+        borderColor: 'divider',
+        background: 'linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)',
+        transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
         '&:hover': {
-          transform: 'translateY(-10px)',
-          boxShadow: '0 12px 24px -10px rgba(0,0,0,0.3)',
+          transform: 'translateY(-8px)',
+          boxShadow: '0 22px 40px -18px rgba(15, 23, 42, 0.35)',
+          borderColor: 'primary.light',
         },
       }}
     >
@@ -40,31 +45,42 @@ const BookCard = ({ book }) => {
         onClick={() => navigate(`/books/${book._id}`)}
         sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
       >
-        <CardMedia
-          component="img"
-          height="280"
-          image={imageSrc}
-          alt={book.title}
-          sx={{ 
-            objectFit: 'cover',
-            transition: 'transform 0.5s ease',
-            '&:hover': { transform: 'scale(1.05)' }
+        <Box
+          sx={{
+            position: 'relative',
+            px: 2,
+            pt: 2,
+            pb: 1,
+            background: 'linear-gradient(180deg, #eaf3ff 0%, #f8fbff 100%)',
           }}
-        />
-        <CardContent sx={{ flexGrow: 1, width: '100%', display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        >
+          <CardMedia
+            component="img"
+            image={imageSrc}
+            alt={book.title}
+            sx={{ 
+              height: 260,
+              width: '100%',
+              objectFit: 'cover',
+              borderRadius: 3,
+              boxShadow: '0 14px 32px -18px rgba(15, 23, 42, 0.5)',
+              transition: 'transform 0.45s ease',
+              '&:hover': { transform: 'scale(1.03)' }
+            }}
+          />
+        </Box>
+        <CardContent sx={{ flexGrow: 1, width: '100%', display: 'flex', flexDirection: 'column', p: 2.5 }}>
+          <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: 1.5 }}>
             <Chip 
               label={book.availableCopies > 0 ? 'Available' : 'Out of Stock'} 
               color={book.availableCopies > 0 ? 'success' : 'error'} 
               size="small" 
-              variant="outlined" 
+              variant="filled"
             />
-            {book.availableCopies > 0 && (
-              <Typography variant="caption" color="textSecondary">
-                {book.availableCopies} left
-              </Typography>
+            {book.categoryId?.name && (
+              <Chip label={book.categoryId.name} size="small" variant="outlined" />
             )}
-          </Box>
+          </Stack>
           <Typography 
             gutterBottom 
             variant="h6" 
@@ -76,15 +92,24 @@ const BookCard = ({ book }) => {
               WebkitLineClamp: 2, 
               WebkitBoxOrient: 'vertical', 
               overflow: 'hidden',
-              lineHeight: 1.2,
-              mb: 1
+              lineHeight: 1.25,
+              minHeight: 58,
+              mb: 0.75
             }}
           >
             {book.title}
           </Typography>
-          <Typography variant="body2" color="textSecondary" noWrap sx={{ mb: 'auto' }}>
+          <Typography variant="body2" color="text.secondary" noWrap sx={{ mb: 1.5 }}>
             {book.author}
           </Typography>
+          <Box sx={{ mt: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="caption" color="text.secondary">
+              {book.availableCopies > 0 ? `${book.availableCopies} copies left` : 'Currently unavailable'}
+            </Typography>
+            <Typography variant="caption" color="primary.main" fontWeight={700}>
+              View details
+            </Typography>
+          </Box>
         </CardContent>
       </CardActionArea>
     </Card>

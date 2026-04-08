@@ -28,6 +28,7 @@ const MaterialDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const canInteractAsReader = isAuthenticated && user?.role === 'reader';
 
   useEffect(() => {
     const fetchMaterial = async () => {
@@ -44,9 +45,31 @@ const MaterialDetailPage = () => {
     fetchMaterial();
   }, [id]);
 
+  useEffect(() => {
+    const syncBookmarkState = async () => {
+      if (!canInteractAsReader) {
+        setIsBookmarked(false);
+        return;
+      }
+
+      try {
+        const allBookmarks = await bookmarksApi.getAll();
+        setIsBookmarked(allBookmarks.some((bookmark) => bookmark.materialId === id));
+      } catch (err) {
+        console.error('Failed to sync bookmark state', err);
+      }
+    };
+
+    syncBookmarkState();
+  }, [canInteractAsReader, id]);
+
   const handleBookmark = async () => {
     if (!isAuthenticated) {
       navigate('/login');
+      return;
+    }
+
+    if (user?.role !== 'reader') {
       return;
     }
 
@@ -98,14 +121,16 @@ const MaterialDetailPage = () => {
               {material.title}
             </Typography>
           </Box>
-          <Button 
-            variant={isBookmarked ? "contained" : "outlined"} 
-            color="primary"
-            onClick={handleBookmark}
-            startIcon={isBookmarked ? <BookmarkIcon /> : <BookmarkBorderIcon />}
-          >
-            {isBookmarked ? 'Bookmarked' : 'Bookmark'}
-          </Button>
+          {user?.role === 'reader' || !isAuthenticated ? (
+            <Button 
+              variant={isBookmarked ? "contained" : "outlined"} 
+              color="primary"
+              onClick={handleBookmark}
+              startIcon={isBookmarked ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+            >
+              {isBookmarked ? 'Bookmarked' : 'Bookmark'}
+            </Button>
+          ) : null}
         </Box>
 
         <Typography variant="subtitle1" color="textSecondary" gutterBottom>

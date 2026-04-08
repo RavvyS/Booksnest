@@ -31,6 +31,16 @@ class LearningMaterialRepositoryImpl extends LearningMaterialRepository {
         return await LearningMaterialSchema.find({ status: "approved", category }).sort({ createdAt: -1 });
     }
 
+    async findByOwner({ userId, authorName }) {
+        const filters = [{ createdBy: userId }];
+
+        if (authorName) {
+            filters.push({ author: authorName });
+        }
+
+        return await LearningMaterialSchema.find({ $or: filters }).sort({ createdAt: -1 });
+    }
+
     async update(id, data) {
         return await LearningMaterialSchema.findByIdAndUpdate(
             id,

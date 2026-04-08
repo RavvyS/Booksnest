@@ -11,21 +11,21 @@ router.get("/", CommentController.getComments);
 router.post(
   "/",
   AuthMiddleware,
-  RoleMiddleware("reader", "author", "librarian"),
+  RoleMiddleware("reader"),
   CommentController.createComment
 );
 
 router.put(
   "/:commentId",
   AuthMiddleware,
-  RoleMiddleware("reader", "author", "librarian"),
+  RoleMiddleware("reader", "librarian"),
   CommentController.updateComment
 );
 
 router.delete(
   "/:commentId",
   AuthMiddleware,
-  RoleMiddleware("reader", "author", "librarian"),
+  RoleMiddleware("reader", "librarian"),
   CommentController.deleteComment
 );
 
