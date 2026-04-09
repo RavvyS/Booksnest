@@ -14,18 +14,35 @@ class ReadBook {
    * - User has an active borrow (returned = false)
    * - dueDate > current time (not expired)
    */
-  async execute(userId, bookId) {
+  async execute(userId, userRole, bookId) {
     if (!userId) throw new Error("User ID is required");
     if (!bookId) throw new Error("Book ID is required");
 
-    // Check for valid (non-expired, non-returned) borrow
-    const validBorrow = await this.borrowRepository.findValidBorrow(
-      userId,
-      bookId,
-    );
-    if (!validBorrow) {
+    // Fetch book to check ownership
+    const book = await this.bookRepository.findById(bookId);
+    if (!book) throw new Error("Book not found");
+
+    // Access granted if librarian OR uploader OR borrowed
+    let accessGranted = false;
+    
+    if (userRole === "librarian") {
+      accessGranted = true;
+    } else if (book.uploadedBy === userId) {
+      accessGranted = true;
+    } else {
+      // Check for valid (non-expired, non-returned) borrow
+      const validBorrow = await this.borrowRepository.findValidBorrow(
+        userId,
+        bookId,
+      );
+      if (validBorrow) {
+        accessGranted = true;
+      }
+    }
+
+    if (!accessGranted) {
       throw new Error(
-        "Access denied: you do not have a valid borrow for this book",
+        "Access denied: you do not have permission to view this book",
       );
     }
 

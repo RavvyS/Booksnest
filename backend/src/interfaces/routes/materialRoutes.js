@@ -9,6 +9,14 @@ const RoleMiddleware = require("../middleware/RoleMiddleware");
 // Public: Get all approved materials (optionally filter by category)
 router.get("/", MaterialController.getAllMaterials);
 
+// Protected: Get all materials by current author
+router.get(
+    "/my",
+    AuthMiddleware,
+    RoleMiddleware("author"),
+    MaterialController.getMyMaterials
+);
+
 // Protected: Get all pending materials (librarian only)
 router.get(
     "/pending",

@@ -1,16 +1,16 @@
-//  Implements a single business use case with domain-focused rules.
+
+//  Implements a single business use case to fetch materials by uploader ID.
 
 class GetMyMaterials {
     constructor(repository) {
         this.repository = repository;
     }
 
-    async execute({ userId, authorName }) {
-        if (!userId) {
-            throw new Error("User id is required");
+    async execute(authorId) {
+        if (!authorId) {
+            throw new Error("Author ID is required");
         }
-
-        return await this.repository.findByOwner({ userId, authorName });
+        return await this.repository.findByAuthorId(authorId);
     }
 }
 

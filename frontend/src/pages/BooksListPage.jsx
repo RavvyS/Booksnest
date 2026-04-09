@@ -73,7 +73,7 @@ const BooksListPage = () => {
         <Grid container spacing={4}>
           {filteredBooks.length > 0 ? (
             filteredBooks.map((book) => (
-              <Grid item key={book._id} xs={12} sm={6} md={3}>
+              <Grid item key={book.id} xs={12} sm={6} md={3}>
                 <BookCard book={book} />
               </Grid>
             ))

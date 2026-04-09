@@ -34,6 +34,11 @@ class UpdateBook {
       }
     }
 
+    // Ownership check: uploader or librarian
+    if (bookData.role !== "librarian" && existing.uploadedBy !== bookData.userId) {
+      throw new Error("Unauthorized: You can only edit your own submissions");
+    }
+
     return await this.bookRepository.update(id, bookData);
   }
 }

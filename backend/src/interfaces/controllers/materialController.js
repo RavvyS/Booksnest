@@ -18,7 +18,7 @@ const updateUseCase = new UpdateMaterial(repository);
 const deleteUseCase = new DeleteMaterial(repository);
 const approveUseCase = new ApproveMaterial(repository);
 const getPendingUseCase = new GetPendingMaterials(repository);
-const getMyMaterialsUseCase = new GetMyMaterials(repository);
+const getMyUseCase = new GetMyMaterials(repository);
 
 // POST /api/materials
 exports.createMaterial = async (req, res) => {
@@ -30,12 +30,22 @@ exports.createMaterial = async (req, res) => {
             type: req.body.type,
             category: req.body.category,
             author: req.body.author,
-            createdBy: req.user.id,
+            uploadedBy: req.user.id,
         });
 
         res.status(201).json(result);
     } catch (error) {
         res.status(400).json({ message: "Failed to create material", error: error.message });
+    }
+};
+
+// GET /api/materials/my (author view)
+exports.getMyMaterials = async (req, res) => {
+    try {
+        const result = await getMyUseCase.execute(req.user.id);
+        res.status(200).json(result);
+    } catch (error) {
+        res.status(500).json({ message: "Failed to retrieve your materials", error: error.message });
     }
 };
 
@@ -70,6 +80,8 @@ exports.updateMaterial = async (req, res) => {
         const result = await updateUseCase.execute({
             id: req.params.id,
             data: req.body,
+            userId: req.user.id,
+            role: req.user.role,
         });
 
         res.status(200).json(result);
@@ -82,7 +94,11 @@ exports.updateMaterial = async (req, res) => {
 // DELETE /api/materials/:id
 exports.deleteMaterial = async (req, res) => {
     try {
-        const result = await deleteUseCase.execute({ id: req.params.id });
+        const result = await deleteUseCase.execute({
+            id: req.params.id,
+            userId: req.user.id,
+            role: req.user.role,
+        });
 
         res.status(200).json(result);
     } catch (error) {
@@ -113,19 +129,5 @@ exports.getPendingMaterials = async (req, res) => {
         res.status(200).json(result);
     } catch (error) {
         res.status(500).json({ message: "Failed to retrieve pending materials", error: error.message });
-    }
-};
-
-// GET /api/materials/my
-exports.getMyMaterials = async (req, res) => {
-    try {
-        const result = await getMyMaterialsUseCase.execute({
-            userId: req.user.id,
-            authorName: req.user.name,
-        });
-
-        res.status(200).json(result);
-    } catch (error) {
-        res.status(400).json({ message: "Failed to retrieve your materials", error: error.message });
     }
 };

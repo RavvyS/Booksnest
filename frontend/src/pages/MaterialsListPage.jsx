@@ -100,9 +100,9 @@ const MaterialsListPage = () => {
         <Grid container spacing={3}>
           {filteredMaterials.length > 0 ? (
             filteredMaterials.map((material) => (
-              <Grid item key={material._id} xs={12} sm={6} md={4}>
+              <Grid item key={material.id} xs={12} sm={6} md={4}>
                 <Card sx={{ height: '100%', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.02)' } }}>
-                  <CardActionArea onClick={() => navigate(`/materials/${material._id}`)} sx={{ height: '100%' }}>
+                  <CardActionArea onClick={() => navigate(`/materials/${material.id}`)} sx={{ height: '100%' }}>
                     <CardContent>
                       <Box sx={{ mb: 1 }}>
                         <Chip label={material.category || 'General'} size="small" variant="outlined" color="primary" sx={{ mb: 1, mr: 1 }} />

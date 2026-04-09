@@ -7,11 +7,15 @@ class DeleteMaterial {
         this.repository = repository;
     }
 
-    async execute({ id }) {
+    async execute({ id, userId, role }) {
         const existing = await this.repository.findById(id);
 
         if (!existing) {
             throw new Error("Material not found");
+        }
+
+        if (role !== "librarian" && existing.uploadedBy?.toString() !== userId?.toString()) {
+            throw new Error("Unauthorized: You can only delete your own submissions");
         }
 
         await this.repository.delete(id);

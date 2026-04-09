@@ -29,13 +29,13 @@ const learningMaterialSchema = new mongoose.Schema(
         },
         author: {
             type: String,
-            required: [true, "Author is required"],
+            required: [true, "Author name is required"],
             trim: true,
         },
-        createdBy: {
-            type: String,
-            required: [true, "Creator is required"],
-            trim: true,
+        uploadedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: [true, "Uploader ID is required"],
         },
         status: {
             type: String,

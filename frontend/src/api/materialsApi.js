@@ -9,7 +9,7 @@ const materialsApi = {
     const response = await apiClient.get('/materials/pending');
     return response.data;
   },
-  getMine: async () => {
+  getMy: async () => {
     const response = await apiClient.get('/materials/my');
     return response.data;
   },

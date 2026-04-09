@@ -35,7 +35,7 @@ class CreateMaterial {
             type: data.type,
             category: data.category || "",
             author: data.author.trim(),
-            createdBy: data.createdBy,
+            uploadedBy: data.uploadedBy,
             status: "pending",
         });
 

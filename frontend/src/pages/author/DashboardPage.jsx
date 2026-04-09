@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PendingIcon from '@mui/icons-material/Pending';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -20,24 +21,39 @@ import InsightsIcon from '@mui/icons-material/Insights';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import { useNavigate } from 'react-router-dom';
 import materialsApi from '../../api/materialsApi';
+import booksApi from '../../api/booksApi';
 
 const AuthorDashboard = () => {
   const [stats, setStats] = useState({ total: 0, approved: 0, pending: 0, rejected: 0 });
-  const [recentMaterials, setRecentMaterials] = useState([]);
+  const [recentItems, setRecentItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const data = await materialsApi.getMine();
+        const [materialsRaw, booksRaw] = await Promise.all([
+          materialsApi.getMy(),
+          booksApi.getMyBooks(),
+        ]);
+        
+        const materials = Array.isArray(materialsRaw) ? materialsRaw : [];
+        const books = Array.isArray(booksRaw) ? booksRaw : [];
+
+        // Calculate Stats
+        const allItems = [
+          ...books.map(b => ({ ...b, itemType: 'Book' })),
+          ...materials.map(m => ({ ...m, itemType: 'Material' }))
+        ].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
         setStats({
-          total: data.length,
-          approved: data.filter((m) => m.status === 'approved').length,
-          pending: data.filter((m) => m.status === 'pending').length,
-          rejected: data.filter((m) => m.status === 'rejected').length,
+          total: allItems.length,
+          approved: allItems.filter(i => i.status === 'approved').length,
+          pending: allItems.filter(i => i.status === 'pending').length,
+          rejected: allItems.filter(i => i.status === 'rejected').length,
         });
-        setRecentMaterials(data.slice(0, 3));
+
+        setRecentItems(allItems.slice(0, 5)); // Show latest 5
       } catch (err) {
         console.error('Failed to fetch author stats', err);
       } finally {
@@ -63,6 +79,7 @@ const AuthorDashboard = () => {
         borderRadius: 4,
         height: '100%',
         background: `linear-gradient(180deg, #ffffff 0%, ${accent}12 100%)`,
+        border: '1px solid #eee',
       }}
     >
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
@@ -96,6 +113,7 @@ const AuthorDashboard = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+      {/* Header Banner */}
       <Box
         sx={{
           mb: 4,
@@ -125,206 +143,205 @@ const AuthorDashboard = () => {
           }}
         >
           <Box>
-            <Typography variant="h3" sx={{ mb: 1 }}>
-              Author Dashboard
+            <Typography variant="h3" sx={{ mb: 1 }} fontWeight="bold">
+              Welcome Back!
             </Typography>
             <Typography sx={{ maxWidth: 700, color: 'rgba(255,255,255,0.86)' }}>
               Track your submissions, monitor approval progress, and keep your library contributions organized in one place.
             </Typography>
           </Box>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => navigate('/author/materials/create')}
-            size="large"
-            sx={{
-              bgcolor: 'white',
-              color: 'primary.main',
-              '&:hover': { bgcolor: '#eef5ff' },
-            }}
-          >
-            Upload Material
-          </Button>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => navigate('/author/upload?type=book')}
+              size="large"
+              sx={{
+                bgcolor: 'white',
+                color: 'primary.main',
+                fontWeight: 'bold',
+                '&:hover': { bgcolor: '#eef5ff' },
+              }}
+            >
+              New Book
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => navigate('/author/upload?type=material')}
+              size="large"
+              sx={{
+                bgcolor: 'rgba(255,255,255,0.2)',
+                color: 'white',
+                fontWeight: 'bold',
+                backdropFilter: 'blur(10px)',
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' },
+              }}
+            >
+              New Material
+            </Button>
+          </Box>
         </Box>
       </Box>
 
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+      {/* Stats Section */}
+      <Grid container spacing={3} sx={{ mb: 6 }}>
+        <Grid item xs={12} sm={6} lg={3}>
           <StatCard
             title="Total Uploads"
             value={stats.total}
-            icon={<AutoStoriesIcon />}
+            icon={<LibraryBooksIcon />}
             accent="#0653B8"
-            helper="Everything you have submitted to the library."
+            helper="All your submitted library items."
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+        <Grid item xs={12} sm={6} lg={3}>
           <StatCard
             title="Approved"
             value={stats.approved}
             icon={<CheckCircleIcon />}
             accent="#10B981"
-            helper="Resources currently visible to readers and guests."
+            helper="Resources visible to readers."
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+        <Grid item xs={12} sm={6} lg={3}>
           <StatCard
             title="Pending Review"
             value={stats.pending}
             icon={<PendingIcon />}
             accent="#F59E0B"
-            helper="Submissions waiting for librarian review."
+            helper="Waiting for librarian review."
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+        <Grid item xs={12} sm={6} lg={3}>
           <StatCard
             title="Rejected"
             value={stats.rejected}
             icon={<CancelIcon />}
             accent="#EF4444"
-            helper="Items that may need edits before resubmission."
+            helper="Items needing updates."
           />
         </Grid>
       </Grid>
 
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 7 }}>
-          <Paper elevation={3} sx={{ p: { xs: 3, md: 4 }, borderRadius: 4, height: '100%' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+      <Grid container spacing={4}>
+        {/* Recent Submissions */}
+        <Grid item xs={12} md={7}>
+          <Paper elevation={0} sx={{ p: { xs: 3, md: 4 }, borderRadius: 4, border: '1px solid #eee' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
               <Box>
                 <Typography variant="h5" fontWeight="bold">
                   Recent Submissions
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Your latest materials and their current review status.
+                  Your latest content and their current review status.
                 </Typography>
               </Box>
-              <Button endIcon={<ArrowForwardIcon />} onClick={() => navigate('/author/materials')}>
-                View All
+              <Button endIcon={<ArrowForwardIcon />} onClick={() => navigate('/author/books')}>
+                Manage All
               </Button>
             </Box>
 
-            <Divider sx={{ mb: 2 }} />
+            <Divider sx={{ mb: 3 }} />
 
-            {recentMaterials.length > 0 ? (
+            {recentItems.length > 0 ? (
               <Box sx={{ display: 'grid', gap: 2 }}>
-                {recentMaterials.map((material) => (
+                {recentItems.map((item) => (
                   <Paper
-                    key={material._id}
+                    key={item.id}
                     variant="outlined"
-                    sx={{ p: 2.5, borderRadius: 3, borderColor: 'divider' }}
+                    onClick={() => navigate(item.itemType === 'Book' ? `/books/${item.id}` : `/materials/${item.id}`)}
+                    sx={{ 
+                      p: 2.5, 
+                      borderRadius: 3, 
+                      borderColor: 'divider',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      '&:hover': { borderColor: 'primary.main', bgcolor: '#f8fbff', transform: 'translateX(4px)' }
+                    }}
                   >
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, alignItems: 'flex-start' }}>
                       <Box>
-                        <Typography variant="h6" fontWeight="bold">
-                          {material.title}
-                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                          <Chip label={item.itemType} size="small" sx={{ height: 20, fontSize: '0.65rem', fontWeight: 'bold' }} />
+                          <Typography variant="h6" fontWeight="bold" sx={{ fontSize: '1.1rem' }}>
+                            {item.title}
+                          </Typography>
+                        </Box>
                         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 1 }}>
-                          {material.description?.slice(0, 120) || 'No description added yet.'}
+                          {item.description?.slice(0, 100) || 'No description added yet.'}...
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {material.category || 'General'} • {new Date(material.createdAt).toLocaleDateString()}
+                          Submitted on {new Date(item.createdAt).toLocaleDateString()}
                         </Typography>
                       </Box>
                       <Chip
-                        label={material.status}
-                        color={getStatusColor(material.status)}
+                        label={item.status === 'approved' ? 'Published' : item.status === 'pending' ? 'In Review' : 'Rejected'}
+                        color={getStatusColor(item.status)}
                         size="small"
-                        sx={{ textTransform: 'capitalize' }}
+                        sx={{ textTransform: 'capitalize', fontWeight: 'bold' }}
                       />
                     </Box>
                   </Paper>
                 ))}
               </Box>
             ) : (
-              <Box
-                sx={{
-                  borderRadius: 4,
-                  p: 5,
-                  textAlign: 'center',
-                  bgcolor: '#f8fbff',
-                  border: '1px dashed #b8cff2',
-                }}
-              >
-                <Typography variant="h6" fontWeight="bold" gutterBottom>
-                  No materials uploaded yet
-                </Typography>
-                <Typography color="text.secondary" sx={{ mb: 2 }}>
-                  Start building your author profile by publishing your first learning resource.
-                </Typography>
-                <Button variant="contained" onClick={() => navigate('/author/materials/create')}>
-                  Upload First Material
-                </Button>
+              <Box sx={{ p: 6, textAlign: 'center', bgcolor: '#fafafa', borderRadius: 4, border: '1px dashed #ccc' }}>
+                <Typography color="textSecondary">No recent activity detected.</Typography>
               </Box>
             )}
           </Paper>
         </Grid>
 
-        <Grid size={{ xs: 12, md: 5 }}>
+        {/* Quick Tips/Actions */}
+        <Grid item xs={12} md={5}>
           <Paper
-            elevation={3}
+            elevation={0}
             sx={{
               p: { xs: 3, md: 4 },
               borderRadius: 4,
-              height: '100%',
-              background: 'linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)',
+              border: '1px solid #eee',
+              background: 'linear-gradient(180deg, #ffffff 0%, #f9fbff 100%)',
             }}
           >
             <Typography variant="h5" fontWeight="bold" gutterBottom>
               Author Actions
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Stay on top of your workflow with a quick review of what to do next.
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
+              Stay on top of your workflow with these quick tips.
             </Typography>
 
-            <Box sx={{ display: 'grid', gap: 2.5 }}>
-              <Box sx={{ display: 'flex', gap: 1.5 }}>
+            <Box sx={{ display: 'grid', gap: 3 }}>
+              <Box sx={{ display: 'flex', gap: 2 }}>
                 <TaskAltIcon color="primary" />
                 <Box>
                   <Typography fontWeight="bold">Submit polished resources</Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Clear titles, working links, and strong descriptions help materials get approved faster.
+                    Clear titles and strong descriptions help materials get approved faster.
                   </Typography>
                 </Box>
               </Box>
 
-              <Box sx={{ display: 'flex', gap: 1.5 }}>
+              <Box sx={{ display: 'flex', gap: 2 }}>
                 <InsightsIcon color="primary" />
                 <Box>
-                  <Typography fontWeight="bold">Monitor approval progress</Typography>
+                  <Typography fontWeight="bold">Monitor progress</Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Check pending and rejected items regularly so you can make updates when needed.
-                  </Typography>
-                </Box>
-              </Box>
-
-              <Box sx={{ display: 'flex', gap: 1.5 }}>
-                <AutoStoriesIcon color="primary" />
-                <Box>
-                  <Typography fontWeight="bold">Grow your collection</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Keep your profile active by adding valuable resources across multiple categories.
+                    Check pending items regularly and make updates when needed.
                   </Typography>
                 </Box>
               </Box>
             </Box>
 
-            <Divider sx={{ my: 3 }} />
+            <Divider sx={{ my: 4 }} />
 
-            <Box sx={{ display: 'grid', gap: 2 }}>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => navigate('/author/materials/create')}
-              >
-                Upload New Material
+            <Typography variant="h6" fontWeight="bold" gutterBottom>Quick Navigation</Typography>
+            <Box sx={{ display: 'grid', gap: 2, mt: 2 }}>
+              <Button fullWidth variant="outlined" sx={{ borderRadius: 2 }} onClick={() => navigate('/author/books')}>
+                Manage My Books
               </Button>
-              <Button
-                variant="outlined"
-                endIcon={<ArrowForwardIcon />}
-                onClick={() => navigate('/author/materials')}
-              >
-                Open My Materials
+              <Button fullWidth variant="outlined" sx={{ borderRadius: 2 }} onClick={() => navigate('/author/materials')}>
+                Manage My Materials
               </Button>
             </Box>
           </Paper>

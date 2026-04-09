@@ -20,6 +20,11 @@ import {
   DialogActions,
   TextField,
   Grid,
+  Chip,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -48,6 +53,7 @@ const ManageBooksPage = () => {
     author: '',
     isbn: '',
     description: '',
+    type: 'book',
     totalCopies: 1,
     availableCopies: 1,
   });
@@ -110,6 +116,7 @@ const ManageBooksPage = () => {
         author: book.author,
         isbn: book.isbn,
         description: book.description || '',
+        type: book.type || 'book',
         totalCopies: book.totalCopies,
         availableCopies: book.availableCopies,
       });
@@ -120,6 +127,7 @@ const ManageBooksPage = () => {
         author: '',
         isbn: '',
         description: '',
+        type: 'book',
         totalCopies: 1,
         availableCopies: 1,
       });
@@ -194,6 +202,7 @@ const ManageBooksPage = () => {
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Title</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Author</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>ISBN</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Type</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Status</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Actions</TableCell>
             </TableRow>
@@ -204,6 +213,9 @@ const ManageBooksPage = () => {
                 <TableCell>{b.title}</TableCell>
                 <TableCell>{b.author}</TableCell>
                 <TableCell>{b.isbn}</TableCell>
+                <TableCell>
+                  <Chip label={b.type} size="small" variant="outlined" />
+                </TableCell>
                 <TableCell>
                   <Typography variant="body2" color={b.availableCopies > 0 ? "success.main" : "error.main"}>
                     {b.availableCopies} available / {b.totalCopies} total
@@ -297,6 +309,21 @@ const ManageBooksPage = () => {
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField fullWidth label="ISBN" name="isbn" required value={formData.isbn} onChange={handleChange} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth required>
+                  <InputLabel>Type</InputLabel>
+                  <Select
+                    name="type"
+                    value={formData.type}
+                    onChange={handleChange}
+                    label="Type"
+                  >
+                    <MenuItem value="book">Book</MenuItem>
+                    <MenuItem value="magazine">Magazine</MenuItem>
+                    <MenuItem value="journal">Journal</MenuItem>
+                  </Select>
+                </FormControl>
               </Grid>
               <Grid item xs={12}>
                 <TextField fullWidth label="Description" name="description" multiline rows={3} value={formData.description} onChange={handleChange} />

@@ -20,7 +20,7 @@ const BookCard = ({ book }) => {
   // Resolve image source
   const imageSrc = book.coverImage 
     ? (book.coverImage.startsWith('http') ? book.coverImage : `${baseUrl}/${book.coverImage}`)
-    : `https://images.unsplash.com/photo-1543004471-24b9a3dc73ef?q=80&w=400&auto=format&fit=crop&sig=${book._id || 'default'}`;
+    : `https://images.unsplash.com/photo-1543004471-24b9a3dc73ef?q=80&w=400&auto=format&fit=crop&sig=${book.id || 'default'}`;
 
   return (
     <Card 
@@ -42,7 +42,7 @@ const BookCard = ({ book }) => {
       }}
     >
       <CardActionArea 
-        onClick={() => navigate(`/books/${book._id}`)}
+        onClick={() => navigate(`/books/${book.id}`)}
         sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
       >
         <Box

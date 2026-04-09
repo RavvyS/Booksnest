@@ -12,6 +12,7 @@ import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import CategoryIcon from '@mui/icons-material/Category';
 import RateReviewIcon from '@mui/icons-material/RateReview';
 import GroupIcon from '@mui/icons-material/Group';
+import PendingIcon from '@mui/icons-material/Pending';
 import { useNavigate } from 'react-router-dom';
 import booksApi from '../../api/booksApi';
 import materialsApi from '../../api/materialsApi';
@@ -25,14 +26,16 @@ const LibrarianDashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [books, pending, categories] = await Promise.all([
+        const [books, pendingMaterials, pendingBooks, categories] = await Promise.all([
           booksApi.getAll(),
           materialsApi.getPending(),
+          booksApi.getPending(),
           categoriesApi.getAll(),
         ]);
         setStats({
           books: books.length,
-          pending: pending.length,
+          pendingMaterials: pendingMaterials.length,
+          pendingBooks: pendingBooks.length,
           categories: categories.length,
         });
       } catch (err) {
@@ -78,17 +81,27 @@ const LibrarianDashboard = () => {
       </Box>
 
       <Grid container spacing={4}>
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={6} md={3}>
           <StatCard 
             title="Pending Materials" 
-            value={stats.pending} 
+            value={stats.pendingMaterials} 
             icon={<RateReviewIcon fontSize="large" />} 
             color="warning" 
             actionLabel="Review All"
             onClick={() => navigate('/librarian/pending')}
           />
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard 
+            title="Pending Books" 
+            value={stats.pendingBooks} 
+            icon={<PendingIcon fontSize="large" />} 
+            color="secondary" 
+            actionLabel="Review Queue"
+            onClick={() => navigate('/librarian/pending-books')}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
           <StatCard 
             title="Total Books" 
             value={stats.books} 
@@ -98,7 +111,7 @@ const LibrarianDashboard = () => {
             onClick={() => navigate('/librarian/books')}
           />
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={6} md={3}>
           <StatCard 
             title="Content Categories" 
             value={stats.categories} 

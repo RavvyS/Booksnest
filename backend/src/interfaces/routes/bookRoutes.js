@@ -51,14 +51,15 @@ router.patch(
 router.put(
   "/:bookId",
   AuthMiddleware,
-  RoleMiddleware("librarian"),
+  RoleMiddleware("author", "librarian"),
+  upload.single("file"),
   BookController.updateBook,
 );
 
 router.delete(
   "/:bookId",
   AuthMiddleware,
-  RoleMiddleware("librarian"),
+  RoleMiddleware("author", "librarian"),
   BookController.deleteBook,
 );
 

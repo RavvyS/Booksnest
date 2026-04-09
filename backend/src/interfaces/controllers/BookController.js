@@ -73,6 +73,9 @@ exports.updateBook = async (req, res) => {
       isbn: req.body.isbn,
       categoryId: req.body.categoryId,
       description: req.body.description,
+      userId: req.user.id,
+      role: req.user.role,
+      filePath: req.file ? req.file.path : undefined,
     });
 
     res.json(result);
@@ -83,7 +86,11 @@ exports.updateBook = async (req, res) => {
 
 exports.deleteBook = async (req, res) => {
   try {
-    const result = await deleteUseCase.execute(req.params.bookId);
+    const result = await deleteUseCase.execute(
+      req.params.bookId,
+      req.user.id,
+      req.user.role
+    );
     res.json(result);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -99,6 +106,7 @@ exports.readBook = async (req, res) => {
   try {
     const { filePath } = await readUseCase.execute(
       req.user.id,
+      req.user.role,
       req.params.bookId,
     );
 

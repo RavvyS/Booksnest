@@ -6,7 +6,7 @@ class DeleteBook {
     this.bookRepository = bookRepository;
   }
 
-  async execute(id) {
+  async execute(id, userId, userRole) {
     if (!id) {
       throw new Error("Book ID is required");
     }
@@ -14,6 +14,10 @@ class DeleteBook {
     const existing = await this.bookRepository.findById(id);
     if (!existing) {
       throw new Error("Book not found");
+    }
+
+    if (userRole !== "librarian" && existing.uploadedBy !== userId) {
+      throw new Error("Unauthorized: You can only delete your own submissions");
     }
 
     const result = await this.bookRepository.delete(id);

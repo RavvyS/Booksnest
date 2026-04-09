@@ -57,7 +57,8 @@ function ResponsiveAppBar() {
     } else if (user.role === "author") {
       links.push(
         { label: "Dashboard", path: "/author/dashboard" },
-        { label: "My Materials", path: "/author/materials" }
+        { label: "My Materials", path: "/author/materials" },
+        { label: "My Books", path: "/author/books" }
       );
     } else if (user.role === "librarian") {
       links.push(
