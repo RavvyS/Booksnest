@@ -13,6 +13,14 @@ const authApi = {
     const response = await apiClient.get('/auth/profile');
     return response.data;
   },
+  forgotPassword: async (email) => {
+    const response = await apiClient.post('/auth/forgot-password', { email });
+    return response.data;
+  },
+  changePassword: async (passwords) => {
+    const response = await apiClient.post('/auth/change-password', passwords);
+    return response.data;
+  },
 };
 
 export default authApi;

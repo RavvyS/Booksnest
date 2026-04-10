@@ -81,6 +81,11 @@ const LoginPage = () => {
             >
               {loading ? <CircularProgress size={24} color="inherit" /> : 'Login'}
             </Button>
+            <Box sx={{ textAlign: 'center' }}>
+              <Button component={Link} to="/forgot-password" size="small" color="secondary">
+                Forgot Password?
+              </Button>
+            </Box>
           </form>
 
           <Box sx={{ mt: 2, textAlign: 'center' }}>

@@ -26,6 +26,14 @@ const UserSchema = new mongoose.Schema(
       enum: ["reader", "author", "librarian"],
       default: "reader",
     },
+
+    isApproved: {
+      type: Boolean,
+      default: false,
+    },
+
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
   },
   {
     timestamps: true,
