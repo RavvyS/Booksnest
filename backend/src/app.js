@@ -17,16 +17,25 @@ const app = express();
 
 app.use(
   cors({
-    origin: [
-      process.env.CORS_ORIGIN || "http://localhost:3000",
-      "http://localhost:5173",
-      "http://localhost:5174"
-    ],
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        process.env.CORS_ORIGIN,
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://localhost:5174"
+      ];
+      if (!origin || allowedOrigins.includes(origin) || allowedOrigins.some(o => o && origin.startsWith(o))) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   }),
 );
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
+app.get("/", (req, res) => res.json({ status: "ok", message: "Booksnest API is running" }));
 
 app.use("/api/bookmarks", bookMarkRoutes);
 app.use("/api/auth", authRoutes);
