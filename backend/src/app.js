@@ -11,6 +11,7 @@ const categoryRoutes = require("./interfaces/routes/categoryRoutes");
 const bookRoutes = require("./interfaces/routes/bookRoutes");
 const borrowRoutes = require("./interfaces/routes/borrowRoutes");
 const materialRoutes = require("./interfaces/routes/materialRoutes");
+const userRoutes = require("./interfaces/routes/userRoutes");
 
 const app = express();
 
@@ -34,5 +35,6 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/books", bookRoutes);
 app.use("/api/borrows", borrowRoutes);
 app.use("/api/materials", materialRoutes);
+app.use("/api/users", userRoutes);
 
 module.exports = app;

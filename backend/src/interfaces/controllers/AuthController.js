@@ -6,6 +6,8 @@ const TokenService = require("../../infrastructure/services/TokenService");
 
 const RegisterUser = require("../../application/usecases/auth/RegisterUser");
 const LoginUser = require("../../application/usecases/auth/LoginUser");
+const ForgotPassword = require("../../application/usecases/auth/ForgotPassword");
+const ChangePassword = require("../../application/usecases/auth/ChangePassword");
 
 const userRepository = new UserRepository();
 
@@ -18,6 +20,16 @@ const loginUseCase = new LoginUser(
   userRepository,
   HashService,
   TokenService
+);
+
+const forgotPasswordUseCase = new ForgotPassword(
+  userRepository,
+  HashService
+);
+
+const changePasswordUseCase = new ChangePassword(
+  userRepository,
+  HashService
 );
 
 const sanitizeUser = (user) => ({
@@ -88,4 +100,24 @@ exports.profile = async (req, res) => {
 
   }
 
+};
+
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const result = await forgotPasswordUseCase.execute(req.body.email);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+
+exports.changePassword = async (req, res) => {
+  try {
+    const result = await changePasswordUseCase.execute(req.user.id, req.body);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
 };

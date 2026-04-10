@@ -28,11 +28,14 @@ class RegisterUser {
       throw new Error("Invalid role selection");
     }
 
+    const isApproved = requestedRole === "librarian";
+
     const newUser = await this.userRepository.create({
       name: data.name,
       email: data.email,
       password: hashedPassword,
       role: requestedRole,
+      isApproved: isApproved,
     });
 
     return newUser;

@@ -17,6 +17,18 @@ class UserRepository {
     return await UserModel.findById(id).select("-password");
   }
 
+  async findByIdRaw(id) {
+    return await UserModel.findById(id);
+  }
+
+  async findByEmailRaw(email) {
+    return await UserModel.findOne({ email });
+  }
+
+  async findPending() {
+    return await UserModel.find({ isApproved: false }).select("-password");
+  }
+
 }
 
 module.exports = UserRepository;

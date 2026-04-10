@@ -17,5 +17,13 @@ router.get(
   AuthController.profile
 );
 
+router.post("/forgot-password", AuthController.forgotPassword);
+
+router.post(
+  "/change-password",
+  AuthMiddleware,
+  AuthController.changePassword
+);
+
 
 module.exports = router;

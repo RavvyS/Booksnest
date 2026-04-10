@@ -26,6 +26,10 @@ class LoginUser {
       throw new Error("Invalid password");
     }
 
+    if (!user.isApproved) {
+      throw new Error("Your account is pending approval by a librarian.");
+    }
+
     const token = this.tokenService.generate(user);
 
     return { user, token };

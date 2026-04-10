@@ -2,17 +2,15 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Box } from '@mui/material';
-<<<<<<< HEAD
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-=======
 import './App.css';
->>>>>>> 2e5dc54665f60f171ad735db6e7aa3f3d16ccba8
 
 // Public Pages
 import Landing from './pages/Landing';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import Home from './pages/Home';
 import MaterialsListPage from './pages/MaterialsListPage';
 import MaterialDetailPage from './pages/MaterialDetailPage';
@@ -37,6 +35,7 @@ import PendingMaterialsPage from './pages/librarian/PendingMaterialsPage';
 import ManageBooksPage from './pages/librarian/ManageBooksPage';
 import ManageCategoriesPage from './pages/librarian/ManageCategoriesPage';
 import LibrarianProfilePage from './pages/librarian/ProfilePage';
+import ManageUsersPage from './pages/librarian/ManageUsersPage';
 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer/Footer';
@@ -51,6 +50,7 @@ const App = () => {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/home" element={<Home />} />
           <Route path="/materials" element={<MaterialsListPage />} />
           <Route path="/materials/:id" element={<MaterialDetailPage />} />
@@ -81,6 +81,7 @@ const App = () => {
             <Route path="/librarian/books" element={<ManageBooksPage />} />
             <Route path="/librarian/categories" element={<ManageCategoriesPage />} />
             <Route path="/librarian/profile" element={<LibrarianProfilePage />} />
+            <Route path="/librarian/users" element={<ManageUsersPage />} />
           </Route>
 
           {/* Catch-all redirect */}

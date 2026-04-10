@@ -44,7 +44,7 @@ const RegisterPage = () => {
         login(data.token);
         navigate('/home');
       } else {
-        navigate('/login');
+        setError('success-pending');
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to register. Please try again.');
@@ -64,7 +64,13 @@ const RegisterPage = () => {
             Join the Book Nest community today.
           </Typography>
 
-          {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+          {error === 'success-pending' ? (
+            <Alert severity="success" sx={{ mb: 3 }}>
+              Registration successful! Your account is pending librarian approval. You will receive an email once it is approved.
+            </Alert>
+          ) : error && (
+            <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>
+          )}
 
           <form onSubmit={handleSubmit}>
             <TextField

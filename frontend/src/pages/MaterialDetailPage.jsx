@@ -55,61 +55,20 @@ const MaterialDetailPage = () => {
     fetchMaterialAndBookmark();
   }, [id, isAuthenticated]);
 
-<<<<<<< HEAD
   const handleBookmark = () => {
-=======
-  useEffect(() => {
-    const syncBookmarkState = async () => {
-      if (!canInteractAsReader) {
-        setIsBookmarked(false);
-        return;
-      }
-
-      try {
-        const allBookmarks = await bookmarksApi.getAll();
-        setIsBookmarked(allBookmarks.some((bookmark) => bookmark.materialId === id));
-      } catch (err) {
-        console.error('Failed to sync bookmark state', err);
-      }
-    };
-
-    syncBookmarkState();
-  }, [canInteractAsReader, id]);
-
-  const handleBookmark = async () => {
->>>>>>> 2e5dc54665f60f171ad735db6e7aa3f3d16ccba8
     if (!isAuthenticated) {
       toast.info('Please login to bookmark this material');
       return;
     }
 
-<<<<<<< HEAD
-    if (isBookmarked) {
-      toast.warning('This material is already bookmarked');
-      return;
-=======
     if (user?.role !== 'reader') {
+      toast.warning('Only readers can bookmark materials');
       return;
     }
 
-    try {
-      if (isBookmarked) {
-        // Find and delete the bookmark
-        const allBookmarks = await bookmarksApi.getAll();
-        const existing = allBookmarks.find(b => b.materialId === id);
-        if (existing) await bookmarksApi.delete(existing._id);
-        setIsBookmarked(false);
-      } else {
-        await bookmarksApi.create({
-          materialId: id,
-          materialTitle: material.title,
-          materialContentUrl: material.contentUrl,
-        });
-        setIsBookmarked(true);
-      }
-    } catch (err) {
-      console.error('Bookmark error', err);
->>>>>>> 2e5dc54665f60f171ad735db6e7aa3f3d16ccba8
+    if (isBookmarked) {
+      toast.warning('This material is already bookmarked');
+      return;
     }
 
     // Navigate to create page and pass material data
@@ -144,28 +103,17 @@ const MaterialDetailPage = () => {
               {material.title}
             </Typography>
           </Box>
-<<<<<<< HEAD
-          <Button 
-            variant={isBookmarked ? "contained" : "outlined"} 
-            color="primary"
-            onClick={handleBookmark}
-            disabled={isBookmarked && isAuthenticated}
-            startIcon={isBookmarked ? <BookmarkIcon /> : <BookmarkBorderIcon />}
-          >
-            {isBookmarked && isAuthenticated ? 'Bookmarked' : 'Bookmark'}
-          </Button>
-=======
           {user?.role === 'reader' || !isAuthenticated ? (
             <Button 
               variant={isBookmarked ? "contained" : "outlined"} 
               color="primary"
               onClick={handleBookmark}
+              disabled={isBookmarked && isAuthenticated}
               startIcon={isBookmarked ? <BookmarkIcon /> : <BookmarkBorderIcon />}
             >
-              {isBookmarked ? 'Bookmarked' : 'Bookmark'}
+              {isBookmarked && isAuthenticated ? 'Bookmarked' : 'Bookmark'}
             </Button>
           ) : null}
->>>>>>> 2e5dc54665f60f171ad735db6e7aa3f3d16ccba8
         </Box>
 
         <Typography variant="subtitle1" color="textSecondary" gutterBottom>
