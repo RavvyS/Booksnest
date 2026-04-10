@@ -2,12 +2,12 @@
 //  Implements a single business use case with domain-focused rules.
 
 class DeleteBookmark {
-    constructor({ bookmarkRepository }) {
+    constructor(bookmarkRepository) {
         this.bookmarkRepository = bookmarkRepository;
     }
 
-    async execute({ bookmarkId, userId }) {
-        const existingBookmark = await this.bookmarkRepository.findById(id); 
+    async execute({ id, userId }) {
+        const existingBookmark = await this.bookmarkRepository.findById(id);
 
         // Check if the bookmark exists
         if (!existingBookmark) {
@@ -15,12 +15,12 @@ class DeleteBookmark {
         }
 
         // Ensure the user owns the bookmark
-        if (existingBookmark.userId !== userId) {
+        if (existingBookmark.userId.toString() !== userId) {
             throw new Error("Unauthorized");
         }
 
         // Delete the bookmark
-        await this.bookmarkRepository.delete(bookmarkId);
+        await this.bookmarkRepository.delete(id);
         return { message: "Bookmark deleted successfully" };
     }
 

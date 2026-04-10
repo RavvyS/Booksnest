@@ -6,7 +6,7 @@ class UpdateBookmark {
     this.bookmarkRepository = bookmarkRepository;
   }
 
-  async execute({ id, userId, materialId, note }) {
+  async execute({ id, userId, materialId, note, isFavorite, isCompleted, lastViewed }) {
 
     const existingBookmark = await this.bookmarkRepository.findById(id);
 
@@ -18,8 +18,13 @@ class UpdateBookmark {
       throw new Error('Unauthorized');
     }
     
+    const updateData = {};
+    if (note !== undefined) updateData.note = note;
+    if (isFavorite !== undefined) updateData.isFavorite = isFavorite;
+    if (isCompleted !== undefined) updateData.isCompleted = isCompleted;
+    if (lastViewed !== undefined) updateData.lastViewed = lastViewed;
 
-    const updatedBookmark = await this.bookmarkRepository.update(id, { note });
+    const updatedBookmark = await this.bookmarkRepository.update(id, updateData);
     return updatedBookmark;
   }
 

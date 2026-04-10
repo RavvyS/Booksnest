@@ -19,6 +19,7 @@ import materialsApi from '../api/materialsApi';
 import bookmarksApi from '../api/bookmarksApi';
 import { useAuth } from '../context/AuthContext';
 import CommentSection from '../components/CommentSection';
+import { toast } from 'react-toastify';
 
 const MaterialDetailPage = () => {
   const { id } = useParams();
@@ -31,10 +32,19 @@ const MaterialDetailPage = () => {
   const canInteractAsReader = isAuthenticated && user?.role === 'reader';
 
   useEffect(() => {
-    const fetchMaterial = async () => {
+    const fetchMaterialAndBookmark = async () => {
       try {
         const data = await materialsApi.getById(id);
         setMaterial(data);
+
+        // Check if bookmarked
+        if (isAuthenticated) {
+          const allBookmarks = await bookmarksApi.getAll();
+          const existing = allBookmarks.find(b => b.materialId === id);
+          if (existing) {
+            setIsBookmarked(true);
+          }
+        }
       } catch (err) {
         setError('Failed to load material details.');
         console.error(err);
@@ -42,9 +52,12 @@ const MaterialDetailPage = () => {
         setLoading(false);
       }
     };
-    fetchMaterial();
-  }, [id]);
+    fetchMaterialAndBookmark();
+  }, [id, isAuthenticated]);
 
+<<<<<<< HEAD
+  const handleBookmark = () => {
+=======
   useEffect(() => {
     const syncBookmarkState = async () => {
       if (!canInteractAsReader) {
@@ -64,11 +77,17 @@ const MaterialDetailPage = () => {
   }, [canInteractAsReader, id]);
 
   const handleBookmark = async () => {
+>>>>>>> 2e5dc54665f60f171ad735db6e7aa3f3d16ccba8
     if (!isAuthenticated) {
-      navigate('/login');
+      toast.info('Please login to bookmark this material');
       return;
     }
 
+<<<<<<< HEAD
+    if (isBookmarked) {
+      toast.warning('This material is already bookmarked');
+      return;
+=======
     if (user?.role !== 'reader') {
       return;
     }
@@ -90,7 +109,11 @@ const MaterialDetailPage = () => {
       }
     } catch (err) {
       console.error('Bookmark error', err);
+>>>>>>> 2e5dc54665f60f171ad735db6e7aa3f3d16ccba8
     }
+
+    // Navigate to create page and pass material data
+    navigate(`/reader/bookmarks/create/${id}`, { state: { material } });
   };
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
@@ -121,6 +144,17 @@ const MaterialDetailPage = () => {
               {material.title}
             </Typography>
           </Box>
+<<<<<<< HEAD
+          <Button 
+            variant={isBookmarked ? "contained" : "outlined"} 
+            color="primary"
+            onClick={handleBookmark}
+            disabled={isBookmarked && isAuthenticated}
+            startIcon={isBookmarked ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+          >
+            {isBookmarked && isAuthenticated ? 'Bookmarked' : 'Bookmark'}
+          </Button>
+=======
           {user?.role === 'reader' || !isAuthenticated ? (
             <Button 
               variant={isBookmarked ? "contained" : "outlined"} 
@@ -131,6 +165,7 @@ const MaterialDetailPage = () => {
               {isBookmarked ? 'Bookmarked' : 'Bookmark'}
             </Button>
           ) : null}
+>>>>>>> 2e5dc54665f60f171ad735db6e7aa3f3d16ccba8
         </Box>
 
         <Typography variant="subtitle1" color="textSecondary" gutterBottom>
