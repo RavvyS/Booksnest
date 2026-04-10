@@ -1,0 +1,104 @@
+config:
+  target: "http://localhost:8070"
+  processor: "./processor.js"
+  phases:
+    - duration: 20
+      arrivalRate: 5
+      name: warm-up
+    - duration: 40
+      arrivalRate: 15
+      name: sustained-borrow-traffic
+  defaults:
+    headers:
+      Content-Type: "application/json"
+  ensure:
+    p95: 700
+    maxErrorRate: 5
+
+scenarios:
+  - name: borrow-return-flow
+    weight: 60
+    flow:
+      - function: setUniqueUser
+      - post:
+          url: "/api/auth/register"
+          json:
+            name: "{{ name }}"
+            email: "{{ email }}"
+            password: "{{ password }}"
+            role: "reader"
+          capture:
+            - json: "$.token"
+              as: token
+      - post:
+          url: "/api/books"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            title: "Perf Book {{ name }}"
+            author: "Perf Author"
+            isbn: "PERF-{{ name }}"
+            totalCopies: 2
+          capture:
+            - json: "$.id"
+              as: bookId
+      - post:
+          url: "/api/borrows/borrow/{{ bookId }}"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 201
+      - get:
+          url: "/api/borrows/my-borrows"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
+      - post:
+          url: "/api/borrows/return/{{ bookId }}"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
+
+  - name: queue-flow-no-copies
+    weight: 40
+    flow:
+      - function: setUniqueUser
+      - post:
+          url: "/api/auth/register"
+          json:
+            name: "{{ name }}"
+            email: "{{ email }}"
+            password: "{{ password }}"
+            role: "reader"
+          capture:
+            - json: "$.token"
+              as: token
+      - post:
+          url: "/api/books"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            title: "No Copies Book {{ name }}"
+            author: "Perf Author"
+            isbn: "NO-COPIES-{{ name }}"
+            totalCopies: 0
+          capture:
+            - json: "$.id"
+              as: bookId
+      - post:
+          url: "/api/borrows/queue/{{ bookId }}"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          json:
+            note: "Queue from performance test"
+          expect:
+            - statusCode: 201
+      - get:
+          url: "/api/borrows/queue/my"
+          headers:
+            Authorization: "Bearer {{ token }}"
+          expect:
+            - statusCode: 200
+
