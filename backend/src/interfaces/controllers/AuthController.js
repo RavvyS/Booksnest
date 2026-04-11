@@ -55,7 +55,7 @@ exports.register = async (req, res) => {
   } catch (error) {
 
     console.error("Registration Error:", error.message);
-    res.status(400).json({ message: error.message });
+    res.status(401).json({ message: error.message });
 
   }
 
@@ -75,7 +75,7 @@ exports.login = async (req, res) => {
 
   } catch (error) {
 
-    res.status(400).json({ message: error.message });
+    res.status(401).json({ message: error.message });
 
   }
 
@@ -96,7 +96,7 @@ exports.profile = async (req, res) => {
 
   } catch (error) {
 
-    res.status(400).json({ message: error.message });
+    res.status(401).json({ message: error.message });
 
   }
 

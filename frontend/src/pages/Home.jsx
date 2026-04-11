@@ -219,7 +219,7 @@ const Home = () => {
           <Grid container spacing={3} sx={{ mb: 8 }}>
             {books.length > 0 ? (
               books.map((book) => (
-                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={book._id || book.id}>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={book.id}>
                   <BookCard book={book} />
                 </Grid>
               ))
