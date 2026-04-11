@@ -1,4 +1,3 @@
-
 //  Builds and configures the Express application with all API routes.
 
 const express = require("express");
@@ -22,6 +21,7 @@ app.use(
   }),
 );
 app.use(express.json());
+app.use("/uploads", express.static("uploads"));
 
 app.use("/api/bookmarks", bookMarkRoutes);
 app.use("/api/auth", authRoutes);

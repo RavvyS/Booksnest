@@ -7,7 +7,7 @@ const AuthMiddleware = require("../middleware/AuthMiddleware");
 const RoleMiddleware = require("../middleware/RoleMiddleware");
 
 
-router.get("/", BookmarkController.getBookmarks);  //-----------
+router.get("/", AuthMiddleware, BookmarkController.getBookmarks);
 
 
 

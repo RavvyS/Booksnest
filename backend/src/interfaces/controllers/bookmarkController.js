@@ -33,7 +33,7 @@ exports.createBookmark = async (req, res) => {
 exports.getBookmarks = async (req,res) =>{
     try{
         const result = await getUseCase.execute({
-            userId: req.query.userId,
+            userId: req.user.id,
         });
         res.json(result);
     } catch(error){

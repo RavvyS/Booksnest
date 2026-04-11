@@ -20,95 +20,111 @@ const getPendingUseCase = new GetPendingMaterials(repository);
 
 // POST /api/materials
 exports.createMaterial = async (req, res) => {
-    try {
-        const result = await createUseCase.execute({
-            title: req.body.title,
-            description: req.body.description,
-            contentUrl: req.body.contentUrl,
-            categoryId: req.body.categoryId,
-            author: req.body.author,
-        });
+  try {
+    const result = await createUseCase.execute({
+      title: req.body.title,
+      description: req.body.description,
+      contentUrl: req.body.contentUrl,
+      type: req.body.type,
+      category: req.body.category,
+      author: req.body.author,
+    });
 
-        res.status(201).json(result);
-    } catch (error) {
-        res.status(400).json({ message: "Failed to create material", error: error.message });
-    }
+    res.status(201).json(result);
+  } catch (error) {
+    res
+      .status(400)
+      .json({ message: "Failed to create material", error: error.message });
+  }
 };
 
 // GET /api/materials
 exports.getAllMaterials = async (req, res) => {
-    try {
-        const result = await getAllUseCase.execute({
-            categoryId: req.query.categoryId,
-        });
+  try {
+    const result = await getAllUseCase.execute({
+      categoryId: req.query.categoryId,
+    });
 
-        res.status(200).json(result);
-    } catch (error) {
-        res.status(500).json({ message: "Failed to retrieve materials", error: error.message });
-    }
+    res.status(200).json(result);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to retrieve materials", error: error.message });
+  }
 };
 
 // GET /api/materials/:id
 exports.getMaterialById = async (req, res) => {
-    try {
-        const result = await getByIdUseCase.execute({ id: req.params.id });
+  try {
+    const result = await getByIdUseCase.execute({ id: req.params.id });
 
-        res.status(200).json(result);
-    } catch (error) {
-        const status = error.message === "Material not found" ? 404 : 500;
-        res.status(status).json({ message: error.message, error: error.message });
-    }
+    res.status(200).json(result);
+  } catch (error) {
+    const status = error.message === "Material not found" ? 404 : 500;
+    res.status(status).json({ message: error.message, error: error.message });
+  }
 };
 
 // PUT /api/materials/:id
 exports.updateMaterial = async (req, res) => {
-    try {
-        const result = await updateUseCase.execute({
-            id: req.params.id,
-            data: req.body,
-        });
+  try {
+    const result = await updateUseCase.execute({
+      id: req.params.id,
+      data: req.body,
+    });
 
-        res.status(200).json(result);
-    } catch (error) {
-        const status = error.message === "Material not found" ? 404 : 400;
-        res.status(status).json({ message: "Failed to update material", error: error.message });
-    }
+    res.status(200).json(result);
+  } catch (error) {
+    const status = error.message === "Material not found" ? 404 : 400;
+    res.status(status).json({ message: error.message });
+  }
 };
 
 // DELETE /api/materials/:id
 exports.deleteMaterial = async (req, res) => {
-    try {
-        const result = await deleteUseCase.execute({ id: req.params.id });
+  try {
+    const result = await deleteUseCase.execute({ id: req.params.id });
 
-        res.status(200).json(result);
-    } catch (error) {
-        const status = error.message === "Material not found" ? 404 : 500;
-        res.status(status).json({ message: "Failed to delete material", error: error.message });
-    }
+    res.status(200).json(result);
+  } catch (error) {
+    const status = error.message === "Material not found" ? 404 : 500;
+    res
+      .status(status)
+      .json({ message: "Failed to delete material", error: error.message });
+  }
 };
 
 // PATCH /api/materials/:id/approve
 exports.approveMaterial = async (req, res) => {
-    try {
-        const result = await approveUseCase.execute({
-            id: req.params.id,
-            status: req.body.status,
-        });
+  try {
+    const result = await approveUseCase.execute({
+      id: req.params.id,
+      status: req.body.status,
+    });
 
-        res.status(200).json(result);
-    } catch (error) {
-        const status = error.message === "Material not found" ? 404 : 400;
-        res.status(status).json({ message: "Failed to update material status", error: error.message });
-    }
+    res.status(200).json(result);
+  } catch (error) {
+    const status = error.message === "Material not found" ? 404 : 400;
+    res
+      .status(status)
+      .json({
+        message: "Failed to update material status",
+        error: error.message,
+      });
+  }
 };
 
 // GET /api/materials/pending (librarian view)
 exports.getPendingMaterials = async (req, res) => {
-    try {
-        const result = await getPendingUseCase.execute();
-        res.status(200).json(result);
-    } catch (error) {
-        res.status(500).json({ message: "Failed to retrieve pending materials", error: error.message });
-    }
+  try {
+    const result = await getPendingUseCase.execute();
+    res.status(200).json(result);
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        message: "Failed to retrieve pending materials",
+        error: error.message,
+      });
+  }
 };
-

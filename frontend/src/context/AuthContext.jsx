@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
 const AuthContext = createContext();
 
@@ -12,56 +12,44 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      fetchProfile();
+      try {
+        const decoded = jwtDecode(token);
+        // Add expiration check if needed
+        setUser(decoded);
+        localStorage.setItem("token", token);
+      } catch (err) {
+        console.error("Invalid token", err);
+        logout();
+      }
     } else {
-      setLoading(false);
+      setUser(null);
+      localStorage.removeItem("token");
     }
+    setLoading(false);
   }, [token]);
 
-  const fetchProfile = async () => {
-    try {
-      const response = await axios.get("http://localhost:8070/api/auth/profile");
-      setUser(response.data);
-    } catch (error) {
-      console.error("Failed to fetch profile:", error);
-      logout();
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const login = async (email, password) => {
-    const response = await axios.post("http://localhost:8070/api/auth/login", {
-      email,
-      password,
-    });
-    const { token, user } = response.data;
-    localStorage.setItem("token", token);
-    setToken(token);
-    setUser(user);
-    return { user, token };
-  };
-
-  const register = async (userData) => {
-    const response = await axios.post("http://localhost:8070/api/auth/register", userData);
-    const { token, user } = response.data;
-    localStorage.setItem("token", token);
-    setToken(token);
-    setUser(user);
-    return { user, token };
+  const login = (newToken) => {
+    setToken(newToken);
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
     setToken(null);
     setUser(null);
-    delete axios.defaults.headers.common["Authorization"];
+    localStorage.removeItem("token");
+  };
+
+  const value = {
+    user,
+    token,
+    loading,
+    login,
+    logout,
+    isAuthenticated: !!user,
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
-      {children}
+    <AuthContext.Provider value={value}>
+      {!loading && children}
     </AuthContext.Provider>
   );
 };

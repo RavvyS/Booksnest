@@ -7,17 +7,24 @@ const mongoose = require("mongoose");
 
 class BookRepositoryImpl extends BookRepository {
   _toEntity(doc) {
-    const categoryData = doc.categoryId && typeof doc.categoryId === 'object' && doc.categoryId._id 
-      ? { id: doc.categoryId._id.toString(), name: doc.categoryId.name, description: doc.categoryId.description }
-      : null;
+    const categoryData =
+      doc.categoryId && typeof doc.categoryId === "object" && doc.categoryId._id
+        ? {
+            id: doc.categoryId._id.toString(),
+            name: doc.categoryId.name,
+            description: doc.categoryId.description,
+          }
+        : null;
 
     return new Book({
       id: doc._id.toString(),
       title: doc.title,
       author: doc.author,
       isbn: doc.isbn,
-      categoryId: doc.categoryId ? (doc.categoryId._id ? doc.categoryId._id.toString() : doc.categoryId.toString()) : null,
-      category: categoryData,
+      type: doc.type,
+      status: doc.status,
+      uploadedBy: doc.uploadedBy ? doc.uploadedBy.toString() : null,
+      categoryId: doc.categoryId ? doc.categoryId.toString() : null,
       description: doc.description,
       filePath: doc.filePath || null,
       totalCopies: doc.totalCopies,
@@ -32,6 +39,9 @@ class BookRepositoryImpl extends BookRepository {
       title: book.title,
       author: book.author,
       isbn: book.isbn,
+      type: book.type,
+      status: "pending",
+      uploadedBy: book.uploadedBy,
       categoryId: book.categoryId || undefined,
       description: book.description,
       filePath: book.filePath || null,
@@ -42,13 +52,39 @@ class BookRepositoryImpl extends BookRepository {
     return this._toEntity(saved);
   }
 
-  async findAll(categoryId = null) {
-    let filter = {};
-    if (categoryId && mongoose.Types.ObjectId.isValid(categoryId)) {
-      filter.categoryId = new mongoose.Types.ObjectId(categoryId);
-    }
-    const books = await BookModel.find(filter).populate("categoryId").sort({ title: 1 });
+  async findAll() {
+    return await this.findAllApproved();
+  }
+
+  async findAllApproved() {
+    const books = await BookModel.find({ status: "approved" }).sort({
+      title: 1,
+    });
     return books.map((b) => this._toEntity(b));
+  }
+
+  async findAllPending() {
+    const books = await BookModel.find({ status: "pending" }).sort({
+      createdAt: -1,
+    });
+    return books.map((b) => this._toEntity(b));
+  }
+
+  async findByUploader(userId) {
+    const books = await BookModel.find({ uploadedBy: userId }).sort({
+      createdAt: -1,
+    });
+    return books.map((b) => this._toEntity(b));
+  }
+
+  async approve(id, status) {
+    const updated = await BookModel.findByIdAndUpdate(
+      id,
+      { $set: { status } },
+      { new: true, runValidators: true },
+    );
+    if (!updated) return null;
+    return this._toEntity(updated);
   }
 
   async findById(id) {
@@ -74,11 +110,10 @@ class BookRepositoryImpl extends BookRepository {
     if (bookData.filePath !== undefined) {
       updateFields.filePath = bookData.filePath;
     }
-    const updated = await BookModel.findByIdAndUpdate(
-      id,
-      updateFields,
-      { new: true, runValidators: true },
-    ).populate("categoryId");
+    const updated = await BookModel.findByIdAndUpdate(id, updateFields, {
+      new: true,
+      runValidators: true,
+    }).populate("categoryId");
     if (!updated) return null;
     return this._toEntity(updated);
   }

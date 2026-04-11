@@ -9,21 +9,54 @@ const RoleMiddleware = require("../middleware/RoleMiddleware");
 const { upload } = require("../../infrastructure/services/multerBookUpload");
 
 // Public routes
-router.get("/view", BookController.streamByToken);
-router.get("/", BookController.getAllBooks);
-router.get("/:bookId", OptionalAuthMiddleware, BookController.getBookById);
-
-// Secure read route (any authenticated user with valid borrow)
-router.get("/:bookId/read", AuthMiddleware, BookController.readBook);
-router.post("/:bookId/read-link", AuthMiddleware, BookController.generateReadLink);
-
-// Protected routes (Librarian only)
+// Protected routes (Librarian/Author)
 router.post(
   "/",
   AuthMiddleware,
-  RoleMiddleware("librarian"),
+  RoleMiddleware("author", "librarian"),
   upload.single("file"),
   BookController.createBook,
+);
+
+router.get(
+  "/my-books",
+  AuthMiddleware,
+  RoleMiddleware("author"),
+  BookController.getMyBooks,
+);
+
+router.get(
+  "/pending",
+  AuthMiddleware,
+  RoleMiddleware("librarian"),
+  BookController.getPendingBooks,
+);
+
+// Public routes
+router.get("/", BookController.getAllBooks);
+router.get("/:bookId", BookController.getBookById);
+router.get("/external/free", BookController.getFreeExternalBooks);
+router.get(
+  "/search-external",
+  AuthMiddleware,
+  RoleMiddleware("author", "librarian"),
+  BookController.searchExternal,
+);
+
+// Secure read route (any authenticated user with valid borrow)
+router.get("/:bookId/read", AuthMiddleware, BookController.readBook);
+router.post(
+  "/:bookId/read-link",
+  AuthMiddleware,
+  BookController.generateReadLink,
+);
+
+// Librarian only routes
+router.patch(
+  "/:bookId/approve",
+  AuthMiddleware,
+  RoleMiddleware("librarian"),
+  BookController.approveBook,
 );
 
 router.put(

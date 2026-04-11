@@ -1,41 +1,48 @@
 import React, { useEffect, useState } from "react";
-import { styled } from '@mui/material/styles';
-import InputBase from '@mui/material/InputBase';
-import SearchIcon from '@mui/icons-material/Search';
-import { Card, CardContent, CardMedia, Typography, Grid, Box, Chip } from '@mui/material';
+import { styled } from "@mui/material/styles";
+import InputBase from "@mui/material/InputBase";
+import SearchIcon from "@mui/icons-material/Search";
+import {
+  Card,
+  CardContent,
+  CardMedia,
+  Typography,
+  Grid,
+  Box,
+  Chip,
+} from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import bookService from "../../services/bookService";
 import categoryService from "../../services/categoryService";
 
-
 // Search bar styles
-const Search = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: '2rem',
-  border: '2px solid rgb(12, 57, 155)',
-  backgroundColor: '#fff',
-  boxShadow: '0px 2px 4px rgba(20, 101, 194, 0.1)',
-  display: 'flex',
-  alignItems: 'center',
+const Search = styled("div")(({ theme }) => ({
+  position: "relative",
+  borderRadius: "2rem",
+  border: "2px solid rgb(12, 57, 155)",
+  backgroundColor: "#fff",
+  boxShadow: "0px 2px 4px rgba(20, 101, 194, 0.1)",
+  display: "flex",
+  alignItems: "center",
   padding: theme.spacing(0, 2),
-  width: '20rem',
-  height: '2rem',
+  width: "20rem",
+  height: "2rem",
 }));
 
-const SearchIconWrapper = styled('div')(({ theme }) => ({
+const SearchIconWrapper = styled("div")(({ theme }) => ({
   marginRight: theme.spacing(1),
-  color: 'rgb(12, 57, 155)',
-  display: 'flex',
-  alignItems: 'center',
+  color: "rgb(12, 57, 155)",
+  display: "flex",
+  alignItems: "center",
 }));
 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: '#7f7f7f',
-  fontSize: '0.9rem',
+  color: "#7f7f7f",
+  fontSize: "0.9rem",
   flex: 1,
-  '& .MuiInputBase-input': {
-    width: '100%',
-    height: '100%',
+  "& .MuiInputBase-input": {
+    width: "100%",
+    height: "100%",
     padding: 0,
   },
 }));
@@ -61,7 +68,6 @@ function MainHome() {
       console.error("Error fetching data:", error);
     }
   };
- 
 
   const handleBookClick = (bookId) => {
     window.location.href = `/bookpreview/${bookId}`;
@@ -75,7 +81,10 @@ function MainHome() {
           <SearchIconWrapper>
             <SearchIcon />
           </SearchIconWrapper>
-          <StyledInputBase placeholder="Search by book name, Author, Subject" inputProps={{ 'aria-label': 'search' }} />
+          <StyledInputBase
+            placeholder="Search by book name, Author, Subject"
+            inputProps={{ "aria-label": "search" }}
+          />
         </Search>
         <style>
           {`
@@ -104,15 +113,15 @@ function MainHome() {
       <div className="categories-section">
         <h2 className="section-title">Browse by Category</h2>
         <div className="categories-container">
-          <div 
+          <div
             className="category-chip all-chip"
-            onClick={() => navigate('/books')}
+            onClick={() => navigate("/books")}
           >
             All
           </div>
           {categories.map((cat) => (
-            <div 
-              key={cat.id || cat._id} 
+            <div
+              key={cat.id || cat._id}
               className="category-chip"
               onClick={() => navigate(`/books?category=${cat.id || cat._id}`)}
             >
@@ -220,69 +229,81 @@ function MainHome() {
       </div>
 
       {/* Cards Section */}
-      <Grid container spacing={2} style={{ maxWidth: '1680px', margin: '1rem auto', gap:'70px' , marginTop:"30px"}}>
-      {books.map((book, index) => (
-        <div key={book._id}>
-          <Grid item xs={6} sm={4} md={3} lg={1.714} key={index}>
-            <Card
-            onClick={() => handleBookClick(book._id)}
-              sx={{
-                height: '400px',
-                width: '250px',
-                padding: '10px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                cursor: 'pointer',
-                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                '&:hover': {
-                  backgroundColor: 'rgba(9, 96, 177, 0.11)',  
-                  boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)', 
-                  transform: 'scale(1.05)',  
-                }
-
-                
-              }}
-              className="card"
-            >
-              <CardMedia
-                component="img"
-                style={{
-                  height: '180px',
-                  width: 'auto',
-                  margin: '0 auto',
-                  paddingTop: '10px',
+      <Grid
+        container
+        spacing={2}
+        style={{
+          maxWidth: "1680px",
+          margin: "1rem auto",
+          gap: "70px",
+          marginTop: "30px",
+        }}
+      >
+        {books.map((book, index) => (
+          <div key={book._id}>
+            <Grid item xs={6} sm={4} md={3} lg={1.714} key={index}>
+              <Card
+                onClick={() => handleBookClick(book._id)}
+                sx={{
+                  height: "400px",
+                  width: "250px",
+                  padding: "10px",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  cursor: "pointer",
+                  transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                  "&:hover": {
+                    backgroundColor: "rgba(9, 96, 177, 0.11)",
+                    boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
+                    transform: "scale(1.05)",
+                  },
                 }}
-                image={book.coverImageURL || "/default-image.png"}
-                alt={`Cover of ${book.title}`}
-              />
-              <CardContent style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                <Typography
-                  gutterBottom
-                  variant="h6"
-                  component="div"
-                  style={{ fontWeight: 'bold', marginBottom: '10px' }}
+                className="card"
+              >
+                <CardMedia
+                  component="img"
+                  style={{
+                    height: "180px",
+                    width: "auto",
+                    margin: "0 auto",
+                    paddingTop: "10px",
+                  }}
+                  image={book.coverImageURL || "/default-image.png"}
+                  alt={`Cover of ${book.title}`}
+                />
+                <CardContent
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                  }}
                 >
-                   {book.title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {book.author}
-                </Typography>
-              </CardContent>
-              <div style={{ textAlign: 'left', padding: '10px'  }}>
-                <span style={{ fontWeight: 'bold' }}>{book.category?.name || book.genre || "General"}</span>
-                <span style={{ fontWeight: 'normal', marginLeft:'70px' }}>{book.publishedYear}</span>
-              </div>
-            </Card>
-          </Grid>
-          
+                  <Typography
+                    gutterBottom
+                    variant="h6"
+                    component="div"
+                    style={{ fontWeight: "bold", marginBottom: "10px" }}
+                  >
+                    {book.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {book.author}
+                  </Typography>
+                </CardContent>
+                <div style={{ textAlign: "left", padding: "10px" }}>
+                  <span style={{ fontWeight: "bold" }}>
+                    {book.category?.name || book.genre || "General"}
+                  </span>
+                  <span style={{ fontWeight: "normal", marginLeft: "70px" }}>
+                    {book.publishedYear}
+                  </span>
+                </div>
+              </Card>
+            </Grid>
           </div>
         ))}
       </Grid>
-
-      
-
-      
     </>
   );
 }

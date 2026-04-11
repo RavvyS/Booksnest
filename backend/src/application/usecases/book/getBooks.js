@@ -1,4 +1,3 @@
-
 //  Implements a single business use case with domain-focused rules.
 
 class GetBooks {
@@ -6,8 +5,19 @@ class GetBooks {
     this.bookRepository = bookRepository;
   }
 
-  async execute(categoryId = null) {
-    return await this.bookRepository.findAll(categoryId);
+  async execute() {
+    return await this.bookRepository.findAllApproved();
+  }
+
+  async executePending() {
+    return await this.bookRepository.findAllPending();
+  }
+
+  async executeByUploader(userId) {
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
+    return await this.bookRepository.findByUploader(userId);
   }
 
   async executeById(id) {
