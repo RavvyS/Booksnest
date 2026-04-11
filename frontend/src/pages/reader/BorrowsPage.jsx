@@ -16,6 +16,8 @@ import {
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import CancelIcon from '@mui/icons-material/Cancel';
 import borrowsApi from '../../api/borrowsApi';
+import booksApi from '../../api/booksApi';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 
 const BorrowsPage = () => {
   const [borrows, setBorrows] = useState([]);
@@ -60,6 +62,18 @@ const BorrowsPage = () => {
     }
   };
 
+  const handleRead = async (bookId) => {
+    try {
+      const blob = await booksApi.read(bookId);
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    } catch (err) {
+      setMessage({ text: 'Failed to open book PDF. Make sure borrow is active.', type: 'error' });
+    }
+  };
+
+  const activeBorrows = borrows.filter(b => !b.returned);
+
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
 
   return (
@@ -80,32 +94,49 @@ const BorrowsPage = () => {
       {/* Active Borrows */}
       <Box sx={{ mb: 8 }}>
         <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          Active Borrows <Chip label={borrows.length} size="small" color="primary" />
+          Active Borrows <Chip label={activeBorrows.length} size="small" color="primary" />
         </Typography>
         <Divider sx={{ mb: 3 }} />
-        {borrows.length > 0 ? (
+        {activeBorrows.length > 0 ? (
           <Grid container spacing={3}>
-            {borrows.map((borrow) => (
-              <Grid item key={borrow._id} xs={12} md={6}>
-                <Card elevation={2} sx={{ borderRadius: 2 }}>
-                  <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Box>
+            {activeBorrows.map((borrow) => (
+              <Grid item key={borrow.id} xs={12} md={6}>
+                <Card elevation={2} sx={{ borderRadius: 2, borderLeft: '4px solid #0653B8' }}>
+                  <CardContent sx={{ display: 'flex', direction: 'column', gap: 2 }}>
+                    <Box sx={{ flexGrow: 1 }}>
                       <Typography variant="h6" fontWeight="bold">{borrow.bookTitle}</Typography>
-                      <Typography variant="body2" color="textSecondary">
-                        Borrowed on: {new Date(borrow.borrowDate).toLocaleDateString()}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: 'error.main', fontWeight: 'bold', display: 'block', mt: 1 }}>
-                        Due Date: {new Date(new Date(borrow.borrowDate).getTime() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString()}
-                      </Typography>
+                      <Typography variant="body2" color="textSecondary" gutterBottom>By {borrow.bookAuthor}</Typography>
+                      <Divider sx={{ my: 1.5, opacity: 0.5 }} />
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                          Borrowed: {new Date(borrow.borrowedAt).toLocaleDateString()}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: 'error.main', fontWeight: 'bold' }}>
+                          Access Until: {new Date(borrow.dueDate).toLocaleString()}
+                        </Typography>
+                      </Box>
                     </Box>
-                    <Button 
-                      variant="outlined" 
-                      color="error"
-                      startIcon={<ExitToAppIcon />}
-                      onClick={() => handleReturn(borrow.bookId)}
-                    >
-                      Return
-                    </Button>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Button 
+                        variant="contained" 
+                        size="small"
+                        startIcon={<MenuBookIcon />}
+                        onClick={() => handleRead(borrow.bookId)}
+                        disabled={!borrow.filePath}
+                        title={!borrow.filePath ? "No PDF available for this book" : ""}
+                      >
+                        Read
+                      </Button>
+                      <Button 
+                        variant="outlined" 
+                        color="error"
+                        size="small"
+                        startIcon={<ExitToAppIcon />}
+                        onClick={() => handleReturn(borrow.bookId)}
+                      >
+                        Return
+                      </Button>
+                    </Box>
                   </CardContent>
                 </Card>
               </Grid>
@@ -127,13 +158,13 @@ const BorrowsPage = () => {
         {queueRequests.length > 0 ? (
           <Grid container spacing={3}>
             {queueRequests.map((request) => (
-              <Grid item key={request._id} xs={12} md={6}>
+              <Grid item key={request.id} xs={12} md={6}>
                 <Card elevation={2} sx={{ borderRadius: 2, borderLeft: '4px solid #ed6c02' }}>
                   <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Box>
                       <Typography variant="h6" fontWeight="bold">{request.bookTitle}</Typography>
                       <Typography variant="body2" color="textSecondary">
-                        Requested on: {new Date(request.requestDate).toLocaleDateString()}
+                        Requested: {new Date(request.createdAt).toLocaleDateString()}
                       </Typography>
                       <Chip 
                         label={`Status: ${request.status || 'Pending'}`} 
@@ -146,7 +177,7 @@ const BorrowsPage = () => {
                       variant="text" 
                       color="inherit"
                       startIcon={<CancelIcon />}
-                      onClick={() => handleCancelQueue(request._id)}
+                      onClick={() => handleCancelQueue(request.id)}
                     >
                       Cancel
                     </Button>

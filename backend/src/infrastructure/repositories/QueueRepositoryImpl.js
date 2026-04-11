@@ -1,5 +1,6 @@
 //  Implements persistence operations against MongoDB models.
 
+const mongoose = require("mongoose");
 const QueueRepository = require("../../domain/repositories/QueueRepository");
 const QueueRequestModel = require("../database/schemas/QueueRequestSchema");
 const QueueRequest = require("../../domain/entities/QueueRequest");
@@ -43,10 +44,43 @@ class QueueRepositoryImpl extends QueueRepository {
   }
 
   async findByUser(userId) {
-    const requests = await QueueRequestModel.find({ userId }).sort({
-      createdAt: -1,
-    });
-    return requests.map((req) => this._toEntity(req));
+    // Aggregation to join with books collection for title/author
+    const requests = await QueueRequestModel.aggregate([
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      { $sort: { createdAt: -1 } },
+      {
+        $lookup: {
+          from: "books",
+          localField: "bookId",
+          foreignField: "_id",
+          as: "bookDetails",
+        },
+      },
+      { $unwind: "$bookDetails" },
+      {
+        $project: {
+          _id: 1,
+          userId: 1,
+          bookId: 1,
+          note: 1,
+          status: 1,
+          fulfilledBorrowId: 1,
+          cancellationReason: 1,
+          cancelledAt: 1,
+          fulfilledAt: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          bookTitle: "$bookDetails.title",
+          bookAuthor: "$bookDetails.author",
+        },
+      },
+    ]);
+
+    return requests.map((req) => ({
+      ...this._toEntity(req),
+      bookTitle: req.bookTitle,
+      bookAuthor: req.bookAuthor,
+    }));
   }
 
   async findActiveRequestByUserAndBook(userId, bookId) {

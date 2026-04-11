@@ -20,6 +20,7 @@ import {
   DialogActions,
   TextField,
   Grid,
+  MenuItem,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -37,9 +38,11 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import booksApi from '../../api/booksApi';
+import categoriesApi from '../../api/categoriesApi';
 
 const ManageBooksPage = () => {
   const [books, setBooks] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -50,6 +53,7 @@ const ManageBooksPage = () => {
     description: '',
     totalCopies: 1,
     availableCopies: 1,
+    categoryId: '',
   });
   const [file, setFile] = useState(null);
   const [searchText, setSearchText] = useState('');
@@ -98,13 +102,23 @@ const ManageBooksPage = () => {
 
   useEffect(() => {
     fetchBooks();
+    fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const data = await categoriesApi.getAll();
+      setCategories(data);
+    } catch (err) {
+      console.error('Failed to fetch categories', err);
+    }
+  };
 
   const handleOpen = (book = null) => {
     setSearchResults([]);
     setSearchText('');
     if (book) {
-      setEditId(book._id);
+      setEditId(book.id);
       setFormData({
         title: book.title,
         author: book.author,
@@ -112,6 +126,7 @@ const ManageBooksPage = () => {
         description: book.description || '',
         totalCopies: book.totalCopies,
         availableCopies: book.availableCopies,
+        categoryId: book.categoryId || '',
       });
     } else {
       setEditId(null);
@@ -122,6 +137,7 @@ const ManageBooksPage = () => {
         description: '',
         totalCopies: 1,
         availableCopies: 1,
+        categoryId: '',
       });
     }
     setOpen(true);
@@ -200,7 +216,7 @@ const ManageBooksPage = () => {
           </TableHead>
           <TableBody>
             {books.map((b) => (
-              <TableRow key={b._id}>
+              <TableRow key={b.id}>
                 <TableCell>{b.title}</TableCell>
                 <TableCell>{b.author}</TableCell>
                 <TableCell>{b.isbn}</TableCell>
@@ -213,7 +229,7 @@ const ManageBooksPage = () => {
                   <IconButton size="small" color="primary" onClick={() => handleOpen(b)}>
                     <EditIcon />
                   </IconButton>
-                  <IconButton size="small" color="error" onClick={() => handleDelete(b._id)}>
+                  <IconButton size="small" color="error" onClick={() => handleDelete(b.id)}>
                     <DeleteIcon />
                   </IconButton>
                 </TableCell>
@@ -306,6 +322,23 @@ const ManageBooksPage = () => {
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField fullWidth type="number" label="Available Now" name="availableCopies" required value={formData.availableCopies} onChange={handleChange} />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  select
+                  label="Category"
+                  name="categoryId"
+                  value={formData.categoryId}
+                  onChange={handleChange}
+                >
+                  <MenuItem value="">None</MenuItem>
+                  {categories.map((cat) => (
+                    <MenuItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Grid>
               {!editId && (
                 <Grid item xs={12}>

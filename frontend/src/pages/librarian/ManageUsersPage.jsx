@@ -92,7 +92,7 @@ const ManageUsersPage = () => {
               </TableRow>
             ) : (
               pendingUsers.map((user) => (
-                <TableRow key={user._id} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
+                <TableRow key={user.id} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
                   <TableCell fontWeight="medium">{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
@@ -112,7 +112,7 @@ const ManageUsersPage = () => {
                       color="success"
                       startIcon={<CheckCircleIcon />}
                       size="small"
-                      onClick={() => handleApprove(user._id)}
+                      onClick={() => handleApprove(user.id)}
                     >
                       Approve
                     </Button>

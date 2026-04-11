@@ -70,6 +70,9 @@ exports.returnBook = async (req, res) => {
 
 exports.getMyBorrows = async (req, res) => {
   try {
+    // Check and return any expired books before fetching history
+    await borrowRepository.returnExpiredBooks();
+    
     const result = await historyUseCase.execute(req.user.id);
     res.json(result);
   } catch (error) {

@@ -1,5 +1,7 @@
 //  Implements persistence operations against MongoDB models.
 
+const path = require("path");
+const mongoose = require("mongoose");
 const BookRepository = require("../../domain/repositories/BookRepository");
 const BookModel = require("../database/schemas/BookSchema");
 const Book = require("../../domain/entities/Book");
@@ -34,7 +36,9 @@ class BookRepositoryImpl extends BookRepository {
       uploadedBy: book.uploadedBy,
       categoryId: book.categoryId || undefined,
       description: book.description,
-      filePath: book.filePath || null,
+      filePath: (book.filePath && book.filePath.includes("uploads")) 
+        ? "uploads/" + book.filePath.split("uploads")[1].replace(/\\/g, "/").replace(/^\//, "")
+        : (book.filePath || null),
       totalCopies: book.totalCopies,
       availableCopies: book.totalCopies,
     });
@@ -92,7 +96,10 @@ class BookRepositoryImpl extends BookRepository {
       description: bookData.description,
     };
     if (bookData.filePath !== undefined) {
-      updateFields.filePath = bookData.filePath;
+      const pathValue = bookData.filePath;
+      updateFields.filePath = (pathValue && pathValue.includes("uploads"))
+        ? "uploads/" + pathValue.split("uploads")[1].replace(/\\/g, "/").replace(/^\//, "")
+        : (pathValue || null);
     }
     const updated = await BookModel.findByIdAndUpdate(
       id,
@@ -104,13 +111,17 @@ class BookRepositoryImpl extends BookRepository {
   }
 
   /**
-   * Returns the raw filePath for a book (for secure streaming).
-   * Does NOT return a domain entity — only the path.
+   * Returns the absolute filePath for a book (for secure streaming).
    */
   async getFilePath(bookId) {
     const book = await BookModel.findById(bookId).select("filePath");
-    if (!book) return null;
-    return book.filePath || null;
+    if (!book || !book.filePath) return null;
+
+    // Resolve relative paths to absolute ones
+    if (!path.isAbsolute(book.filePath)) {
+      return path.join(process.cwd(), book.filePath);
+    }
+    return book.filePath;
   }
 
   async delete(id) {

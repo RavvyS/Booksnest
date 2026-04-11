@@ -118,6 +118,8 @@ const CommentSection = ({ materialId, bookId }) => {
                 {comment.userName?.[0] || 'U'}
               </Avatar>
               <ListItemText
+                primaryTypographyProps={{ component: 'div' }}
+                secondaryTypographyProps={{ component: 'div' }}
                 primary={
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography variant="subtitle2" fontWeight="bold">

@@ -72,12 +72,9 @@ const BookDetailPage = () => {
 
   const handleRead = async () => {
     try {
-      const data = await booksApi.read(id);
-      if (data.filePath) {
-        window.open(data.filePath, '_blank');
-      } else {
-        setMessage({ text: 'Reading content not available.', type: 'warning' });
-      }
+      const blob = await booksApi.read(id);
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank');
     } catch (err) {
       setMessage({ text: 'Need an active borrow to read this book.', type: 'error' });
     }
@@ -150,8 +147,9 @@ const BookDetailPage = () => {
               size="large" 
               startIcon={<MenuBookIcon />}
               onClick={handleRead}
-              disabled={!isAuthenticated}
+              disabled={!isAuthenticated || !book.filePath}
               sx={{ px: 4 }}
+              title={!book.filePath ? "No PDF available for this book" : ""}
             >
               Read Now
             </Button>
