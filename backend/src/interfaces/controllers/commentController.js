@@ -19,6 +19,7 @@ exports.createComment = async (req, res) => {
       content: req.body.content,
       userId: req.user.id,
       materialId: req.body.materialId,
+      bookId: req.body.bookId,
     });
 
     res.status(201).json(result);

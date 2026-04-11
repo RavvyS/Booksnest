@@ -39,13 +39,27 @@ const ForgotPasswordPage = () => {
       <Box sx={{ mt: 8, mb: 4 }}>
         <Paper elevation={6} sx={{ p: 4, borderRadius: 2 }}>
           <Typography variant="h4" component="h1" gutterBottom align="center" fontWeight="bold" color="primary">
-            Forgot Password
+            Reset Password
           </Typography>
           <Typography variant="body1" align="center" color="textSecondary" sx={{ mb: 3 }}>
-            Enter your email address and we'll send you a new system-generated password.
+            Enter your email and we will send you a <strong>system-generated temporary password</strong> to access your account.
           </Typography>
 
-          {message && <Alert severity="success" sx={{ mb: 3 }}>{message}</Alert>}
+          {message && (
+            <Alert 
+              severity="success" 
+              sx={{ 
+                mb: 3, 
+                '& .MuiAlert-message': { width: '100%' }
+              }}
+            >
+              <Typography variant="subtitle2" fontWeight="bold">New Password Sent!</Typography>
+              <Typography variant="body2">{message}</Typography>
+              <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
+                Please check your inbox (and spam folder) for your temporary credentials.
+              </Typography>
+            </Alert>
+          )}
           {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
           {!message && (
@@ -53,12 +67,14 @@ const ForgotPasswordPage = () => {
               <TextField
                 fullWidth
                 label="Email Address"
+                placeholder="you@example.com"
                 type="email"
                 variant="outlined"
                 margin="normal"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
               />
               <Button
                 fullWidth
@@ -66,9 +82,17 @@ const ForgotPasswordPage = () => {
                 variant="contained"
                 size="large"
                 disabled={loading}
-                sx={{ mt: 3, mb: 2, py: 1.5, fontSize: '1rem' }}
+                sx={{ 
+                  mt: 3, 
+                  mb: 2, 
+                  py: 1.5, 
+                  fontSize: '1rem', 
+                  borderRadius: 3,
+                  textTransform: 'none',
+                  fontWeight: 'bold'
+                }}
               >
-                {loading ? <CircularProgress size={24} color="inherit" /> : 'Send New Password'}
+                {loading ? <CircularProgress size={24} color="inherit" /> : 'Email Recovery Password'}
               </Button>
             </form>
           )}
