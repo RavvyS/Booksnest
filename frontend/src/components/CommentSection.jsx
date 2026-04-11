@@ -16,6 +16,20 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { useAuth } from '../context/AuthContext';
 import commentsApi from '../api/commentsApi';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Slide,
+} from '@mui/material';
+import GavelIcon from '@mui/icons-material/Gavel';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 
 const CommentSection = ({ materialId, bookId }) => {
   const { user, isAuthenticated } = useAuth();
@@ -24,6 +38,7 @@ const CommentSection = ({ materialId, bookId }) => {
   const [newComment, setNewComment] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editContent, setEditContent] = useState('');
+  const [openWarning, setOpenWarning] = useState(false);
 
   const fetchComments = async () => {
     try {
@@ -40,10 +55,14 @@ const CommentSection = ({ materialId, bookId }) => {
     fetchComments();
   }, [materialId, bookId]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
+    setOpenWarning(true);
+  };
 
+  const handleConfirmPost = async () => {
+    setOpenWarning(false);
     try {
       await commentsApi.create({
         content: newComment,
@@ -115,13 +134,13 @@ const CommentSection = ({ materialId, bookId }) => {
           <React.Fragment key={comment._id}>
             <ListItem alignItems="flex-start" sx={{ px: 0 }}>
               <Avatar sx={{ mr: 2, bgcolor: 'primary.main' }}>
-                {comment.userName?.[0] || 'U'}
+                {comment.userId?.name?.[0] || 'U'}
               </Avatar>
               <ListItemText
                 primary={
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography variant="subtitle2" fontWeight="bold">
-                      {comment.userName}
+                      {comment.userId?.name || 'Unknown User'}
                     </Typography>
                     <Typography variant="caption" color="textSecondary">
                       {new Date(comment.createdAt).toLocaleDateString()}
@@ -148,11 +167,13 @@ const CommentSection = ({ materialId, bookId }) => {
                       </Typography>
                     )}
                     
-                    {(user?.id === comment.userId || user?.role === 'librarian') && (
+                    {(user?.id === comment.userId?._id || user?.role === 'librarian') && (
                       <Box sx={{ mt: 1 }}>
-                        <IconButton size="small" onClick={() => { setEditingId(comment._id); setEditContent(comment.content); }}>
-                          <EditIcon fontSize="inherit" />
-                        </IconButton>
+                        {user?.id === comment.userId?._id && (
+                          <IconButton size="small" onClick={() => { setEditingId(comment._id); setEditContent(comment.content); }}>
+                            <EditIcon fontSize="inherit" />
+                          </IconButton>
+                        )}
                         <IconButton size="small" color="error" onClick={() => handleDelete(comment._id)}>
                           <DeleteIcon fontSize="inherit" />
                         </IconButton>
@@ -166,6 +187,59 @@ const CommentSection = ({ materialId, bookId }) => {
           </React.Fragment>
         ))}
       </List>
+
+      {/* Community Policy Warning Dialog */}
+      <Dialog
+        open={openWarning}
+        TransitionComponent={Transition}
+        keepMounted
+        onClose={() => setOpenWarning(false)}
+        aria-describedby="community-policy-warning"
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            p: 1,
+            maxWidth: '450px'
+          }
+        }}
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: 'error.main', fontWeight: 'bold' }}>
+          <WarningAmberIcon color="error" />
+          Community Policy Warning
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="community-policy-warning" sx={{ color: 'text.primary', mb: 2 }}>
+            By posting this comment, you agree to comply with our <strong>Community Violation Policy</strong>.
+          </DialogContentText>
+          <Box sx={{ bgcolor: 'rgba(211, 47, 47, 0.05)', p: 2, borderRadius: 2, border: '1px solid rgba(211, 47, 47, 0.2)' }}>
+            <Typography variant="body2" color="error.dark" sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+              <GavelIcon sx={{ fontSize: 20, mt: 0.3 }} />
+              <span>
+                Please maintain respectful communication. Any violation of our policies may result in 
+                <strong> temporary or permanent account suspension (Permanent Ban)</strong>.
+              </span>
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2.5, pt: 0 }}>
+          <Button onClick={() => setOpenWarning(false)} color="inherit" sx={{ fontWeight: 'bold' }}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleConfirmPost} 
+            variant="contained" 
+            color="error"
+            sx={{ 
+              fontWeight: 'bold',
+              px: 3,
+              borderRadius: 2,
+              boxShadow: '0 4px 12px rgba(211, 47, 47, 0.3)'
+            }}
+          >
+            I Understand & Post
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

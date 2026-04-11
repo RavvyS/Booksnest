@@ -62,7 +62,14 @@ const LoginPage = () => {
               severity={error.includes('pending') ? 'warning' : 'error'} 
               sx={{ mb: 3, borderRadius: 2 }}
             >
-              {error}
+              <Typography variant="body2" fontWeight="bold">
+                {error.includes('pending') ? 'Account Pending Approval' : 'Login Failed'}
+              </Typography>
+              <Typography variant="body2">
+                {error.includes('pending') 
+                  ? 'Your account is currently being reviewed by a librarian. This typically takes about 24 hours. You will receive an email once it is approved.' 
+                  : error}
+              </Typography>
             </Alert>
           )}
 

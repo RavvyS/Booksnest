@@ -65,76 +65,110 @@ const RegisterPage = () => {
           </Typography>
 
           {error === 'success-pending' ? (
-            <Alert severity="success" sx={{ mb: 3 }}>
-              Registration successful! Your account is pending librarian approval. You will receive an email once it is approved.
+            <Alert 
+              severity="success" 
+              sx={{ 
+                mb: 3, 
+                borderRadius: 2,
+                '& .MuiAlert-message': { width: '100%' }
+              }}
+            >
+              <Typography variant="subtitle2" fontWeight="bold">Registration Received!</Typography>
+              <Typography variant="body2">
+                Thank you for joining BookNest. Your account is now <strong>pending librarian approval</strong>.
+              </Typography>
+              <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
+                We typically review and approve registrations within <strong>24 hours</strong>. You will receive an email once you're ready to log in.
+              </Typography>
             </Alert>
           ) : error && (
-            <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>
+            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>
           )}
 
-          <form onSubmit={handleSubmit}>
-            <TextField
-              fullWidth
-              label="Full Name"
-              name="name"
-              variant="outlined"
-              margin="normal"
-              required
-              value={formData.name}
-              onChange={handleChange}
-            />
-            <TextField
-              fullWidth
-              label="Email Address"
-              name="email"
-              type="email"
-              variant="outlined"
-              margin="normal"
-              required
-              value={formData.email}
-              onChange={handleChange}
-            />
-            <TextField
-              fullWidth
-              label="Password"
-              name="password"
-              type="password"
-              variant="outlined"
-              margin="normal"
-              required
-              value={formData.password}
-              onChange={handleChange}
-            />
-            <FormControl fullWidth variant="outlined" margin="normal" required>
-              <InputLabel>User Role</InputLabel>
-              <Select
-                name="role"
-                value={formData.role}
+          {!error || error !== 'success-pending' ? (
+            <form onSubmit={handleSubmit}>
+              <TextField
+                fullWidth
+                label="Full Name"
+                name="name"
+                variant="outlined"
+                margin="normal"
+                required
+                value={formData.name}
                 onChange={handleChange}
-                label="User Role"
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+              />
+              <TextField
+                fullWidth
+                label="Email Address"
+                name="email"
+                type="email"
+                variant="outlined"
+                margin="normal"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+              />
+              <TextField
+                fullWidth
+                label="Password"
+                name="password"
+                type="password"
+                variant="outlined"
+                margin="normal"
+                required
+                value={formData.password}
+                onChange={handleChange}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+              />
+              <FormControl fullWidth variant="outlined" margin="normal" required sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}>
+                <InputLabel>User Role</InputLabel>
+                <Select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  label="User Role"
+                >
+                  <MenuItem value="reader">Reader / Student</MenuItem>
+                  <MenuItem value="author">Author / Educator</MenuItem>
+                  <MenuItem value="librarian">Librarian / Admin</MenuItem>
+                </Select>
+              </FormControl>
+
+              <Box sx={{ mt: 2, mb: 1, p: 2, bgcolor: 'rgba(4, 58, 130, 0.04)', borderRadius: 2, border: '1px dashed rgba(4, 58, 130, 0.2)' }}>
+                <Typography variant="caption" color="textSecondary" display="block" align="center">
+                  <strong>Note:</strong> All new accounts (except Librarians) require manual approval. 
+                  Approval usually takes about <strong>24 hours</strong>.
+                </Typography>
+              </Box>
+
+              <Button
+                fullWidth
+                type="submit"
+                variant="contained"
+                size="large"
+                disabled={loading}
+                sx={{ 
+                  mt: 2, 
+                  mb: 2, 
+                  py: 1.5, 
+                  fontSize: '1.1rem', 
+                  borderRadius: 3,
+                  textTransform: 'none',
+                  fontWeight: 'bold',
+                  boxShadow: '0 4px 12px rgba(4, 58, 130, 0.2)'
+                }}
               >
-                <MenuItem value="reader">Reader / Student</MenuItem>
-                <MenuItem value="author">Author / Educator</MenuItem>
-                <MenuItem value="librarian">Librarian / Admin</MenuItem>
-              </Select>
-            </FormControl>
+                {loading ? <CircularProgress size={24} color="inherit" /> : 'Register Account'}
+              </Button>
+            </form>
+          ) : null}
 
-            <Button
-              fullWidth
-              type="submit"
-              variant="contained"
-              size="large"
-              disabled={loading}
-              sx={{ mt: 3, mb: 2, py: 1.5, fontSize: '1rem' }}
-            >
-              {loading ? <CircularProgress size={24} color="inherit" /> : 'Register'}
-            </Button>
-          </form>
-
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
+          <Box sx={{ mt: error === 'success-pending' ? 0 : 2, textAlign: 'center' }}>
             <Typography variant="body2" color="textSecondary">
               Already have an account?{' '}
-              <Button component={Link} to="/login" color="primary" sx={{ fontWeight: 'bold' }}>
+              <Button component={Link} to="/login" color="primary" sx={{ fontWeight: 'bold', textTransform: 'none' }}>
                 Login Here
               </Button>
             </Typography>

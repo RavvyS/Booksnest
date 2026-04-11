@@ -17,7 +17,8 @@ class UpdateComment {
       throw new Error("Comment not found");
     }
 
-    const isOwner = existingComment.userId.toString() === user.id;
+    const existingUserId = existingComment.userId._id ? existingComment.userId._id.toString() : existingComment.userId.toString();
+    const isOwner = existingUserId === user.id;
     const isLibrarian = user.role === "librarian";
 
     if (!isOwner && !isLibrarian) {

@@ -2,16 +2,24 @@ const nodemailer = require("nodemailer");
 
 class EmailService {
   constructor() {
-    this.transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    this.transporter = null;
+  }
+
+  getTransporter() {
+    if (!this.transporter) {
+      this.transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+    }
+    return this.transporter;
   }
 
   async sendApprovalEmail(to, name) {
+    const transporter = this.getTransporter();
     const mailOptions = {
       from: process.env.EMAIL_FROM,
       to,
@@ -36,7 +44,7 @@ class EmailService {
     };
 
     try {
-      await this.transporter.sendMail(mailOptions);
+      await transporter.sendMail(mailOptions);
       console.log(`Approval email sent to ${to}`);
     } catch (error) {
       console.error("Error sending approval email:", error);
@@ -44,6 +52,7 @@ class EmailService {
   }
 
   async sendPasswordResetEmail(to, name, newPassword) {
+    const transporter = this.getTransporter();
     const mailOptions = {
       from: process.env.EMAIL_FROM,
       to,
@@ -73,7 +82,7 @@ class EmailService {
     };
 
     try {
-      await this.transporter.sendMail(mailOptions);
+      await transporter.sendMail(mailOptions);
       console.log(`Password reset email sent to ${to}`);
     } catch (error) {
       console.error("Error sending password reset email:", error);
