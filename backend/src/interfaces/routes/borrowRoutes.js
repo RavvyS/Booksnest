@@ -24,6 +24,12 @@ router.get(
   RoleMiddleware("reader"),
   BorrowController.getMyQueueRequests,
 );
+router.get(
+  "/queue/book/:bookId/status",
+  AuthMiddleware,
+  RoleMiddleware("reader"),
+  BorrowController.getQueueStatus,
+);
 router.put(
   "/queue/:requestId",
   AuthMiddleware,
@@ -35,6 +41,20 @@ router.delete(
   AuthMiddleware,
   RoleMiddleware("reader"),
   BorrowController.cancelQueueRequest,
+);
+
+// Librarian management routes
+router.get(
+  "/queue/book/:bookId",
+  AuthMiddleware,
+  RoleMiddleware("librarian"),
+  BorrowController.getBookQueue,
+);
+router.delete(
+  "/queue/admin/:requestId",
+  AuthMiddleware,
+  RoleMiddleware("librarian"),
+  BorrowController.librarianCancelQueue,
 );
 
 module.exports = router;

@@ -10,6 +10,9 @@ const CreateQueueRequest = require("../../application/usecases/queue/CreateQueue
 const UpdateQueueRequest = require("../../application/usecases/queue/UpdateQueueRequest");
 const CancelQueueRequest = require("../../application/usecases/queue/CancelQueueRequest");
 const GetMyQueueRequests = require("../../application/usecases/queue/GetMyQueueRequests");
+const GetBookQueue = require("../../application/usecases/queue/GetBookQueue");
+const LibrarianCancelQueue = require("../../application/usecases/queue/LibrarianCancelQueue");
+const GetQueueStatus = require("../../application/usecases/queue/GetQueueStatus");
 
 const bookRepository = new BookRepositoryImpl();
 const borrowRepository = new BorrowRepositoryImpl();
@@ -30,6 +33,9 @@ const createQueueUseCase = new CreateQueueRequest(
 const updateQueueUseCase = new UpdateQueueRequest(queueRepository);
 const cancelQueueUseCase = new CancelQueueRequest(queueRepository);
 const getQueueUseCase = new GetMyQueueRequests(queueRepository);
+const getBookQueueUseCase = new GetBookQueue(queueRepository);
+const adminCancelQueueUseCase = new LibrarianCancelQueue(queueRepository);
+const getQueueStatusUseCase = new GetQueueStatus(queueRepository);
 
 const ensureReaderForQueue = (req, res) => {
   if (req.user?.role !== "reader") {
@@ -141,6 +147,36 @@ exports.getMyQueueRequests = async (req, res) => {
     if (!ensureReaderForQueue(req, res)) return;
 
     const result = await getQueueUseCase.execute(req.user.id);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+exports.getBookQueue = async (req, res) => {
+  try {
+    const result = await getBookQueueUseCase.execute(req.params.bookId);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+exports.librarianCancelQueue = async (req, res) => {
+  try {
+    const result = await adminCancelQueueUseCase.execute(req.params.requestId);
+    if (!result) {
+      return res.status(404).json({ message: "Queue request not found" });
+    }
+    res.json({ message: "Queue request removed by librarian", result });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+exports.getQueueStatus = async (req, res) => {
+  try {
+    const result = await getQueueStatusUseCase.execute(req.user.id, req.params.bookId);
     res.json(result);
   } catch (error) {
     res.status(400).json({ message: error.message });

@@ -11,6 +11,7 @@ const QuickActions = () => {
 
   const actions = [
     { label: 'Manage All Books', icon: <LibraryBooksIcon />, path: '/librarian/books', color: '#0653B8' },
+    { label: 'Manage Materials', icon: <LibraryBooksIcon />, path: '/librarian/materials', color: '#F59E0B' },
     { label: 'Create Genre', icon: <CategoryIcon />, path: '/librarian/categories', color: '#10B981' },
     { label: 'Moderate Users', icon: <PeopleIcon />, path: '/librarian/users', color: '#6366F1' },
     { label: 'Pending Review', icon: <AddIcon />, path: '/librarian/pending', color: '#F59E0B' },

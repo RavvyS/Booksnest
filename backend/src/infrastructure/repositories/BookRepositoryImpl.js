@@ -8,6 +8,16 @@ const Book = require("../../domain/entities/Book");
 
 class BookRepositoryImpl extends BookRepository {
   _toEntity(doc) {
+    // categoryId might be an ID string/ObjectId or a populated object
+    const catId = doc.categoryId && doc.categoryId._id 
+      ? doc.categoryId._id.toString() 
+      : (doc.categoryId ? doc.categoryId.toString() : null);
+    
+    // Fallback order: Populated Name > Legacy Category String > null
+    const catName = (doc.categoryId && doc.categoryId.name) 
+      ? doc.categoryId.name 
+      : (doc.category || null);
+
     return new Book({
       id: doc._id.toString(),
       title: doc.title,
@@ -16,7 +26,8 @@ class BookRepositoryImpl extends BookRepository {
       type: doc.type,
       status: doc.status,
       uploadedBy: doc.uploadedBy ? doc.uploadedBy.toString() : null,
-      categoryId: doc.categoryId ? doc.categoryId.toString() : null,
+      categoryId: catId,
+      categoryName: catName, // Add this for easier frontend access
       description: doc.description,
       filePath: doc.filePath || null,
       totalCopies: doc.totalCopies,
@@ -43,7 +54,8 @@ class BookRepositoryImpl extends BookRepository {
       availableCopies: book.totalCopies,
     });
     const saved = await newBook.save();
-    return this._toEntity(saved);
+    const populated = await BookModel.findById(saved._id).populate("categoryId");
+    return this._toEntity(populated);
   }
 
   async findAll() {
@@ -51,17 +63,23 @@ class BookRepositoryImpl extends BookRepository {
   }
 
   async findAllApproved() {
-    const books = await BookModel.find({ status: "approved" }).sort({ title: 1 });
+    const books = await BookModel.find({ status: "approved" })
+      .populate("categoryId")
+      .sort({ title: 1 });
     return books.map((b) => this._toEntity(b));
   }
 
   async findAllPending() {
-    const books = await BookModel.find({ status: "pending" }).sort({ createdAt: -1 });
+    const books = await BookModel.find({ status: "pending" })
+      .populate("categoryId")
+      .sort({ createdAt: -1 });
     return books.map((b) => this._toEntity(b));
   }
 
   async findByUploader(userId) {
-    const books = await BookModel.find({ uploadedBy: userId }).sort({ createdAt: -1 });
+    const books = await BookModel.find({ uploadedBy: userId })
+      .populate("categoryId")
+      .sort({ createdAt: -1 });
     return books.map((b) => this._toEntity(b));
   }
 
@@ -76,7 +94,7 @@ class BookRepositoryImpl extends BookRepository {
   }
 
   async findById(id) {
-    const book = await BookModel.findById(id);
+    const book = await BookModel.findById(id).populate("categoryId");
     if (!book) return null;
     return this._toEntity(book);
   }
@@ -105,7 +123,8 @@ class BookRepositoryImpl extends BookRepository {
       id,
       updateFields,
       { new: true, runValidators: true },
-    );
+    ).populate("categoryId");
+    
     if (!updated) return null;
     return this._toEntity(updated);
   }
@@ -127,6 +146,17 @@ class BookRepositoryImpl extends BookRepository {
   async delete(id) {
     const deleted = await BookModel.findByIdAndDelete(id);
     return deleted !== null;
+  }
+
+  /**
+   * Unsets categoryId for all books in a specific category.
+   * Used when a category is deleted to maintain data integrity.
+   */
+  async removeCategoryFromBooks(categoryId) {
+    return await BookModel.updateMany(
+      { categoryId },
+      { $set: { categoryId: null } },
+    );
   }
 
   /**

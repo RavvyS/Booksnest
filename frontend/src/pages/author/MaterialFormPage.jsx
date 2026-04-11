@@ -37,7 +37,7 @@ const MaterialFormPage = () => {
     description: '',
     contentUrl: '',
     type: 'video',
-    category: '',
+    categoryId: '',
     author: user?.name || '',
   });
   const [categories, setCategories] = useState([]);
@@ -58,7 +58,7 @@ const MaterialFormPage = () => {
             description: matData.description || '',
             contentUrl: matData.contentUrl,
             type: matData.type || 'video',
-            category: matData.category || '',
+            categoryId: matData.categoryId || '',
             author: matData.author,
           });
         }
@@ -189,15 +189,15 @@ const MaterialFormPage = () => {
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <FormControl fullWidth required>
-                    <InputLabel>Category</InputLabel>
+                    <InputLabel>Genre</InputLabel>
                     <Select
-                      name="category"
-                      value={formData.category}
+                      name="categoryId"
+                      value={formData.categoryId}
                       onChange={handleChange}
-                      label="Category"
+                      label="Genre"
                     >
                       {categories.map((cat) => (
-                        <MenuItem key={cat._id} value={cat.name}>{cat.name}</MenuItem>
+                        <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
                       ))}
                       {categories.length === 0 && <MenuItem value="General">General</MenuItem>}
                     </Select>

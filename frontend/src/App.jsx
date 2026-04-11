@@ -32,6 +32,7 @@ import AuthorProfilePage from './pages/author/ProfilePage';
 // Librarian Pages
 import LibrarianDashboard from './pages/librarian/DashboardPage';
 import PendingMaterialsPage from './pages/librarian/PendingMaterialsPage';
+import ManageMaterialsPage from './pages/librarian/ManageMaterialsPage';
 import ManageBooksPage from './pages/librarian/ManageBooksPage';
 import ManageCategoriesPage from './pages/librarian/ManageCategoriesPage';
 import LibrarianProfilePage from './pages/librarian/ProfilePage';
@@ -78,6 +79,7 @@ const App = () => {
           <Route element={<ProtectedRoute allowedRoles={['librarian']} />}>
             <Route path="/librarian/dashboard" element={<LibrarianDashboard />} />
             <Route path="/librarian/pending" element={<PendingMaterialsPage />} />
+            <Route path="/librarian/materials" element={<ManageMaterialsPage />} />
             <Route path="/librarian/books" element={<ManageBooksPage />} />
             <Route path="/librarian/categories" element={<ManageCategoriesPage />} />
             <Route path="/librarian/profile" element={<LibrarianProfilePage />} />

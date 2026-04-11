@@ -105,7 +105,13 @@ const MyMaterialsPage = () => {
                     <Typography variant="subtitle2" fontWeight="bold">{m.title}</Typography>
                     <Typography variant="caption" color="textSecondary">{m.description?.slice(0, 50)}...</Typography>
                   </TableCell>
-                  <TableCell>{m.category || 'General'}</TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={m.categoryName || m.category || 'General'} 
+                      size="small" 
+                      variant="outlined" 
+                    />
+                  </TableCell>
                   <TableCell>{getStatusChip(m.status)}</TableCell>
                   <TableCell>{new Date(m.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell align="right">

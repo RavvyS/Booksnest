@@ -11,6 +11,7 @@ class Book {
     status,
     uploadedBy,
     categoryId,
+    categoryName,
     description,
     filePath,
     totalCopies,
@@ -26,6 +27,7 @@ class Book {
     this.status = status || "pending";
     this.uploadedBy = uploadedBy;
     this.categoryId = categoryId;
+    this.categoryName = categoryName;
     this.description = description;
     this.filePath = filePath || null;
     this.totalCopies = totalCopies;

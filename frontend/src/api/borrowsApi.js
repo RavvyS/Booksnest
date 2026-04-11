@@ -21,12 +21,25 @@ const borrowsApi = {
     const response = await apiClient.get('/borrows/queue/my');
     return response.data;
   },
+  getQueueStatus: async (bookId) => {
+    const response = await apiClient.get(`/borrows/queue/book/${bookId}/status`);
+    return response.data;
+  },
   updateQueue: async (requestId, note) => {
     const response = await apiClient.put(`/borrows/queue/${requestId}`, { note });
     return response.data;
   },
   cancelQueue: async (requestId) => {
     const response = await apiClient.delete(`/borrows/queue/${requestId}`);
+    return response.data;
+  },
+  // Librarian administrative calls
+  getBookQueue: async (bookId) => {
+    const response = await apiClient.get(`/borrows/queue/book/${bookId}`);
+    return response.data;
+  },
+  adminCancelQueue: async (requestId) => {
+    const response = await apiClient.delete(`/borrows/queue/admin/${requestId}`);
     return response.data;
   },
 };

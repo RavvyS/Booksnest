@@ -31,44 +31,78 @@ const LibrarianDashboard = () => {
   const [stats, setStats] = useState({ 
     books: 0, 
     pending: 0, 
+    materials: 0,
     categories: 0, 
     pendingUsers: 0,
     recentBooks: []
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState({
+    books: true,
+    materials: true,
+    categories: true,
+    users: true
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchEverything = async () => {
+    // Independent Fetching for better resilience
+    const fetchBooks = async () => {
       try {
-        const [books, pending, categories, pendingUsers] = await Promise.all([
-          booksApi.getAll(),
-          materialsApi.getPending(),
-          categoriesApi.getAll(),
-          usersApi.getPending(),
-        ]);
-
-        const sortedBooks = [...books].sort((a, b) => 
+        const books = await booksApi.getAll();
+        const sorted = [...books].sort((a, b) => 
           new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
         ).slice(0, 3);
-
-        setStats({
-          books: books.length,
-          pending: pending.length,
-          categories: categories.length,
-          pendingUsers: pendingUsers.length,
-          recentBooks: sortedBooks
-        });
+        setStats(prev => ({ ...prev, books: books.length, recentBooks: sorted }));
       } catch (err) {
-        console.error('Failed to fetch dashboard data', err);
+        console.error('Failed to fetch books', err);
       } finally {
-        setLoading(false);
+        setLoading(prev => ({ ...prev, books: false }));
       }
     };
-    fetchEverything();
+
+    const fetchMaterials = async () => {
+      try {
+        const [pending, all] = await Promise.all([
+          materialsApi.getPending(),
+          materialsApi.getAll()
+        ]);
+        setStats(prev => ({ ...prev, pending: pending.length, materials: all.length }));
+      } catch (err) {
+        console.error('Failed to fetch materials', err);
+      } finally {
+        setLoading(prev => ({ ...prev, materials: false }));
+      }
+    };
+
+    const fetchCategories = async () => {
+      try {
+        const cats = await categoriesApi.getAll();
+        setStats(prev => ({ ...prev, categories: cats.length }));
+      } catch (err) {
+        console.error('Failed to fetch categories', err);
+      } finally {
+        setLoading(prev => ({ ...prev, categories: false }));
+      }
+    };
+
+    const fetchUsers = async () => {
+      try {
+        const pendingUsers = await usersApi.getPending();
+        setStats(prev => ({ ...prev, pendingUsers: pendingUsers.length }));
+      } catch (err) {
+        console.error('Failed to fetch users', err);
+      } finally {
+        setLoading(prev => ({ ...prev, users: false }));
+      }
+    };
+
+    fetchBooks();
+    fetchMaterials();
+    fetchCategories();
+    fetchUsers();
   }, []);
 
-  const StatCard = ({ title, value, icon, accent, helper }) => (
+  const StatCard = ({ title, value, icon, accent, helper, onClick, loading }) => (
     <Paper
       elevation={3}
       sx={{
@@ -97,9 +131,13 @@ const LibrarianDashboard = () => {
         >
           {icon}
         </Box>
-        <Typography variant="h3" fontWeight="bold">
-          {value}
-        </Typography>
+        {loading ? (
+          <CircularProgress size={24} sx={{ color: accent }} />
+        ) : (
+          <Typography variant="h4" fontWeight="bold">
+            {value}
+          </Typography>
+        )}
       </Box>
       <Typography variant="h6" fontWeight="bold" gutterBottom>
         {title}
@@ -107,10 +145,19 @@ const LibrarianDashboard = () => {
       <Typography variant="body2" color="text.secondary">
         {helper}
       </Typography>
+      <Button 
+        size="small" 
+        fullWidth 
+        sx={{ mt: 2, borderRadius: 2 }} 
+        onClick={onClick}
+        disabled={loading}
+      >
+        Manage
+      </Button>
     </Paper>
   );
 
-  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress size={60} /></Box>;
+  // Removed global loading check to allow shell to render instantly
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
@@ -173,11 +220,13 @@ const LibrarianDashboard = () => {
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
-            title="Pending Materials"
-            value={stats.pending}
+            title="Learning Materials"
+            value={stats.pending > 0 ? `${stats.pending} Pending` : `${stats.materials} Total`}
             icon={<RateReviewIcon />}
             accent="#F59E0B"
-            helper="Submissions waiting for your approval."
+            helper="Manage submissions and full catalog."
+            onClick={() => navigate('/librarian/materials')}
+            loading={loading.materials}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -187,6 +236,8 @@ const LibrarianDashboard = () => {
             icon={<LibraryBooksIcon />}
             accent="#0653B8"
             helper="Total cataloged books in the system."
+            onClick={() => navigate('/librarian/books')}
+            loading={loading.books}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -196,6 +247,8 @@ const LibrarianDashboard = () => {
             icon={<CategoryIcon />}
             accent="#10B981"
             helper="Active genre and topic classifications."
+            onClick={() => navigate('/librarian/categories')}
+            loading={loading.categories}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -205,76 +258,22 @@ const LibrarianDashboard = () => {
             icon={<PeopleIcon />}
             accent="#6366f1"
             helper="New registrations pending review."
+            onClick={() => navigate('/librarian/users')}
+            loading={loading.users}
           />
         </Grid>
       </Grid>
 
-      {/* Main Content Area */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={7}>
-          <Paper elevation={3} sx={{ p: { xs: 3, md: 4 }, borderRadius: 4, height: '100%' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Box>
-                <Typography variant="h5" fontWeight="bold">
-                  Recently Added Books
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  The latest titles added to our digital library.
-                </Typography>
-              </Box>
-              <Button endIcon={<ArrowForwardIcon />} onClick={() => navigate('/librarian/books')}>
-                View All
-              </Button>
-            </Box>
-
-            <Divider sx={{ mb: 3 }} />
-
-            {stats.recentBooks.length > 0 ? (
-              <Box sx={{ display: 'grid', gap: 2 }}>
-                {stats.recentBooks.map((book) => (
-                  <Paper
-                    key={book.id}
-                    variant="outlined"
-                    sx={{ p: 2.5, borderRadius: 3, borderColor: 'divider' }}
-                  >
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, alignItems: 'center' }}>
-                      <Box>
-                        <Typography variant="h6" fontWeight="bold">
-                          {book.title}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          By {book.author}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                          ISBN: {book.isbn} • {new Date(book.createdAt).toLocaleDateString()}
-                        </Typography>
-                      </Box>
-                      <Chip
-                        label={book.status || 'Approved'}
-                        color="success"
-                        size="small"
-                        variant="outlined"
-                        sx={{ textTransform: 'capitalize' }}
-                      />
-                    </Box>
-                  </Paper>
-                ))}
-              </Box>
-            ) : (
-              <Box sx={{ textAlign: 'center', py: 5 }}>
-                <Typography color="text.secondary">No recent books found.</Typography>
-              </Box>
-            )}
-          </Paper>
+      {/* Main Management Area */}
+      <Grid container spacing={3} justifyContent="center">
+        <Grid item xs={12} md={6}>
+          <QuickActions />
         </Grid>
-
-        <Grid item xs={12} md={5}>
-          <Stack spacing={3}>
-            <QuickActions />
-            <AdminGuide />
-          </Stack>
+        <Grid item xs={12} md={6}>
+          <AdminGuide />
         </Grid>
       </Grid>
+
     </Container>
   );
 };

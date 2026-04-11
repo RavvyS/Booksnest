@@ -7,34 +7,53 @@ import {
   CircularProgress,
   TextField,
   InputAdornment,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import booksApi from '../api/booksApi';
+import categoriesApi from '../api/categoriesApi';
 import BookCard from '../components/BookCard';
 
 const BooksListPage = () => {
   const [books, setBooks] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
   useEffect(() => {
-    const fetchBooks = async () => {
+    const fetchData = async () => {
       try {
-        const data = await booksApi.getAll();
-        setBooks(data);
+        const [booksData, categoriesData] = await Promise.all([
+          booksApi.getAll(),
+          categoriesApi.getAll()
+        ]);
+        setBooks(booksData);
+        setCategories(categoriesData);
       } catch (err) {
-        console.error('Failed to fetch books', err);
+        console.error('Failed to fetch data', err);
       } finally {
         setLoading(false);
       }
     };
-    fetchBooks();
+    fetchData();
   }, []);
 
-  const filteredBooks = books.filter(b => 
-    b.title.toLowerCase().includes(search.toLowerCase()) ||
-    b.author.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredBooks = books.filter(b => {
+    const matchesSearch = 
+      b.title.toLowerCase().includes(search.toLowerCase()) ||
+      b.author.toLowerCase().includes(search.toLowerCase()) ||
+      b.isbn.toLowerCase().includes(search.toLowerCase()) ||
+      (b.categoryName && b.categoryName.toLowerCase().includes(search.toLowerCase()));
+    
+    const matchesCategory = selectedCategory === 'all' || b.categoryId === selectedCategory;
+    
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
@@ -47,12 +66,12 @@ const BooksListPage = () => {
         </Typography>
       </Box>
 
-      {/* Search Bar */}
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
+      {/* Filters & Search */}
+      <Box sx={{ mb: 4, display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center', alignItems: 'center' }}>
         <TextField
-          placeholder="Search by title, author, or ISBN..."
+          placeholder="Search books..."
           variant="outlined"
-          sx={{ width: { xs: '100%', md: '60%' } }}
+          sx={{ flexGrow: 1, maxWidth: { xs: '100%', md: '50%' } }}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           InputProps={{
@@ -63,6 +82,26 @@ const BooksListPage = () => {
             ),
           }}
         />
+        
+        <FormControl sx={{ minWidth: 200 }}>
+          <InputLabel id="category-filter-label">Category</InputLabel>
+          <Select
+            labelId="category-filter-label"
+            value={selectedCategory}
+            label="Category"
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            startAdornment={
+              <InputAdornment position="start">
+                <FilterListIcon fontSize="small" />
+              </InputAdornment>
+            }
+          >
+            <MenuItem value="all">All Categories</MenuItem>
+            {categories.map((cat) => (
+              <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </Box>
 
       {loading ? (

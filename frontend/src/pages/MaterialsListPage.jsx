@@ -19,28 +19,34 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import { useNavigate } from 'react-router-dom';
 import materialsApi from '../api/materialsApi';
+import categoriesApi from '../api/categoriesApi';
 
 const MaterialsListPage = () => {
   const [materials, setMaterials] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchMaterials = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
-        const data = await materialsApi.getAll({ category: category || undefined });
-        setMaterials(data);
+        const [mats, cats] = await Promise.all([
+          materialsApi.getAll({ categoryId: filterCategory || undefined }),
+          categoriesApi.getAll()
+        ]);
+        setMaterials(mats);
+        setCategories(cats);
       } catch (err) {
-        console.error('Failed to fetch materials', err);
+        console.error('Failed to fetch data', err);
       } finally {
         setLoading(false);
       }
     };
-    fetchMaterials();
-  }, [category]);
+    fetchData();
+  }, [filterCategory]);
 
   const filteredMaterials = materials.filter(m => 
     m.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -75,19 +81,16 @@ const MaterialsListPage = () => {
           }}
         />
         <FormControl sx={{ minWidth: 200 }}>
-          <InputLabel>Category</InputLabel>
+          <InputLabel>Genre</InputLabel>
           <Select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            label="Category"
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            label="Genre"
           >
-            <MenuItem value="">All Categories</MenuItem>
-            {/* These should ideally come from an API */}
-            <MenuItem value="Science">Science</MenuItem>
-            <MenuItem value="Technology">Technology</MenuItem>
-            <MenuItem value="Engineering">Engineering</MenuItem>
-            <MenuItem value="Mathematics">Mathematics</MenuItem>
-            <MenuItem value="History">History</MenuItem>
+            <MenuItem value="">All Genres</MenuItem>
+            {categories.map((cat) => (
+              <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+            ))}
           </Select>
         </FormControl>
       </Box>
@@ -105,7 +108,13 @@ const MaterialsListPage = () => {
                   <CardActionArea onClick={() => navigate(`/materials/${material._id}`)} sx={{ height: '100%' }}>
                     <CardContent>
                       <Box sx={{ mb: 1 }}>
-                        <Chip label={material.category || 'General'} size="small" variant="outlined" color="primary" sx={{ mb: 1, mr: 1 }} />
+                        <Chip 
+                          label={material.categoryName || material.category || 'General'} 
+                          size="small" 
+                          variant="outlined" 
+                          color="primary" 
+                          sx={{ mb: 1, mr: 1 }} 
+                        />
                       </Box>
                       <Typography variant="h6" fontWeight="bold" gutterBottom>
                         {material.title}

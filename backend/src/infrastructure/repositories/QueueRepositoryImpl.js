@@ -209,6 +209,88 @@ class QueueRepositoryImpl extends QueueRepository {
     if (!updated) return null;
     return this._toEntity(updated);
   }
+
+  async findActiveByBook(bookId) {
+    const requests = await QueueRequestModel.aggregate([
+      {
+        $match: {
+          bookId: new mongoose.Types.ObjectId(bookId),
+          status: { $in: ["pending", "processing"] },
+        },
+      },
+      { $sort: { createdAt: 1 } }, // FIFO order
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      { $unwind: "$userDetails" },
+      {
+        $project: {
+          _id: 1,
+          userId: 1,
+          bookId: 1,
+          note: 1,
+          status: 1,
+          createdAt: 1,
+          userName: "$userDetails.name",
+          userEmail: "$userDetails.email",
+        },
+      },
+    ]);
+
+    return requests.map((req) => ({
+      ...this._toEntity(req),
+      userName: req.userName,
+      userEmail: req.userEmail,
+    }));
+  }
+
+  async cancelByLibrarian(requestId) {
+    const updated = await QueueRequestModel.findByIdAndUpdate(
+      requestId,
+      {
+        $set: {
+          status: "cancelled",
+          cancellationReason: "Removed by librarian",
+          cancelledAt: new Date(),
+        },
+      },
+      { new: true, runValidators: true },
+    );
+    if (!updated) return null;
+    return this._toEntity(updated);
+  }
+
+  async getUserPosition(bookId, userId) {
+    const userRequest = await QueueRequestModel.findOne({
+      userId,
+      bookId,
+      status: { $in: ["pending", "processing"] },
+    });
+
+    if (!userRequest) return null;
+
+    const countAhead = await QueueRequestModel.countDocuments({
+      bookId,
+      status: "pending",
+      createdAt: { $lt: userRequest.createdAt },
+    });
+
+    const totalWaiting = await QueueRequestModel.countDocuments({
+      bookId,
+      status: { $in: ["pending", "processing"] },
+    });
+
+    return {
+      position: countAhead + 1,
+      totalWaiting,
+      status: userRequest.status,
+    };
+  }
 }
 
 module.exports = QueueRepositoryImpl;
