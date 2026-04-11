@@ -29,6 +29,10 @@ class UserRepository {
     return await UserModel.find({ isApproved: false }).select("-password");
   }
 
+  async delete(id) {
+    return await UserModel.findByIdAndDelete(id);
+  }
+
 }
 
 module.exports = UserRepository;

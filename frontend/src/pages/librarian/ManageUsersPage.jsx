@@ -16,6 +16,7 @@ import {
   Alert,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import DeleteIcon from '@mui/icons-material/Delete';
 import usersApi from '../../api/usersApi';
 import { toast } from 'react-toastify';
 
@@ -48,6 +49,18 @@ const ManageUsersPage = () => {
       fetchPendingUsers(); // Refresh list
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to approve user.');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to permanently delete this registration request?')) {
+      try {
+        await usersApi.deleteUser(id);
+        toast.success('Registration request deleted successfully.');
+        fetchPendingUsers(); // Refresh list
+      } catch (err) {
+        toast.error(err.response?.data?.message || 'Failed to delete user.');
+      }
     }
   };
 
@@ -107,15 +120,26 @@ const ManageUsersPage = () => {
                     <Chip label="Pending" size="small" variant="outlined" color="warning" />
                   </TableCell>
                   <TableCell align="center">
-                    <Button
-                      variant="contained"
-                      color="success"
-                      startIcon={<CheckCircleIcon />}
-                      size="small"
-                      onClick={() => handleApprove(user._id)}
-                    >
-                      Approve
-                    </Button>
+                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                      <Button
+                        variant="contained"
+                        color="success"
+                        startIcon={<CheckCircleIcon />}
+                        size="small"
+                        onClick={() => handleApprove(user._id)}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        startIcon={<DeleteIcon />}
+                        size="small"
+                        onClick={() => handleDelete(user._id)}
+                      >
+                        Delete
+                      </Button>
+                    </Box>
                   </TableCell>
                 </TableRow>
               ))

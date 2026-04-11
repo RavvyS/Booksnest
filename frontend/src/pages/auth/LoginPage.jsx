@@ -39,16 +39,32 @@ const LoginPage = () => {
 
   return (
     <Container maxWidth="sm">
-      <Box sx={{ mt: 8, mb: 4 }}>
-        <Paper elevation={6} sx={{ p: 4, borderRadius: 2 }}>
-          <Typography variant="h4" component="h1" gutterBottom align="center" fontWeight="bold" color="primary">
-            Login to Book Nest
+      <Box sx={{ mt: { xs: 4, md: 10 }, mb: 4 }}>
+        <Paper 
+          elevation={10} 
+          sx={{ 
+            p: { xs: 3, md: 5 }, 
+            borderRadius: 4,
+            background: 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.3)'
+          }}
+        >
+          <Typography variant="h3" component="h1" gutterBottom align="center" fontWeight="bold" color="primary" sx={{ letterSpacing: '-0.02em' }}>
+            BookNest
           </Typography>
-          <Typography variant="body1" align="center" color="textSecondary" sx={{ mb: 3 }}>
-            Welcome back! Please enter your details.
+          <Typography variant="h6" align="center" color="textSecondary" sx={{ mb: 4, fontWeight: 'medium' }}>
+            Welcome back! Please login to continue.
           </Typography>
 
-          {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+          {error && (
+            <Alert 
+              severity={error.includes('pending') ? 'warning' : 'error'} 
+              sx={{ mb: 3, borderRadius: 2 }}
+            >
+              {error}
+            </Alert>
+          )}
 
           <form onSubmit={handleSubmit}>
             <TextField
@@ -60,6 +76,7 @@ const LoginPage = () => {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
             />
             <TextField
               fullWidth
@@ -70,29 +87,44 @@ const LoginPage = () => {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
             />
+            
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
+              <Button component={Link} to="/forgot-password" size="small" sx={{ textTransform: 'none', fontWeight: 'bold' }}>
+                Forgot password?
+              </Button>
+            </Box>
+
             <Button
               fullWidth
               type="submit"
               variant="contained"
               size="large"
               disabled={loading}
-              sx={{ mt: 3, mb: 2, py: 1.5, fontSize: '1rem' }}
+              sx={{ 
+                mt: 4, 
+                mb: 2, 
+                py: 1.8, 
+                fontSize: '1.1rem', 
+                borderRadius: 3,
+                textTransform: 'none',
+                fontWeight: 'bold',
+                boxShadow: '0 8px 20px rgba(4, 58, 130, 0.25)',
+                '&:hover': {
+                  boxShadow: '0 12px 25px rgba(4, 58, 130, 0.35)',
+                }
+              }}
             >
-              {loading ? <CircularProgress size={24} color="inherit" /> : 'Login'}
+              {loading ? <CircularProgress size={26} color="inherit" /> : 'Login to Dashboard'}
             </Button>
-            <Box sx={{ textAlign: 'center' }}>
-              <Button component={Link} to="/forgot-password" size="small" color="secondary">
-                Forgot Password?
-              </Button>
-            </Box>
           </form>
 
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
+          <Box sx={{ mt: 3, textAlign: 'center' }}>
             <Typography variant="body2" color="textSecondary">
-              Don't have an account?{' '}
-              <Button component={Link} to="/register" color="primary" sx={{ fontWeight: 'bold' }}>
-                Register Here
+              Don't have an account yet?{' '}
+              <Button component={Link} to="/register" color="primary" sx={{ fontWeight: 'bold', textTransform: 'none' }}>
+                Join BookNest
               </Button>
             </Typography>
           </Box>
