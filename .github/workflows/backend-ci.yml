@@ -6,6 +6,7 @@ on:
       - "backend/**"
       - ".github/workflows/backend-ci.yml"
   pull_request:
+    branches: [ main ]
     paths:
       - "backend/**"
       - ".github/workflows/backend-ci.yml"
@@ -38,3 +39,12 @@ jobs:
 
       - name: Run integration tests
         run: npm run test:integration
+
+  deploy:
+    needs: backend-tests
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Deploy Hook
+        run: |
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
