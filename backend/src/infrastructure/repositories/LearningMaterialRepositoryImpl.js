@@ -19,6 +19,7 @@ class LearningMaterialRepositoryImpl extends LearningMaterialRepository {
 
         return new LearningMaterialEntity({
             id: doc._id.toString(),
+            _id: doc._id.toString(), // Add this for frontend components using legacy _id
             title: doc.title,
             description: doc.description,
             contentUrl: doc.contentUrl,
