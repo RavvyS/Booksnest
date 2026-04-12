@@ -36,6 +36,7 @@ import { toast } from 'react-toastify';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import bookmarksApi from '../../api/bookmarksApi';
+import categoriesApi from '../../api/categoriesApi';
 import BookmarkEditModal from '../../components/BookmarkEditModal';
 import BookmarkAnalytics from '../../components/BookmarkAnalytics';
 
@@ -155,11 +156,8 @@ const generatePDF = (data) => {
 const BookmarksPage = () => {
   // Raw data
   const [bookmarks, setBookmarks] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Category options are derived directly from bookmarks.
-  // Each bookmark already carries category from its material (e.g. 'Science', 'Mathematics').
-  // No separate API call needed.
 
   const navigate = useNavigate();
 
@@ -174,12 +172,16 @@ const BookmarksPage = () => {
   const [selectedBookmark, setSelectedBookmark] = useState(null);
 
   // ── Fetch bookmarks from API ──
-  const fetchBookmarks = async () => {
+  const fetchData = async () => {
     try {
-      const data = await bookmarksApi.getAll();
-      setBookmarks(data);
+      const [bookmarksData, categoriesData] = await Promise.all([
+        bookmarksApi.getAll(),
+        categoriesApi.getAll()
+      ]);
+      setBookmarks(bookmarksData);
+      setCategories(categoriesData);
     } catch (err) {
-      toast.error('Failed to fetch bookmarks');
+      toast.error('Failed to fetch data');
       console.error(err);
     } finally {
       setLoading(false);
@@ -188,19 +190,22 @@ const BookmarksPage = () => {
 
   // ── On mount: load bookmarks ──
   useEffect(() => {
-    fetchBookmarks();
+    fetchData();
   }, []);
 
   // ── Category dropdown list ──
   // Extracted dynamically from bookmarks — each bookmark.category comes from
   // the material's own category field (e.g. 'Science', 'Technology', 'Mathematics')
   const categoryOptions = useMemo(() => {
-    const cats = bookmarks
-      .map((b) => b.category)
-      .filter(Boolean);                          // drop null / undefined
-    const unique = [...new Set(cats)].sort();    // alphabetical, deduplicated
-    return ['All Category', ...unique];
-  }, [bookmarks]);
+    // 1. Categories from the official API
+    const officialCats = categories.map((c) => c.name);
+    
+    // 2. Categories actually present in user's bookmarks (fallback/legacy)
+    const bookmarkCats = bookmarks.map((b) => b.category).filter(Boolean);
+    
+    const combined = [...new Set([...officialCats, ...bookmarkCats])].sort();
+    return ['All Category', ...combined];
+  }, [categories, bookmarks]);
 
   // ── Apply filter + sort (memo for performance) ──
   const filteredBookmarks = useMemo(() => {
@@ -229,7 +234,7 @@ const BookmarksPage = () => {
     try {
       await bookmarksApi.delete(id);
       toast.success('Bookmark deleted successfully!');
-      fetchBookmarks();
+      fetchData();
     } catch {
       toast.error('Failed to delete bookmark.');
     }
@@ -280,7 +285,7 @@ const BookmarksPage = () => {
   const handleViewResource = async (bookmark) => {
     try {
       await bookmarksApi.update(bookmark._id, { lastViewed: new Date() });
-      fetchBookmarks();
+      fetchData();
     } catch (e) {
       console.error(e);
     }
@@ -659,7 +664,7 @@ const BookmarksPage = () => {
         open={editModalOpen}
         bookmark={selectedBookmark}
         onClose={handleEditClose}
-        onSave={fetchBookmarks}
+        onSave={fetchData}
       />
     </Container>
   );
