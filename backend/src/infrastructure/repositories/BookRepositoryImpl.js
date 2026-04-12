@@ -88,7 +88,7 @@ class BookRepositoryImpl extends BookRepository {
     const updated = await BookModel.findByIdAndUpdate(
       id,
       { $set: { status } },
-      { new: true, runValidators: true },
+      { returnDocument: 'after', runValidators: true },
     );
     if (!updated) return null;
     return this._toEntity(updated);
@@ -129,7 +129,7 @@ class BookRepositoryImpl extends BookRepository {
     const updated = await BookModel.findByIdAndUpdate(
       id,
       updateFields,
-      { new: true, runValidators: true },
+      { returnDocument: 'after', runValidators: true },
     ).populate("categoryId");
     
     if (!updated) return null;
@@ -172,7 +172,7 @@ class BookRepositoryImpl extends BookRepository {
    * Returns the updated book, or null if no copies available.
    */
   async atomicDecrementStock(bookId, session = null) {
-    const opts = session ? { session, new: true } : { new: true };
+    const opts = session ? { session, returnDocument: 'after' } : { returnDocument: 'after' };
     const updated = await BookModel.findOneAndUpdate(
       { _id: bookId, availableCopies: { $gt: 0 } },
       { $inc: { availableCopies: -1 } },
@@ -188,7 +188,7 @@ class BookRepositoryImpl extends BookRepository {
    * Returns the updated book, or null if already at max.
    */
   async atomicIncrementStock(bookId, session = null) {
-    const opts = session ? { session, new: true } : { new: true };
+    const opts = session ? { session, returnDocument: 'after' } : { returnDocument: 'after' };
     const updated = await BookModel.findOneAndUpdate(
       {
         _id: bookId,

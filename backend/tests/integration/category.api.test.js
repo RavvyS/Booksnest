@@ -20,14 +20,24 @@ const uniqueEmail = (prefix) =>
   `${prefix}-${Date.now()}-${Math.random()}@example.com`;
 
 const registerAndGetToken = async ({ name, email, role }) => {
-  const res = await request(app).post("/api/auth/register").send({
+  // 1. Register
+  await request(app).post("/api/auth/register").send({
     name,
     email,
     password: "StrongPass123!",
     role,
   });
 
-  return res.body.token;
+  // 2. Manually approve user in DB (needed for Readers/Authors to get tokens)
+  await UserModel.findOneAndUpdate({ email }, { isApproved: true });
+
+  // 3. Login to get token
+  const loginRes = await request(app).post("/api/auth/login").send({
+    email,
+    password: "StrongPass123!",
+  });
+
+  return loginRes.body.token;
 };
 
 beforeAll(async () => {
@@ -129,7 +139,7 @@ describe("Category API integration", () => {
       });
 
     expect(res.status).toBe(403);
-    expect(res.body.message).toBe("Forbidden: insufficient role");
+    expect(res.body.message).toBe("Access denied. Required role: librarian");
   });
 
   test("librarian can create, read, update, and delete a category", async () => {

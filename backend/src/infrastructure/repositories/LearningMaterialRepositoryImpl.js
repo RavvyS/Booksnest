@@ -108,7 +108,7 @@ class LearningMaterialRepositoryImpl extends LearningMaterialRepository {
         const updated = await LearningMaterialSchema.findByIdAndUpdate(
             id,
             { $set: data },
-            { new: true, runValidators: true }
+            { returnDocument: 'after', runValidators: true }
         ).populate("categoryId");
         return this._toEntity(updated);
     }
@@ -117,7 +117,7 @@ class LearningMaterialRepositoryImpl extends LearningMaterialRepository {
         const updated = await LearningMaterialSchema.findByIdAndUpdate(
             id,
             { $set: { status } },
-            { new: true, runValidators: true }
+            { returnDocument: 'after', runValidators: true }
         ).populate("categoryId");
         return this._toEntity(updated);
     }

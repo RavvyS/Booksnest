@@ -102,7 +102,7 @@ class QueueRepositoryImpl extends QueueRepository {
         status: "pending",
       },
       { $set: updateData },
-      { new: true, runValidators: true },
+      { returnDocument: 'after', runValidators: true },
     );
     if (!updated) return null;
     return this._toEntity(updated);
@@ -122,7 +122,7 @@ class QueueRepositoryImpl extends QueueRepository {
           cancelledAt: new Date(),
         },
       },
-      { new: true, runValidators: true },
+      { returnDocument: 'after', runValidators: true },
     );
     if (!updated) return null;
     return this._toEntity(updated);
@@ -130,8 +130,8 @@ class QueueRepositoryImpl extends QueueRepository {
 
   async claimNextPending(bookId, session = null) {
     const opts = session
-      ? { session, sort: { createdAt: 1 }, new: true }
-      : { sort: { createdAt: 1 }, new: true };
+      ? { session, sort: { createdAt: 1 }, returnDocument: 'after' }
+      : { sort: { createdAt: 1 }, returnDocument: 'after' };
 
     const claimed = await QueueRequestModel.findOneAndUpdate(
       {
@@ -152,8 +152,8 @@ class QueueRepositoryImpl extends QueueRepository {
 
   async markFulfilled(requestId, borrowId, session = null) {
     const opts = session
-      ? { session, new: true, runValidators: true }
-      : { new: true, runValidators: true };
+      ? { session, returnDocument: 'after', runValidators: true }
+      : { returnDocument: 'after', runValidators: true };
 
     const updated = await QueueRequestModel.findByIdAndUpdate(
       requestId,
@@ -173,8 +173,8 @@ class QueueRepositoryImpl extends QueueRepository {
 
   async markCancelledBySystem(requestId, reason, session = null) {
     const opts = session
-      ? { session, new: true, runValidators: true }
-      : { new: true, runValidators: true };
+      ? { session, returnDocument: 'after', runValidators: true }
+      : { returnDocument: 'after', runValidators: true };
 
     const updated = await QueueRequestModel.findByIdAndUpdate(
       requestId,
@@ -194,8 +194,8 @@ class QueueRepositoryImpl extends QueueRepository {
 
   async releaseToPending(requestId, session = null) {
     const opts = session
-      ? { session, new: true, runValidators: true }
-      : { new: true, runValidators: true };
+      ? { session, returnDocument: 'after', runValidators: true }
+      : { returnDocument: 'after', runValidators: true };
 
     const updated = await QueueRequestModel.findByIdAndUpdate(
       requestId,
@@ -260,7 +260,7 @@ class QueueRepositoryImpl extends QueueRepository {
           cancelledAt: new Date(),
         },
       },
-      { new: true, runValidators: true },
+      { returnDocument: 'after', runValidators: true },
     );
     if (!updated) return null;
     return this._toEntity(updated);
