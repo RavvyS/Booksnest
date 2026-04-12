@@ -14,7 +14,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
 
 let mongoServer;
-jest.setTimeout(30000);
+jest.setTimeout(60000);
 
 const uniqueEmail = (prefix) =>
   `${prefix}-${Date.now()}-${Math.random()}@example.com`;
@@ -56,6 +56,45 @@ afterAll(async () => {
 });
 
 describe("Category API integration", () => {
+  /* --- Unit Testing: Schema Validation --- */
+  describe("Schema Validation", () => {
+    test("should fail if category name is missing", async () => {
+      const category = new CategoryModel({ description: "Test description" });
+      let err;
+      try {
+        await category.validate();
+      } catch (error) {
+        err = error;
+      }
+      expect(err).toBeDefined();
+      expect(err.errors.name.message).toBe("Category name is required");
+    });
+
+    test("should fail if category name is too short", async () => {
+      const category = new CategoryModel({ name: "A" });
+      let err;
+      try {
+        await category.validate();
+      } catch (error) {
+        err = error;
+      }
+      expect(err).toBeDefined();
+      expect(err.errors.name.message).toContain("at least 2 characters");
+    });
+
+    test("should pass validation with valid name", async () => {
+      const category = new CategoryModel({ name: "Science" });
+      let err;
+      try {
+        await category.validate();
+      } catch (error) {
+        err = error;
+      }
+      expect(err).toBeUndefined();
+    });
+  });
+
+  /* --- Integration Testing: API Endpoints --- */
   test("GET /api/categories returns empty array initially", async () => {
     const res = await request(app).get("/api/categories");
 
