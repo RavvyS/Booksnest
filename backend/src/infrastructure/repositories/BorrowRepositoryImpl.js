@@ -87,8 +87,8 @@ class BorrowRepositoryImpl extends BorrowRepository {
 
   async markReturned(borrowId, session = null) {
     const opts = session
-      ? { session, new: true, runValidators: true }
-      : { new: true, runValidators: true };
+      ? { session, returnDocument: 'after', runValidators: true }
+      : { returnDocument: 'after', runValidators: true };
     const updated = await BorrowModel.findByIdAndUpdate(
       borrowId,
       {

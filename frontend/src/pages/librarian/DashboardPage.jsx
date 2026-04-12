@@ -62,13 +62,18 @@ const LibrarianDashboard = () => {
 
     const fetchMaterials = async () => {
       try {
-        const [pending, all] = await Promise.all([
+        const [pendingMaterials, allMaterials, pendingBooks] = await Promise.all([
           materialsApi.getPending(),
-          materialsApi.getAll()
+          materialsApi.getAll(),
+          booksApi.getPending()
         ]);
-        setStats(prev => ({ ...prev, pending: pending.length, materials: all.length }));
+        setStats(prev => ({ 
+          ...prev, 
+          pending: pendingMaterials.length + pendingBooks.length, 
+          materials: allMaterials.length 
+        }));
       } catch (err) {
-        console.error('Failed to fetch materials', err);
+        console.error('Failed to fetch stats', err);
       } finally {
         setLoading(prev => ({ ...prev, materials: false }));
       }
@@ -220,12 +225,12 @@ const LibrarianDashboard = () => {
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
-            title="Learning Materials"
-            value={stats.pending > 0 ? `${stats.pending} Pending` : `${stats.materials} Total`}
+            title="Pending Approvals"
+            value={stats.pending > 0 ? `${stats.pending} Submissions` : `Clear Queue`}
             icon={<RateReviewIcon />}
             accent="#F59E0B"
-            helper="Manage submissions and full catalog."
-            onClick={() => navigate('/librarian/materials')}
+            helper="Approve/Reject new books and materials."
+            onClick={() => navigate('/librarian/pending')}
             loading={loading.materials}
           />
         </Grid>

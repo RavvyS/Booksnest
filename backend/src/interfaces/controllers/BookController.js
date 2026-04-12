@@ -68,15 +68,20 @@ exports.getBookById = async (req, res) => {
 
 exports.updateBook = async (req, res) => {
   try {
-    const result = await updateUseCase.execute(req.params.bookId, {
-      title: req.body.title,
-      author: req.body.author,
-      isbn: req.body.isbn,
-      categoryId: req.body.categoryId,
-      description: req.body.description,
-      totalCopies: req.body.totalCopies !== undefined ? Number(req.body.totalCopies) : undefined,
-      availableCopies: req.body.availableCopies !== undefined ? Number(req.body.availableCopies) : undefined,
-    });
+    const result = await updateUseCase.execute(
+      req.params.bookId,
+      {
+        title: req.body.title,
+        author: req.body.author,
+        isbn: req.body.isbn,
+        categoryId: req.body.categoryId,
+        description: req.body.description,
+        totalCopies: req.body.totalCopies !== undefined ? Number(req.body.totalCopies) : undefined,
+        availableCopies: req.body.availableCopies !== undefined ? Number(req.body.availableCopies) : undefined,
+      },
+      req.user.id,
+      req.user.role,
+    );
 
     res.json(result);
   } catch (error) {
@@ -86,7 +91,11 @@ exports.updateBook = async (req, res) => {
 
 exports.deleteBook = async (req, res) => {
   try {
-    const result = await deleteUseCase.execute(req.params.bookId);
+    const result = await deleteUseCase.execute(
+      req.params.bookId,
+      req.user.id,
+      req.user.role,
+    );
     res.json(result);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -103,6 +112,7 @@ exports.readBook = async (req, res) => {
     const { filePath } = await readUseCase.execute(
       req.user.id,
       req.params.bookId,
+      req.user.role
     );
 
     // Verify file exists on disk

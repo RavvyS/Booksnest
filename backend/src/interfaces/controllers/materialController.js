@@ -44,6 +44,7 @@ exports.getAllMaterials = async (req, res) => {
     try {
         const result = await getAllUseCase.execute({
             category: req.query.category,
+            categoryId: req.query.categoryId,
         });
 
         res.status(200).json(result);

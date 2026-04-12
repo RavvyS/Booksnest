@@ -581,6 +581,195 @@
       ]
     },
     {
+      "name": "Learning Materials",
+      "item": [
+        {
+          "name": "Get All Approved Materials (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/materials",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "materials"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Material (Author/Librarian)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "const data = pm.response.json();",
+                  "if (data.id) pm.environment.set('materialId', data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authorToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Advanced Data Structures\",\n  \"description\": \"Comprehensive guide to DSA\",\n  \"type\": \"pdf\",\n  \"contentUrl\": \"https://example.com/dsa.pdf\",\n  \"author\": \"Prof. Smith\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/materials",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "materials"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pending Materials (Librarian)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{librarianToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/materials/pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "materials", "pending"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Materials (Author)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authorToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/materials/my",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "materials", "my"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Material (Librarian)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{librarianToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"approved\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/materials/{{materialId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "materials", "{{materialId}}", "approve"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Bookmarks",
+      "item": [
+        {
+          "name": "Get My Bookmarks (Reader)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookmarks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookmarks"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Bookmark (Reader)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "const data = pm.response.json();",
+                  "if (data.id) pm.environment.set('bookmarkId', data.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookId\": \"{{bookId}}\",\n  \"note\": \"Need to read chapter 5\",\n  \"category\": \"Study\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bookmarks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookmarks"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Bookmark (Reader)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Updated bookmark note\",\n  \"category\": \"Urgent\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bookmarks/{{bookmarkId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookmarks", "{{bookmarkId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Bookmark (Reader)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookmarks/{{bookmarkId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookmarks", "{{bookmarkId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Borrows",
       "item": [
         {
@@ -657,6 +846,86 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Waitlist Queue",
+          "item": [
+            {
+              "name": "Join Waitlist (Reader/Author)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/borrows/queue/{{bookId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "borrows", "queue", "{{bookId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get My Queue Requests (Reader/Author)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/borrows/queue/my",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "borrows", "queue", "my"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Check Queue Status (Reader/Author)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{readerToken}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/borrows/queue/book/{{bookId}}/status",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "borrows", "queue", "book", "{{bookId}}", "status"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "View Full Book Queue (Librarian)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{librarianToken}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/borrows/queue/book/{{bookId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "borrows", "queue", "book", "{{bookId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Admin: Cancel User Request (Librarian)",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{librarianToken}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/borrows/queue/admin/{{requestId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "borrows", "queue", "admin", "{{requestId}}"]
+                }
+              },
+              "response": []
+            }
+          ]
         }
       ]
     }

@@ -67,7 +67,7 @@ class CategoryRepositoryImpl extends CategoryRepository {
     const updatedCategory = await CategoryModel.findByIdAndUpdate(
       id,
       { $set: updateData },
-      { new: true, runValidators: true },
+      { returnDocument: 'after', runValidators: true },
     );
     if (!updatedCategory) return null;
     return new Category({

@@ -40,7 +40,7 @@ router.get("/search-external", AuthMiddleware, RoleMiddleware("author", "librari
 // Secure read route (any authenticated user with valid borrow)
 router.get("/:bookId/read", AuthMiddleware, BookController.readBook);
 
-// Librarian only routes
+// Librarian or Author (Ownership check in controller/use case)
 router.patch(
   "/:bookId/approve",
   AuthMiddleware,
@@ -51,14 +51,14 @@ router.patch(
 router.put(
   "/:bookId",
   AuthMiddleware,
-  RoleMiddleware("librarian"),
+  RoleMiddleware("author", "librarian"),
   BookController.updateBook,
 );
 
 router.delete(
   "/:bookId",
   AuthMiddleware,
-  RoleMiddleware("librarian"),
+  RoleMiddleware("author", "librarian"),
   BookController.deleteBook,
 );
 

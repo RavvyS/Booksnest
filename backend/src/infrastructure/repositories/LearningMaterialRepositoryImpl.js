@@ -19,6 +19,7 @@ class LearningMaterialRepositoryImpl extends LearningMaterialRepository {
 
         return new LearningMaterialEntity({
             id: doc._id.toString(),
+            _id: doc._id.toString(), // Add this for frontend components using legacy _id
             title: doc.title,
             description: doc.description,
             contentUrl: doc.contentUrl,
@@ -85,6 +86,13 @@ class LearningMaterialRepositoryImpl extends LearningMaterialRepository {
         return docs.map(d => this._toEntity(d));
     }
 
+    async findByCategoryId(categoryId) {
+        const docs = await LearningMaterialSchema.find({ status: "approved", categoryId })
+            .populate("categoryId")
+            .sort({ createdAt: -1 });
+        return docs.map(d => this._toEntity(d));
+    }
+
     async findByOwner({ userId, authorName }) {
         const filters = [{ createdBy: userId }];
         if (authorName) {
@@ -100,7 +108,7 @@ class LearningMaterialRepositoryImpl extends LearningMaterialRepository {
         const updated = await LearningMaterialSchema.findByIdAndUpdate(
             id,
             { $set: data },
-            { new: true, runValidators: true }
+            { returnDocument: 'after', runValidators: true }
         ).populate("categoryId");
         return this._toEntity(updated);
     }
@@ -109,7 +117,7 @@ class LearningMaterialRepositoryImpl extends LearningMaterialRepository {
         const updated = await LearningMaterialSchema.findByIdAndUpdate(
             id,
             { $set: { status } },
-            { new: true, runValidators: true }
+            { returnDocument: 'after', runValidators: true }
         ).populate("categoryId");
         return this._toEntity(updated);
     }
