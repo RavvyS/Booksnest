@@ -48,6 +48,7 @@ describe("LoginUser use case", () => {
       email: "valid@example.com",
       password: "hashed-password",
       role: "reader",
+      isApproved: true,
     };
     const userRepository = {
       findByEmail: jest.fn().mockResolvedValue(user),
@@ -67,5 +68,28 @@ describe("LoginUser use case", () => {
       user,
       token: "jwt-token",
     });
+  });
+
+  test("throws when account is not approved", async () => {
+    const userRepository = {
+      findByEmail: jest.fn().mockResolvedValue({
+        _id: "u3",
+        email: "pending@example.com",
+        password: "hashed-password",
+        role: "reader",
+        isApproved: false,
+      }),
+    };
+    const hashService = { compare: jest.fn().mockResolvedValue(true) };
+    const tokenService = { generate: jest.fn() };
+
+    const useCase = new LoginUser(userRepository, hashService, tokenService);
+
+    await expect(
+      useCase.execute({
+        email: "pending@example.com",
+        password: "secret123",
+      }),
+    ).rejects.toThrow("Your account is pending approval by a librarian.");
   });
 });

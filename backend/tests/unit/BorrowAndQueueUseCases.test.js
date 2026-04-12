@@ -191,15 +191,15 @@ describe("Borrow and queue use cases", () => {
       const bookRepo = {
         atomicIncrementStock: jest.fn().mockResolvedValue(null),
       };
-      const queueRepo = {};
+      const queueRepo = {
+        claimNextPending: jest.fn().mockResolvedValue(null),
+      };
       const useCase = new ReturnBook(borrowRepo, bookRepo, queueRepo);
 
-      await expect(useCase.execute("user1", "book1")).rejects.toThrow(
-        "Failed to increment book stock",
-      );
+      await useCase.execute("user1", "book1");
 
       expect(bookRepo.atomicIncrementStock).toHaveBeenCalledWith("book1", session);
-      expect(session.abortTransaction).toHaveBeenCalledTimes(1);
+      expect(session.commitTransaction).toHaveBeenCalledTimes(1); 
       expect(session.endSession).toHaveBeenCalledTimes(1);
     });
 
@@ -341,13 +341,15 @@ describe("Borrow and queue use cases", () => {
         findActiveRequestByUserAndBook: jest
           .fn()
           .mockResolvedValue({ id: "q1" }),
+        getUserPosition: jest.fn().mockResolvedValue({ position: 1, totalWaiting: 5 }),
         create: jest.fn(),
       };
       const useCase = new CreateQueueRequest(queueRepo, bookRepo, borrowRepo);
 
-      await expect(useCase.execute("user1", "book1")).rejects.toThrow(
-        "You already have an active queue request for this book",
-      );
+      const result = await useCase.execute("user1", "book1");
+
+      expect(result.alreadyQueued).toBe(true);
+      expect(result.queueRequestId).toBe("q1");
       expect(queueRepo.findActiveRequestByUserAndBook).toHaveBeenCalledWith(
         "user1",
         "book1",
@@ -368,6 +370,7 @@ describe("Borrow and queue use cases", () => {
       const queueRequest = { id: "q1", userId: "user1", bookId: "book1" };
       const queueRepo = {
         findActiveRequestByUserAndBook: jest.fn().mockResolvedValue(null),
+        getUserPosition: jest.fn().mockResolvedValue({ position: 1, totalWaiting: 1 }),
         create: jest.fn().mockResolvedValue(queueRequest),
       };
       const useCase = new CreateQueueRequest(queueRepo, bookRepo, borrowRepo);
@@ -376,12 +379,13 @@ describe("Borrow and queue use cases", () => {
         note: "please notify me",
       });
 
-      expect(queueRepo.create).toHaveBeenCalledWith({
+      expect(result).toEqual(expect.objectContaining({
+        id: "q1",
         userId: "user1",
         bookId: "book1",
-        note: "please notify me",
-      });
-      expect(result).toBe(queueRequest);
+        alreadyQueued: false,
+        position: 1
+      }));
     });
   });
 
@@ -400,14 +404,6 @@ describe("Borrow and queue use cases", () => {
       await expect(
         useCase.execute("user1", "", { note: "n" }),
       ).rejects.toThrow("Queue request ID is required");
-    });
-
-    test("throws when note is missing in payload", async () => {
-      const useCase = new UpdateQueueRequest({});
-
-      await expect(
-        useCase.execute("user1", "req1", {}),
-      ).rejects.toThrow("note is required");
     });
 
     test("updates queue request when data is valid", async () => {

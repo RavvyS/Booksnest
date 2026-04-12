@@ -62,8 +62,37 @@ describe("RegisterUser use case", () => {
       email: "alice@example.com",
       password: "hashed-password",
       role: "author",
+      isApproved: false,
     });
     expect(result.email).toBe("alice@example.com");
+  });
+
+  test("auto-approves librarian role", async () => {
+    const userRepository = {
+      findByEmail: jest.fn().mockResolvedValue(null),
+      create: jest.fn().mockImplementation(async (payload) => ({
+        _id: "u123",
+        ...payload,
+      })),
+    };
+    const hashService = {
+      hash: jest.fn().mockResolvedValue("hashed-password"),
+    };
+
+    const useCase = new RegisterUser(userRepository, hashService);
+
+    const result = await useCase.execute({
+      name: "Lib",
+      email: "lib@example.com",
+      password: "secret123",
+      role: "librarian",
+    });
+
+    expect(userRepository.create).toHaveBeenCalledWith(expect.objectContaining({
+      role: "librarian",
+      isApproved: true,
+    }));
+    expect(result.isApproved).toBe(true);
   });
 
   test("rejects invalid role selection", async () => {

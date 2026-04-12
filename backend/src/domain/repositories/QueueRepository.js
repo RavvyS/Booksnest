@@ -1,4 +1,3 @@
-
 //  Declares repository contract methods expected by the domain layer.
 
 class QueueRepository {
@@ -39,6 +38,10 @@ class QueueRepository {
   }
 
   async releaseToPending(requestId, session) {
+    throw new Error("Method not implemented");
+  }
+
+  async getUserPosition(bookId, userId) {
     throw new Error("Method not implemented");
   }
 }

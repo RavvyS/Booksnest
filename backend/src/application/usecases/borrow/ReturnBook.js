@@ -54,7 +54,7 @@ class ReturnBook {
       );
       
       if (!stockIncremented) {
-        console.warn(`[ReturnBook] Data Integrity Warning: Could not increment availableCopies for book=${bookId}. It is already at totalCopies (${book.totalCopies}). Continuing return anyway.`);
+        console.warn(`[ReturnBook] Data Integrity Warning: Could not increment availableCopies for book=${bookId}. Continuing return anyway.`);
       } else {
         console.log(`[ReturnBook] Stock incremented for book=${bookId}. New avail=${stockIncremented.availableCopies}`);
       }

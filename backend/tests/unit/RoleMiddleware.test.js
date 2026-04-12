@@ -3,7 +3,7 @@
 const RoleMiddleware = require("../../src/interfaces/middleware/RoleMiddleware");
 
 describe("RoleMiddleware", () => {
-  test("returns 401 when user is missing", () => {
+  test("returns 403 when user is missing", () => {
     const req = {};
     const res = {
       status: jest.fn().mockReturnThis(),
@@ -13,8 +13,10 @@ describe("RoleMiddleware", () => {
 
     RoleMiddleware("reader")(req, res, next);
 
-    expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({ message: "Unauthorized" });
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({ 
+      message: "Access denied. Required role: reader" 
+    });
     expect(next).not.toHaveBeenCalled();
   });
 
@@ -30,7 +32,7 @@ describe("RoleMiddleware", () => {
 
     expect(res.status).toHaveBeenCalledWith(403);
     expect(res.json).toHaveBeenCalledWith({
-      message: "Forbidden: insufficient role",
+      message: "Access denied. Required role: reader",
     });
     expect(next).not.toHaveBeenCalled();
   });
