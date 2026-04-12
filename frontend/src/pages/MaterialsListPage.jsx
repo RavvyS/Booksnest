@@ -48,10 +48,12 @@ const MaterialsListPage = () => {
     fetchData();
   }, [filterCategory]);
 
-  const filteredMaterials = materials.filter(m => 
-    m.title.toLowerCase().includes(search.toLowerCase()) ||
-    m.description?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredMaterials = materials.filter(m => {
+    const matchesSearch = m.title.toLowerCase().includes(search.toLowerCase()) ||
+                         m.description?.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = !filterCategory || m.categoryId === filterCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>

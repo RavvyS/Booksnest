@@ -85,6 +85,13 @@ class LearningMaterialRepositoryImpl extends LearningMaterialRepository {
         return docs.map(d => this._toEntity(d));
     }
 
+    async findByCategoryId(categoryId) {
+        const docs = await LearningMaterialSchema.find({ status: "approved", categoryId })
+            .populate("categoryId")
+            .sort({ createdAt: -1 });
+        return docs.map(d => this._toEntity(d));
+    }
+
     async findByOwner({ userId, authorName }) {
         const filters = [{ createdBy: userId }];
         if (authorName) {

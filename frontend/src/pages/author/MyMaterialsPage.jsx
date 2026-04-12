@@ -22,17 +22,36 @@ import LaunchIcon from '@mui/icons-material/Launch';
 import AddIcon from '@mui/icons-material/Add';
 import { useNavigate } from 'react-router-dom';
 import materialsApi from '../../api/materialsApi';
+import categoriesApi from '../../api/categoriesApi';
+import SearchIcon from '@mui/icons-material/Search';
+import {
+  TextField,
+  InputAdornment,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Grid
+} from '@mui/material';
 
 const MyMaterialsPage = () => {
   const [materials, setMaterials] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all');
   const [message, setMessage] = useState({ text: '', type: 'success' });
   const navigate = useNavigate();
 
-  const fetchMaterials = async () => {
+  const fetchData = async () => {
     try {
-      const data = await materialsApi.getMine();
-      setMaterials(data);
+      setLoading(true);
+      const [mats, cats] = await Promise.all([
+        materialsApi.getMine(),
+        categoriesApi.getAll()
+      ]);
+      setMaterials(mats);
+      setCategories(cats);
     } catch (err) {
       console.error('Failed to fetch author materials', err);
     } finally {
@@ -41,7 +60,7 @@ const MyMaterialsPage = () => {
   };
 
   useEffect(() => {
-    fetchMaterials();
+    fetchData();
   }, []);
 
   const handleDelete = async (id) => {
@@ -65,6 +84,13 @@ const MyMaterialsPage = () => {
     return <Chip label={label} color={color} size="small" variant="outlined" />;
   };
 
+  const filteredMaterials = materials.filter(m => {
+    const matchesSearch = m.title.toLowerCase().includes(search.toLowerCase()) ||
+                         m.description?.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = filterCategory === 'all' || m.categoryId === filterCategory;
+    return matchesSearch && matchesCategory;
+  });
+
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
 
   return (
@@ -86,6 +112,38 @@ const MyMaterialsPage = () => {
         </Alert>
       )}
 
+      {/* Filters Bar */}
+      <Box sx={{ mb: 4, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+        <TextField
+          placeholder="Search my materials..."
+          variant="outlined"
+          size="small"
+          sx={{ flexGrow: 1, minWidth: 250 }}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon color="action" />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <FormControl size="small" sx={{ minWidth: 200 }}>
+          <InputLabel>Genre</InputLabel>
+          <Select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            label="Genre"
+          >
+            <MenuItem value="all">All Genres</MenuItem>
+            {categories.map((cat) => (
+              <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+
       {materials.length > 0 ? (
         <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
           <Table>
@@ -99,7 +157,7 @@ const MyMaterialsPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {materials.map((m) => (
+              {filteredMaterials.map((m) => (
                 <TableRow key={m._id} sx={{ '&:hover': { bgcolor: '#f9f9f9' } }}>
                   <TableCell>
                     <Typography variant="subtitle2" fontWeight="bold">{m.title}</Typography>
@@ -132,10 +190,14 @@ const MyMaterialsPage = () => {
         </TableContainer>
       ) : (
         <Paper sx={{ p: 8, textAlign: 'center', bgcolor: '#fafafa', borderRadius: 2 }}>
-          <Typography color="textSecondary">You haven't uploaded any materials yet.</Typography>
-          <Button onClick={() => navigate('/author/materials/create')} sx={{ mt: 2 }}>
-            Get Started Now
-          </Button>
+          <Typography color="textSecondary">
+            {materials.length === 0 ? "You haven't uploaded any materials yet." : "No materials match your search filters."}
+          </Typography>
+          {materials.length === 0 && (
+            <Button onClick={() => navigate('/author/materials/create')} sx={{ mt: 2 }}>
+              Get Started Now
+            </Button>
+          )}
         </Paper>
       )}
     </Container>
