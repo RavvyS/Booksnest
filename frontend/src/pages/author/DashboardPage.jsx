@@ -20,6 +20,7 @@ import InsightsIcon from '@mui/icons-material/Insights';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import { useNavigate } from 'react-router-dom';
 import materialsApi from '../../api/materialsApi';
+import booksApi from '../../api/booksApi';
 
 const AuthorDashboard = () => {
   const [stats, setStats] = useState({ total: 0, approved: 0, pending: 0, rejected: 0 });
@@ -30,14 +31,27 @@ const AuthorDashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const data = await materialsApi.getMine();
+        const [materials, books] = await Promise.all([
+          materialsApi.getMine(),
+          booksApi.getMyBooks()
+        ]);
+        
+        const allItems = [...materials, ...books];
+
         setStats({
-          total: data.length,
-          approved: data.filter((m) => m.status === 'approved').length,
-          pending: data.filter((m) => m.status === 'pending').length,
-          rejected: data.filter((m) => m.status === 'rejected').length,
+          total: allItems.length,
+          approved: allItems.filter((i) => i.status === 'approved').length,
+          pending: allItems.filter((i) => i.status === 'pending').length,
+          rejected: allItems.filter((i) => i.status === 'rejected').length,
         });
-        setRecentMaterials(data.slice(0, 3));
+        
+        // Combine and sort recent items
+        const combined = [
+          ...materials.map(m => ({ ...m, type: 'material' })),
+          ...books.map(b => ({ ...b, type: 'book' }))
+        ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
+        setRecentMaterials(combined.slice(0, 5));
       } catch (err) {
         console.error('Failed to fetch author stats', err);
       } finally {
@@ -132,19 +146,32 @@ const AuthorDashboard = () => {
               Track your submissions, monitor approval progress, and keep your library contributions organized in one place.
             </Typography>
           </Box>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => navigate('/author/materials/create')}
-            size="large"
-            sx={{
-              bgcolor: 'white',
-              color: 'primary.main',
-              '&:hover': { bgcolor: '#eef5ff' },
-            }}
-          >
-            Upload Material
-          </Button>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => navigate('/author/upload?type=book')}
+              sx={{
+                bgcolor: 'white',
+                color: 'primary.main',
+                '&:hover': { bgcolor: '#eef5ff' },
+              }}
+            >
+              Upload Book
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<AddIcon />}
+              onClick={() => navigate('/author/upload?type=material')}
+              sx={{
+                borderColor: 'white',
+                color: 'white',
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' },
+              }}
+            >
+              Upload Material
+            </Button>
+          </Box>
         </Box>
       </Box>
 
@@ -208,27 +235,33 @@ const AuthorDashboard = () => {
 
             {recentMaterials.length > 0 ? (
               <Box sx={{ display: 'grid', gap: 2 }}>
-                {recentMaterials.map((material) => (
+                {recentMaterials.map((item) => (
                   <Paper
-                    key={material._id}
+                    key={item.id || item._id}
                     variant="outlined"
-                    sx={{ p: 2.5, borderRadius: 3, borderColor: 'divider' }}
+                    sx={{ p: 2.5, borderRadius: 3, borderColor: 'divider', position: 'relative' }}
                   >
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, alignItems: 'flex-start' }}>
+                    <Chip 
+                      label={item.type === 'book' ? 'Book' : 'Material'} 
+                      size="small" 
+                      variant="outlined" 
+                      sx={{ position: 'absolute', top: 10, right: 10, fontSize: '0.6rem', height: 18 }}
+                    />
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, alignItems: 'flex-start', mt: 1 }}>
                       <Box>
                         <Typography variant="h6" fontWeight="bold">
-                          {material.title}
+                          {item.title}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 1 }}>
-                          {material.description?.slice(0, 120) || 'No description added yet.'}
+                          {item.description?.slice(0, 120) || 'No description added yet.'}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {material.category || 'General'} • {new Date(material.createdAt).toLocaleDateString()}
+                          {item.category?.name || item.category || 'General'} • {new Date(item.createdAt).toLocaleDateString()}
                         </Typography>
                       </Box>
                       <Chip
-                        label={material.status}
-                        color={getStatusColor(material.status)}
+                        label={item.status}
+                        color={getStatusColor(item.status)}
                         size="small"
                         sx={{ textTransform: 'capitalize' }}
                       />
@@ -250,11 +283,16 @@ const AuthorDashboard = () => {
                   No materials uploaded yet
                 </Typography>
                 <Typography color="text.secondary" sx={{ mb: 2 }}>
-                  Start building your author profile by publishing your first learning resource.
+                  Start building your author profile by publishing your first book or learning resource.
                 </Typography>
-                <Button variant="contained" onClick={() => navigate('/author/materials/create')}>
-                  Upload First Material
-                </Button>
+                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+                  <Button variant="contained" onClick={() => navigate('/author/upload?type=book')}>
+                    Upload Book
+                  </Button>
+                  <Button variant="outlined" onClick={() => navigate('/author/upload?type=material')}>
+                    Upload Material
+                  </Button>
+                </Box>
               </Box>
             )}
           </Paper>
@@ -315,16 +353,23 @@ const AuthorDashboard = () => {
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
-                onClick={() => navigate('/author/materials/create')}
+                onClick={() => navigate('/author/upload?type=book')}
               >
-                Upload New Material
+                Upload New Book
               </Button>
               <Button
                 variant="outlined"
-                endIcon={<ArrowForwardIcon />}
+                startIcon={<AutoStoriesIcon />}
+                onClick={() => navigate('/author/books')}
+              >
+                Manage My Books
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<InsightsIcon />}
                 onClick={() => navigate('/author/materials')}
               >
-                Open My Materials
+                Manage My Materials
               </Button>
             </Box>
           </Paper>

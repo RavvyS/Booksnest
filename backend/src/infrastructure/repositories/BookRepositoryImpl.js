@@ -20,6 +20,7 @@ class BookRepositoryImpl extends BookRepository {
 
     return new Book({
       id: doc._id.toString(),
+      _id: doc._id.toString(), // For frontend components
       title: doc.title,
       author: doc.author,
       isbn: doc.isbn,

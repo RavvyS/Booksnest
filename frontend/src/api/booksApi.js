@@ -9,6 +9,10 @@ const booksApi = {
     const response = await apiClient.get(`/books/${id}`);
     return response.data;
   },
+  getMyBooks: async () => {
+    const response = await apiClient.get('/books/my-books');
+    return response.data;
+  },
   read: async (id) => {
     const response = await apiClient.get(`/books/${id}/read`, {
       responseType: 'blob'
@@ -35,6 +39,14 @@ const booksApi = {
   },
   getFreeExternalBooks: async (subject = 'fiction') => {
     const response = await apiClient.get(`/books/external/free?subject=${subject}`);
+    return response.data;
+  },
+  getPending: async () => {
+    const response = await apiClient.get('/books/pending');
+    return response.data;
+  },
+  approve: async (id, status) => {
+    const response = await apiClient.patch(`/books/${id}/approve`, { status });
     return response.data;
   },
 };

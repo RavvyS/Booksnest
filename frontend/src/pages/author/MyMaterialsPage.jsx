@@ -15,24 +15,21 @@ import {
   Button,
   CircularProgress,
   Alert,
-} from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import LaunchIcon from '@mui/icons-material/Launch';
-import AddIcon from '@mui/icons-material/Add';
-import { useNavigate } from 'react-router-dom';
-import materialsApi from '../../api/materialsApi';
-import categoriesApi from '../../api/categoriesApi';
-import SearchIcon from '@mui/icons-material/Search';
-import {
   TextField,
   InputAdornment,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
-  Grid
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import LaunchIcon from '@mui/icons-material/Launch';
+import AddIcon from '@mui/icons-material/Add';
+import SearchIcon from '@mui/icons-material/Search';
+import { useNavigate } from 'react-router-dom';
+import materialsApi from '../../api/materialsApi';
+import categoriesApi from '../../api/categoriesApi';
 
 const MyMaterialsPage = () => {
   const [materials, setMaterials] = useState([]);
@@ -53,7 +50,6 @@ const MyMaterialsPage = () => {
       setMaterials(mats);
       setCategories(cats);
     } catch (err) {
-      console.error('Failed to fetch author materials', err);
     } finally {
       setLoading(false);
     }
@@ -68,7 +64,7 @@ const MyMaterialsPage = () => {
     try {
       await materialsApi.delete(id);
       setMessage({ text: 'Material deleted.', type: 'success' });
-      fetchMaterials();
+      fetchData();
     } catch (err) {
       setMessage({ text: 'Failed to delete material.', type: 'error' });
     }
@@ -100,7 +96,7 @@ const MyMaterialsPage = () => {
         <Button 
           variant="contained" 
           startIcon={<AddIcon />} 
-          onClick={() => navigate('/author/materials/create')}
+          onClick={() => navigate('/author/upload?type=material')}
         >
           New Material
         </Button>
@@ -138,7 +134,7 @@ const MyMaterialsPage = () => {
           >
             <MenuItem value="all">All Genres</MenuItem>
             {categories.map((cat) => (
-              <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+              <MenuItem key={cat.id || cat._id} value={cat.id || cat._id}>{cat.name}</MenuItem>
             ))}
           </Select>
         </FormControl>
@@ -147,7 +143,7 @@ const MyMaterialsPage = () => {
       {materials.length > 0 ? (
         <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
           <Table>
-            <TableHead sx={{ bgcolor: 'primary.main' }}>
+            <TableHead sx={{ bgcolor: 'secondary.main' }}>
               <TableRow>
                 <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Title</TableCell>
                 <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Category</TableCell>
@@ -157,47 +153,56 @@ const MyMaterialsPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredMaterials.map((m) => (
-                <TableRow key={m._id} sx={{ '&:hover': { bgcolor: '#f9f9f9' } }}>
-                  <TableCell>
-                    <Typography variant="subtitle2" fontWeight="bold">{m.title}</Typography>
-                    <Typography variant="caption" color="textSecondary">{m.description?.slice(0, 50)}...</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Chip 
-                      label={m.categoryName || m.category || 'General'} 
-                      size="small" 
-                      variant="outlined" 
-                    />
-                  </TableCell>
-                  <TableCell>{getStatusChip(m.status)}</TableCell>
-                  <TableCell>{new Date(m.createdAt).toLocaleDateString()}</TableCell>
-                  <TableCell align="right">
-                    <IconButton size="small" color="primary" onClick={() => window.open(m.contentUrl, '_blank')}>
-                      <LaunchIcon fontSize="inherit" />
-                    </IconButton>
-                    <IconButton size="small" color="secondary" onClick={() => navigate(`/author/materials/${m._id}/edit`)}>
-                      <EditIcon fontSize="inherit" />
-                    </IconButton>
-                    <IconButton size="small" color="error" onClick={() => handleDelete(m._id)}>
-                      <DeleteIcon fontSize="inherit" />
-                    </IconButton>
+              {filteredMaterials.length > 0 ? (
+                filteredMaterials.map((m) => {
+                  const materialId = m.id || m._id;
+                  return (
+                    <TableRow key={materialId} sx={{ '&:hover': { bgcolor: '#f9f9f9' } }}>
+                      <TableCell>
+                        <Typography variant="subtitle2" fontWeight="bold">{m.title}</Typography>
+                        <Typography variant="caption" color="textSecondary">
+                          {m.description ? `${m.description.slice(0, 50)}...` : 'No description'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip 
+                          label={m.categoryName || (m.category && m.category.name) || m.category || 'General'} 
+                          size="small" 
+                          variant="outlined" 
+                        />
+                      </TableCell>
+                      <TableCell>{getStatusChip(m.status)}</TableCell>
+                      <TableCell>{new Date(m.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell align="right">
+                        <IconButton size="small" color="primary" onClick={() => window.open(m.contentUrl, '_blank')}>
+                          <LaunchIcon fontSize="inherit" />
+                        </IconButton>
+                        <IconButton size="small" color="secondary" onClick={() => navigate(`/author/materials/${materialId}/edit`)}>
+                          <EditIcon fontSize="inherit" />
+                        </IconButton>
+                        <IconButton size="small" color="error" onClick={() => handleDelete(materialId)}>
+                          <DeleteIcon fontSize="inherit" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                    <Typography color="textSecondary">No materials match your search filters.</Typography>
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </TableContainer>
       ) : (
         <Paper sx={{ p: 8, textAlign: 'center', bgcolor: '#fafafa', borderRadius: 2 }}>
-          <Typography color="textSecondary">
-            {materials.length === 0 ? "You haven't uploaded any materials yet." : "No materials match your search filters."}
-          </Typography>
-          {materials.length === 0 && (
-            <Button onClick={() => navigate('/author/materials/create')} sx={{ mt: 2 }}>
-              Get Started Now
-            </Button>
-          )}
+          <Typography color="textSecondary">You haven't uploaded any materials yet.</Typography>
+          <Button onClick={() => navigate('/author/upload?type=material')} sx={{ mt: 2 }} variant="outlined">
+            Get Started Now
+          </Button>
         </Paper>
       )}
     </Container>
