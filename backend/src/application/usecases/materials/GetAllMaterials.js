@@ -6,7 +6,10 @@ class GetAllMaterials {
         this.repository = repository;
     }
 
-    async execute({ category } = {}) {
+    async execute({ category, categoryId } = {}) {
+        if (categoryId) {
+            return await this.repository.findByCategoryId(categoryId);
+        }
         if (category) {
             return await this.repository.findByCategory(category);
         }

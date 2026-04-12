@@ -142,6 +142,7 @@ describe("Learning Materials API integration", () => {
       contentUrl: "http://test.com/review",
       author: "Alice",
       status: "pending",
+      uploadedBy: new mongoose.Types.ObjectId()
     });
 
     const approveRes = await request(app)
@@ -165,6 +166,7 @@ describe("Learning Materials API integration", () => {
       contentUrl: "http://test.com/wait",
       author: "Alice",
       status: "pending",
+      uploadedBy: new mongoose.Types.ObjectId()
     });
 
     const approveRes = await request(app)
@@ -187,6 +189,7 @@ describe("Learning Materials API integration", () => {
       contentUrl: "http://test.com/pending",
       author: "Alice",
       status: "pending",
+      uploadedBy: new mongoose.Types.ObjectId()
     });
 
     const res = await request(app)

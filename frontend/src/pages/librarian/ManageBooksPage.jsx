@@ -25,14 +25,6 @@ import {
   FormControl,
   InputLabel,
   Select as MuiSelect,
-} from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import SearchIcon from '@mui/icons-material/Search';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import PeopleIcon from '@mui/icons-material/People';
-import { 
   InputAdornment, 
   List, 
   ListItem, 
@@ -42,7 +34,15 @@ import {
   Divider,
   Tooltip,
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import SearchIcon from '@mui/icons-material/Search';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import PeopleIcon from '@mui/icons-material/People';
+import LaunchIcon from '@mui/icons-material/Launch';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import booksApi from '../../api/booksApi';
 import categoriesApi from '../../api/categoriesApi';
 import borrowsApi from '../../api/borrowsApi';
@@ -58,6 +58,7 @@ const ManageBooksPage = () => {
     author: '',
     isbn: '',
     description: '',
+    type: 'book',
     totalCopies: 1,
     availableCopies: 1,
     categoryId: '',
@@ -66,7 +67,6 @@ const ManageBooksPage = () => {
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
-  const [message, setMessage] = useState({ text: '', type: 'success' });
   const [filterCategory, setFilterCategory] = useState('all');
   
   // Queue Management States
@@ -84,7 +84,7 @@ const ManageBooksPage = () => {
       const data = await booksApi.searchExternal(searchText);
       setSearchResults(data);
     } catch (err) {
-      setMessage({ text: 'Search failed. Try again.', type: 'error' });
+      toast.error('Search failed. Try again.');
     } finally {
       setSearchLoading(false);
     }
@@ -92,13 +92,11 @@ const ManageBooksPage = () => {
 
   const handleSelectBook = (book) => {
     setFormData({
+      ...formData,
       title: book.title,
       author: book.author,
       isbn: book.isbn,
       description: book.description || '',
-      coverImage: book.thumbnail || '',
-      totalCopies: 1,
-      availableCopies: 1,
     });
     setSearchResults([]);
     setSearchText('');
@@ -109,9 +107,16 @@ const ManageBooksPage = () => {
       const data = await booksApi.getAll();
       setBooks(data);
     } catch (err) {
-      console.error('Failed to fetch books', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const data = await categoriesApi.getAll();
+      setCategories(data);
+    } catch (err) {
     }
   };
 
@@ -120,25 +125,18 @@ const ManageBooksPage = () => {
     fetchCategories();
   }, []);
 
-  const fetchCategories = async () => {
-    try {
-      const data = await categoriesApi.getAll();
-      setCategories(data);
-    } catch (err) {
-      console.error('Failed to fetch categories', err);
-    }
-  };
-
   const handleOpen = (book = null) => {
     setSearchResults([]);
     setSearchText('');
+    setFile(null);
     if (book) {
-      setEditId(book.id);
+      setEditId(book.id || book._id);
       setFormData({
         title: book.title,
         author: book.author,
         isbn: book.isbn,
         description: book.description || '',
+        type: book.type || 'book',
         totalCopies: book.totalCopies,
         availableCopies: book.availableCopies,
         categoryId: book.categoryId || '',
@@ -150,6 +148,7 @@ const ManageBooksPage = () => {
         author: '',
         isbn: '',
         description: '',
+        type: 'book',
         totalCopies: 1,
         availableCopies: 1,
         categoryId: '',
@@ -167,13 +166,22 @@ const ManageBooksPage = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this book?')) return;
     try {
       await booksApi.delete(id);
-      setMessage({ text: 'Book deleted.', type: 'success' });
+      toast.success('Book deleted successfully');
       fetchBooks();
     } catch (err) {
-      setMessage({ text: 'Failed to delete book.', type: 'error' });
+      toast.error('Failed to delete book.');
+    }
+  };
+
+  const handleBookPreview = async (id) => {
+    try {
+      toast.info('Loading preview...');
+      const blob = await booksApi.read(id);
+      const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+      window.open(url, '_blank');
+    } catch (err) {
     }
   };
 
@@ -181,20 +189,34 @@ const ManageBooksPage = () => {
     e.preventDefault();
     try {
       if (editId) {
-        await booksApi.update(editId, formData);
-        setMessage({ text: 'Book updated!', type: 'success' });
+        const updatePayload = {
+          title: formData.title,
+          author: formData.author,
+          isbn: formData.isbn,
+          description: formData.description,
+          type: formData.type,
+          totalCopies: Number(formData.totalCopies),
+          availableCopies: Number(formData.availableCopies),
+          categoryId: formData.categoryId,
+        };
+        await booksApi.update(editId, updatePayload);
+        toast.success('Book updated successfully!');
       } else {
         const payload = new FormData();
-        Object.keys(formData).forEach(key => payload.append(key, formData[key]));
+        Object.keys(formData).forEach(key => {
+          if (formData[key] !== undefined && formData[key] !== null) {
+            payload.append(key, formData[key]);
+          }
+        });
         if (file) payload.append('file', file);
+        
         await booksApi.create(payload);
-        setMessage({ text: 'Book created!', type: 'success' });
+        toast.success('Book created successfully!');
       }
       setOpen(false);
       fetchBooks();
     } catch (err) {
-      console.error(err);
-      setMessage({ text: err.response?.data?.message || 'Action failed.', type: 'error' });
+      toast.error('Action failed: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -203,7 +225,7 @@ const ManageBooksPage = () => {
     setQueueDialogOpen(true);
     setQueueLoading(true);
     try {
-      const data = await borrowsApi.getBookQueue(book.id);
+      const data = await borrowsApi.getBookQueue(book.id || book._id);
       setQueueData(data);
     } catch (err) {
       console.error('Failed to fetch queue', err);
@@ -216,11 +238,10 @@ const ManageBooksPage = () => {
     if (!window.confirm('Remove this user from the waitlist?')) return;
     try {
       await borrowsApi.adminCancelQueue(requestId);
-      // Refresh queue
-      const data = await borrowsApi.getBookQueue(selectedBookForQueue.id);
+      toast.success('Removed from waitlist');
+      const data = await borrowsApi.getBookQueue(selectedBookForQueue.id || selectedBookForQueue._id);
       setQueueData(data);
     } catch (err) {
-      console.error('Failed to remove from queue', err);
     }
   };
 
@@ -228,8 +249,7 @@ const ManageBooksPage = () => {
     const matchesSearch = 
       b.title.toLowerCase().includes(searchText.toLowerCase()) ||
       b.author.toLowerCase().includes(searchText.toLowerCase()) ||
-      b.isbn.toLowerCase().includes(searchText.toLowerCase()) ||
-      (b.categoryName && b.categoryName.toLowerCase().includes(searchText.toLowerCase()));
+      b.isbn.toLowerCase().includes(searchText.toLowerCase());
       
     const matchesCategory = filterCategory === 'all' || b.categoryId === filterCategory;
     
@@ -273,17 +293,11 @@ const ManageBooksPage = () => {
           >
             <MenuItem value="all">All Genres</MenuItem>
             {categories.map((cat) => (
-              <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+              <MenuItem key={cat.id || cat._id} value={cat.id || cat._id}>{cat.name}</MenuItem>
             ))}
           </MuiSelect>
         </FormControl>
       </Box>
-
-      {message.text && (
-        <Alert severity={message.type} sx={{ mb: 4 }} onClose={() => setMessage({ text: '', type: 'success' })}>
-          {message.text}
-        </Alert>
-      )}
 
       <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
         <Table>
@@ -298,52 +312,69 @@ const ManageBooksPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredBooks.map((b) => (
-              <TableRow key={b.id}>
-                <TableCell>
-                  <Typography 
-                    variant="body1" 
-                    fontWeight="bold"
-                    onClick={() => navigate(`/books/${b.id}`)}
-                    sx={{ 
-                      cursor: 'pointer', 
-                      color: 'primary.main',
-                      '&:hover': { textDecoration: 'underline' }
-                    }}
-                  >
-                    {b.title}
-                  </Typography>
-                </TableCell>
-                <TableCell>{b.author}</TableCell>
-                <TableCell>
-                  <Chip 
-                    label={b.categoryName || 'Uncategorized'} 
-                    size="small" 
-                    variant="outlined"
-                    color={b.categoryName ? "primary" : "default"}
-                  />
-                </TableCell>
-                <TableCell>{b.isbn}</TableCell>
-                <TableCell>
-                  <Typography variant="body2" color={b.availableCopies > 0 ? "success.main" : "error.main"}>
-                    {b.availableCopies} available / {b.totalCopies} total
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Tooltip title="View Waitlist">
-                    <IconButton size="small" color="secondary" onClick={() => handleOpenQueue(b)}>
-                      <PeopleIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <IconButton size="small" color="primary" onClick={() => handleOpen(b)}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton size="small" color="error" onClick={() => handleDelete(b.id)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
+            {filteredBooks.map((b) => {
+              const bookId = b.id || b._id;
+              return (
+                <TableRow key={bookId}>
+                  <TableCell>
+                    <Typography 
+                      variant="body1" 
+                      fontWeight="bold"
+                      onClick={() => navigate(`/books/${bookId}`)}
+                      sx={{ 
+                        cursor: 'pointer', 
+                        color: 'primary.main',
+                        '&:hover': { textDecoration: 'underline' }
+                      }}
+                    >
+                      {b.title}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>{b.author}</TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={b.categoryName || 'Uncategorized'} 
+                      size="small" 
+                      variant="outlined"
+                      color={b.categoryName ? "primary" : "default"}
+                    />
+                  </TableCell>
+                  <TableCell>{b.isbn}</TableCell>
+                  <TableCell>
+                    <Typography variant="body2" color={b.status === 'approved' ? "success.main" : "warning.main"} fontWeight="bold">
+                      {b.status?.toUpperCase()}
+                    </Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      {b.availableCopies} avail / {b.totalCopies} tot
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="right">
+                    <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+                      <Tooltip title="Direct Read (PDF)">
+                        <IconButton size="small" color="info" onClick={() => handleBookPreview(bookId)}>
+                          <LaunchIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="View Waitlist">
+                        <IconButton size="small" color="secondary" onClick={() => handleOpenQueue(b)}>
+                          <PeopleIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <IconButton size="small" color="primary" onClick={() => handleOpen(b)}>
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton size="small" color="error" onClick={() => {
+                        if (window.confirm('Delete this book permanently?')) {
+                          handleDelete(bookId);
+                        }
+                      }}>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>
@@ -418,21 +449,26 @@ const ManageBooksPage = () => {
                 <TextField fullWidth label="Book Title" name="title" required value={formData.title} onChange={handleChange} />
               </Grid>
               <Grid item xs={12} sm={6}>
+                <TextField 
+                  fullWidth 
+                  select 
+                  label="Type" 
+                  name="type" 
+                  value={formData.type} 
+                  onChange={handleChange}
+                >
+                  <MenuItem value="book">Book</MenuItem>
+                  <MenuItem value="magazine">Magazine</MenuItem>
+                  <MenuItem value="journal">Journal</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid item xs={12} sm={6}>
                 <TextField fullWidth label="Author" name="author" required value={formData.author} onChange={handleChange} />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField fullWidth label="ISBN" name="isbn" required value={formData.isbn} onChange={handleChange} />
               </Grid>
-              <Grid item xs={12}>
-                <TextField fullWidth label="Description" name="description" multiline rows={3} value={formData.description} onChange={handleChange} />
-              </Grid>
               <Grid item xs={12} sm={6}>
-                <TextField fullWidth type="number" label="Total Copies" name="totalCopies" required value={formData.totalCopies} onChange={handleChange} />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField fullWidth type="number" label="Available Now" name="availableCopies" required value={formData.availableCopies} onChange={handleChange} />
-              </Grid>
-              <Grid item xs={12}>
                 <TextField
                   fullWidth
                   select
@@ -443,11 +479,20 @@ const ManageBooksPage = () => {
                 >
                   <MenuItem value="">None</MenuItem>
                   {categories.map((cat) => (
-                    <MenuItem key={cat.id} value={cat.id}>
+                    <MenuItem key={cat.id || cat._id} value={cat.id || cat._id}>
                       {cat.name}
                     </MenuItem>
                   ))}
                 </TextField>
+              </Grid>
+              <Grid item xs={12}>
+                <TextField fullWidth label="Description" name="description" multiline rows={3} value={formData.description} onChange={handleChange} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth type="number" label="Total Copies" name="totalCopies" required value={formData.totalCopies} onChange={handleChange} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth type="number" label="Available Now" name="availableCopies" required value={formData.availableCopies} onChange={handleChange} />
               </Grid>
               {!editId && (
                 <Grid item xs={12}>
@@ -491,7 +536,7 @@ const ManageBooksPage = () => {
                 </TableHead>
                 <TableBody>
                   {queueData.map((req, idx) => (
-                    <TableRow key={req.id}>
+                    <TableRow key={req.id || req._id}>
                       <TableCell>
                         <Chip label={`#${idx + 1}`} size="small" color={idx === 0 ? "primary" : "default"} />
                       </TableCell>
@@ -499,7 +544,7 @@ const ManageBooksPage = () => {
                       <TableCell>{req.userEmail}</TableCell>
                       <TableCell>{new Date(req.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell align="right">
-                        <IconButton size="small" color="error" onClick={() => handleRemoveFromQueue(req.id)}>
+                        <IconButton size="small" color="error" onClick={() => handleRemoveFromQueue(req.id || req._id)}>
                           <DeleteIcon fontSize="small" />
                         </IconButton>
                       </TableCell>

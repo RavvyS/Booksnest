@@ -93,7 +93,7 @@ const MaterialDetailPage = () => {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
           <Box>
             <Chip 
-              label={material.category || 'General'} 
+              label={material.categoryName || material.category?.name || material.category || 'General'} 
               color="primary" 
               variant="outlined" 
               size="small" 
@@ -117,13 +117,13 @@ const MaterialDetailPage = () => {
         </Box>
 
         <Typography variant="subtitle1" color="textSecondary" gutterBottom>
-          Published by <strong>{material.author}</strong> on {new Date(material.createdAt).toLocaleDateString()}
+          Published by <strong>{material.author}</strong> on {material.createdAt ? new Date(material.createdAt).toLocaleDateString() : 'N/A'}
         </Typography>
 
         <Divider sx={{ my: 3 }} />
 
         <Typography variant="body1" sx={{ mb: 4, whiteSpace: 'pre-wrap', lineHeight: 1.8 }}>
-          {material.description}
+          {material.description || 'No description available.'}
         </Typography>
 
         <Box sx={{ bgcolor: '#f0f7ff', p: 3, borderRadius: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -141,9 +141,10 @@ const MaterialDetailPage = () => {
             href={material.contentUrl} 
             target="_blank" 
             rel="noopener noreferrer"
+            disabled={!material.contentUrl}
             endIcon={<LaunchIcon />}
           >
-            Open Resource
+            {material.contentUrl ? 'Open Resource' : 'No Link Available'}
           </Button>
         </Box>
       </Paper>

@@ -6,7 +6,7 @@ class UpdateBook {
     this.bookRepository = bookRepository;
   }
 
-  async execute(id, bookData) {
+  async execute(id, bookData, userId, userRole) {
     if (!id) {
       throw new Error("Book ID is required");
     }
@@ -26,6 +26,11 @@ class UpdateBook {
       throw new Error("Book not found");
     }
 
+    // Authorization check: Librarians can edit anything, authors only their own.
+    if (userRole === "author" && existing.uploadedBy !== userId) {
+      throw new Error("Access denied: You can only edit your own books");
+    }
+
     // Check ISBN conflict with another book
     if (bookData.isbn !== existing.isbn) {
       const duplicate = await this.bookRepository.findByIsbn(bookData.isbn);
@@ -34,16 +39,36 @@ class UpdateBook {
       }
     }
 
-    if (bookData.totalCopies !== undefined && bookData.availableCopies !== undefined) {
-      if (bookData.totalCopies < 0 || bookData.availableCopies < 0) {
+    // Validation for copies (Merge from Updated upstream)
+    if (bookData.totalCopies !== undefined || bookData.availableCopies !== undefined) {
+      const tCopies = bookData.totalCopies !== undefined ? Number(bookData.totalCopies) : existing.totalCopies;
+      const aCopies = bookData.availableCopies !== undefined ? Number(bookData.availableCopies) : existing.availableCopies;
+
+      if (tCopies < 0 || aCopies < 0) {
         throw new Error("Copies cannot be negative");
       }
-      if (bookData.availableCopies > bookData.totalCopies) {
+      if (aCopies > tCopies) {
         throw new Error("Available copies cannot exceed total copies");
       }
     }
 
-    return await this.bookRepository.update(id, bookData);
+    // Prepare data for update (Merge from Stashed changes)
+    // Librarians can update copies and status, authors typically only metadata.
+    const updateData = {
+      title: bookData.title,
+      author: bookData.author,
+      isbn: bookData.isbn,
+      categoryId: bookData.categoryId,
+      description: bookData.description,
+    };
+
+    if (userRole === "librarian") {
+      if (bookData.totalCopies !== undefined) updateData.totalCopies = Number(bookData.totalCopies);
+      if (bookData.availableCopies !== undefined) updateData.availableCopies = Number(bookData.availableCopies);
+      if (bookData.status !== undefined) updateData.status = bookData.status;
+    }
+
+    return await this.bookRepository.update(id, updateData);
   }
 }
 

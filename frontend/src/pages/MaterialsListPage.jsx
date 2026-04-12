@@ -48,10 +48,12 @@ const MaterialsListPage = () => {
     fetchData();
   }, [filterCategory]);
 
-  const filteredMaterials = materials.filter(m => 
-    m.title.toLowerCase().includes(search.toLowerCase()) ||
-    m.description?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredMaterials = materials.filter(m => {
+    const matchesSearch = m.title.toLowerCase().includes(search.toLowerCase()) ||
+                         m.description?.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = !filterCategory || m.categoryId === filterCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
@@ -103,13 +105,13 @@ const MaterialsListPage = () => {
         <Grid container spacing={3}>
           {filteredMaterials.length > 0 ? (
             filteredMaterials.map((material) => (
-              <Grid item key={material._id} xs={12} sm={6} md={4}>
+              <Grid item key={material.id || material._id} xs={12} sm={6} md={4}>
                 <Card sx={{ height: '100%', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.02)' } }}>
-                  <CardActionArea onClick={() => navigate(`/materials/${material._id}`)} sx={{ height: '100%' }}>
+                  <CardActionArea onClick={() => navigate(`/materials/${material.id || material._id}`)} sx={{ height: '100%' }}>
                     <CardContent>
                       <Box sx={{ mb: 1 }}>
                         <Chip 
-                          label={material.categoryName || material.category || 'General'} 
+                          label={material.categoryName || material.category?.name || material.category || 'General'} 
                           size="small" 
                           variant="outlined" 
                           color="primary" 
