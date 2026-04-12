@@ -23,6 +23,7 @@ const BorrowsPage = () => {
   const [borrows, setBorrows] = useState([]);
   const [queueRequests, setQueueRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [returningId, setReturningId] = useState(null);
   const [message, setMessage] = useState({ text: '', type: 'success' });
 
   const fetchData = async () => {
@@ -44,11 +45,18 @@ const BorrowsPage = () => {
 
   const handleReturn = async (bookId) => {
     try {
+      setReturningId(bookId);
       await borrowsApi.returnBook(bookId);
       setMessage({ text: 'Book returned successfully!', type: 'success' });
-      fetchData();
+      await fetchData(); // Wait for fetch to complete
     } catch (err) {
-      setMessage({ text: 'Failed to return book.', type: 'error' });
+      console.error('Return failed', err);
+      setMessage({ 
+        text: err.response?.data?.message || 'Failed to return book.', 
+        type: 'error' 
+      });
+    } finally {
+      setReturningId(null);
     }
   };
 
@@ -131,10 +139,11 @@ const BorrowsPage = () => {
                         variant="outlined" 
                         color="error"
                         size="small"
-                        startIcon={<ExitToAppIcon />}
+                        startIcon={returningId === borrow.bookId ? <CircularProgress size={20} color="inherit" /> : <ExitToAppIcon />}
                         onClick={() => handleReturn(borrow.bookId)}
+                        disabled={returningId !== null}
                       >
-                        Return
+                        {returningId === borrow.bookId ? 'Processing...' : 'Return'}
                       </Button>
                     </Box>
                   </CardContent>
@@ -173,14 +182,16 @@ const BorrowsPage = () => {
                         sx={{ mt: 1 }} 
                       />
                     </Box>
-                    <Button 
-                      variant="text" 
-                      color="inherit"
-                      startIcon={<CancelIcon />}
-                      onClick={() => handleCancelQueue(request.id)}
-                    >
-                      Cancel
-                    </Button>
+                    {request.status === 'pending' && (
+                      <Button 
+                        variant="text" 
+                        color="inherit"
+                        startIcon={<CancelIcon />}
+                        onClick={() => handleCancelQueue(request.id)}
+                      >
+                        Cancel
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               </Grid>

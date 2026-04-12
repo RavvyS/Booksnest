@@ -15,31 +15,31 @@ router.get("/my-borrows", AuthMiddleware, BorrowController.getMyBorrows);
 router.post(
   "/queue/:bookId",
   AuthMiddleware,
-  RoleMiddleware("reader"),
+  RoleMiddleware("reader", "author"),
   BorrowController.createQueueRequest,
 );
 router.get(
   "/queue/my",
   AuthMiddleware,
-  RoleMiddleware("reader"),
+  RoleMiddleware("reader", "author"),
   BorrowController.getMyQueueRequests,
 );
 router.get(
   "/queue/book/:bookId/status",
   AuthMiddleware,
-  RoleMiddleware("reader"),
+  RoleMiddleware("reader", "author"),
   BorrowController.getQueueStatus,
 );
 router.put(
   "/queue/:requestId",
   AuthMiddleware,
-  RoleMiddleware("reader"),
+  RoleMiddleware("reader", "author"),
   BorrowController.updateQueueRequest,
 );
 router.delete(
   "/queue/:requestId",
   AuthMiddleware,
-  RoleMiddleware("reader"),
+  RoleMiddleware("reader", "author"),
   BorrowController.cancelQueueRequest,
 );
 
@@ -47,7 +47,6 @@ router.delete(
 router.get(
   "/queue/book/:bookId",
   AuthMiddleware,
-  RoleMiddleware("librarian"),
   BorrowController.getBookQueue,
 );
 router.delete(

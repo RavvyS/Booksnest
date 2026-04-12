@@ -44,7 +44,9 @@ const Home = () => {
           throw new Error('Google Books API error');
         }
         const data = await response.json();
-        const books = (data.items || []).map((item) => {
+        const books = (data.items || [])
+          .filter((item) => item && item.volumeInfo)   // guard against missing volumeInfo
+          .map((item) => {
           const info = item.volumeInfo;
           return {
             id: item.id,

@@ -34,6 +34,15 @@ class UpdateBook {
       }
     }
 
+    if (bookData.totalCopies !== undefined && bookData.availableCopies !== undefined) {
+      if (bookData.totalCopies < 0 || bookData.availableCopies < 0) {
+        throw new Error("Copies cannot be negative");
+      }
+      if (bookData.availableCopies > bookData.totalCopies) {
+        throw new Error("Available copies cannot exceed total copies");
+      }
+    }
+
     return await this.bookRepository.update(id, bookData);
   }
 }

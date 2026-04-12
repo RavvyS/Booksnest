@@ -9,11 +9,11 @@ class UpdateQueueRequest {
   async execute(userId, requestId, payload = {}) {
     if (!userId) throw new Error("User ID is required");
     if (!requestId) throw new Error("Queue request ID is required");
-    if (payload.note === undefined) {
-      throw new Error("note is required");
-    }
-
-    const note = String(payload.note).trim();
+    
+    // Ensure payload exists and handle note safely
+    const note = payload && payload.note !== undefined 
+      ? String(payload.note).trim() 
+      : "";
 
     return await this.queueRepository.updatePendingByIdAndUser(
       requestId,

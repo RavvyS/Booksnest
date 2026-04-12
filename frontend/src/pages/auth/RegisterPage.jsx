@@ -123,8 +123,10 @@ const RegisterPage = () => {
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
               />
               <FormControl fullWidth variant="outlined" margin="normal" required sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}>
-                <InputLabel>User Role</InputLabel>
+                <InputLabel id="role-label">User Role</InputLabel>
                 <Select
+                  labelId="role-label"
+                  id="role-select"
                   name="role"
                   value={formData.role}
                   onChange={handleChange}

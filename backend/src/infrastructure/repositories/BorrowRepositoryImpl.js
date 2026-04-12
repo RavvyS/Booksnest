@@ -8,6 +8,7 @@ const Borrow = require("../../domain/entities/Borrow");
 
 class BorrowRepositoryImpl extends BorrowRepository {
   _toEntity(doc) {
+    if (!doc) return null;
     return new Borrow({
       id: doc._id.toString(),
       userId: doc.userId.toString(),

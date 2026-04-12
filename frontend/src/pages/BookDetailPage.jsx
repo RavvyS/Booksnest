@@ -43,6 +43,7 @@ const BookDetailPage = () => {
   const [queueLoading, setQueueLoading] = useState(false);
   const [userQueueStatus, setUserQueueStatus] = useState(null);
   const [userQueueLoading, setUserQueueLoading] = useState(false);
+  const [userActiveBorrow, setUserActiveBorrow] = useState(null); // active borrow for THIS book
 
   useEffect(() => {
     const fetchBook = async () => {
@@ -58,7 +59,7 @@ const BookDetailPage = () => {
     };
 
     const fetchQueue = async () => {
-      if (user?.role !== 'librarian') return;
+      if (!isAuthenticated) return;
       try {
         setQueueLoading(true);
         const data = await borrowsApi.getBookQueue(id);
@@ -70,14 +71,22 @@ const BookDetailPage = () => {
       }
     };
 
-    const fetchUserQueueStatus = async () => {
-      if (user?.role !== 'reader' || !isAuthenticated) return;
+    const fetchUserStatus = async () => {
+      if (!isAuthenticated || (user?.role !== 'reader' && user?.role !== 'author')) return;
       try {
         setUserQueueLoading(true);
-        const data = await borrowsApi.getQueueStatus(id);
-        setUserQueueStatus(data);
+        // Check queue position
+        const queueData = await borrowsApi.getQueueStatus(id).catch(() => null);
+        setUserQueueStatus(queueData);
+
+        // Check if reader already has an active borrow for this book
+        const allBorrows = await borrowsApi.getMyBorrows().catch(() => []);
+        const activeBorrow = allBorrows.find(
+          (b) => b.bookId === id && b.returned === false
+        ) || null;
+        setUserActiveBorrow(activeBorrow);
       } catch (err) {
-        console.error('Failed to fetch user queue status', err);
+        console.error('Failed to fetch user status', err);
       } finally {
         setUserQueueLoading(false);
       }
@@ -85,8 +94,17 @@ const BookDetailPage = () => {
 
     fetchBook();
     fetchQueue();
-    fetchUserQueueStatus();
+    fetchUserStatus();
   }, [id, user, isAuthenticated]);
+
+  const refreshUserStatus = async () => {
+    if (user?.role !== 'reader' && user?.role !== 'author') return;
+    const queueData = await borrowsApi.getQueueStatus(id).catch(() => null);
+    setUserQueueStatus(queueData);
+    const allBorrows = await borrowsApi.getMyBorrows().catch(() => []);
+    const activeBorrow = allBorrows.find((b) => b.bookId === id && b.returned === false) || null;
+    setUserActiveBorrow(activeBorrow);
+  };
 
   const handleBorrow = async () => {
     if (!isAuthenticated) {
@@ -96,18 +114,57 @@ const BookDetailPage = () => {
 
     setBorrowLoading(true);
     try {
-      if (book.availableCopies > 0) {
+      // Always fetch fresh copy count before deciding to borrow or queue.
+      const freshBook = await booksApi.getById(id);
+      setBook(freshBook);
+
+      if (freshBook.availableCopies > 0) {
+        // Copies available — borrow directly
         await borrowsApi.borrowBook(id);
         setMessage({ text: 'Book borrowed successfully! Check "My Borrows".', type: 'success' });
       } else {
-        await borrowsApi.joinQueue(id);
-        setMessage({ text: 'Joint the queue successfully! We will notify you when it\'s available.', type: 'info' });
+        // No copies — join queue
+        const result = await borrowsApi.joinQueue(id);
+
+        if (result?.alreadyQueued) {
+          // Already in queue — surface their existing position
+          setUserQueueStatus(result);
+          setMessage({ text: `You are already in the waitlist at position #${result.position}.`, type: 'info' });
+        } else {
+          setUserQueueStatus(result);
+          setMessage({ text: `Joined the waitlist! You are at position #${result?.position ?? 1}.`, type: 'success' });
+        }
       }
-      // Refresh book data
+
+      // Refresh book stock and full user status
       const updated = await booksApi.getById(id);
       setBook(updated);
+      await refreshUserStatus();
+
     } catch (err) {
-      setMessage({ text: err.response?.data?.message || 'Action failed.', type: 'error' });
+      const code = err.response?.data?.code;
+      const msg  = err.response?.data?.message || '';
+
+      if (code === 'COPIES_AVAILABLE' || msg.includes('Copies are available')) {
+        // Copies became available between the fresh fetch and the API call — auto-borrow
+        try {
+          await borrowsApi.borrowBook(id);
+          setMessage({ text: 'Book borrowed successfully! Check "My Borrows".', type: 'success' });
+          const updated = await booksApi.getById(id);
+          setBook(updated);
+          await refreshUserStatus();
+        } catch (borrowErr) {
+          setMessage({ text: borrowErr.response?.data?.message || 'Unable to borrow at this time.', type: 'error' });
+        }
+
+      } else if (code === 'ALREADY_BORROWED' || msg.includes('already have an active borrow')) {
+        // User already has this book — refresh state to show the borrow panel
+        await refreshUserStatus();
+        setMessage({ text: 'You already have this book borrowed.', type: 'info' });
+
+      } else {
+        setMessage({ text: msg || 'Action failed.', type: 'error' });
+      }
     } finally {
       setBorrowLoading(false);
     }
@@ -158,7 +215,7 @@ const BookDetailPage = () => {
 
       <Grid container spacing={6}>
         {/* Book Cover Placeholder */}
-        <Grid item xs={12} md={4}>
+        <Grid size={{xs: 12, md: 4}}>
           <Paper elevation={8} sx={{ borderRadius: 2, overflow: 'hidden' }}>
             <Box
               component="img"
@@ -170,7 +227,7 @@ const BookDetailPage = () => {
         </Grid>
 
         {/* Book Details */}
-        <Grid item xs={12} md={8}>
+        <Grid size={{xs: 12, md: 8}}>
           <Box sx={{ mb: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
             {book.categoryName && (
               <Chip 
@@ -221,9 +278,18 @@ const BookDetailPage = () => {
             </Button>
             {user?.role !== 'librarian' && (
               <>
-                {userQueueStatus ? (
+                {/* Already borrowed this book */}
+                {userActiveBorrow ? (
+                  <Paper variant="outlined" sx={{ p: 2, bgcolor: 'success.50', borderColor: 'success.200', borderRadius: 2, width: '100%' }}>
+                    <Typography variant="subtitle2" color="success.main" fontWeight="bold">📚 You Currently Have This Book Borrowed</Typography>
+                    <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5 }}>
+                      Due: {userActiveBorrow.dueDate ? new Date(userActiveBorrow.dueDate).toLocaleDateString() : 'N/A'}
+                    </Typography>
+                  </Paper>
+                ) : userQueueStatus ? (
+                  /* Already in queue */
                   <Paper variant="outlined" sx={{ p: 2, bgcolor: 'primary.50', borderColor: 'primary.200', borderRadius: 2, width: '100%' }}>
-                    <Typography variant="subtitle2" color="primary.main" fontWeight="bold">You are in the Waitlist</Typography>
+                    <Typography variant="subtitle2" color="primary.main" fontWeight="bold">⏳ You are in the Waitlist</Typography>
                     <Typography variant="h4" fontWeight="bold" sx={{ my: 1 }}>
                       Position #{userQueueStatus.position}
                     </Typography>
@@ -232,6 +298,7 @@ const BookDetailPage = () => {
                     </Typography>
                   </Paper>
                 ) : (
+                  /* Can borrow or join queue */
                   <Button 
                     variant="outlined" 
                     size="large" 
@@ -240,7 +307,7 @@ const BookDetailPage = () => {
                     disabled={borrowLoading || userQueueLoading}
                     sx={{ px: 4 }}
                   >
-                    {book.availableCopies > 0 ? 'Borrow Book' : 'Join Queue'}
+                    {borrowLoading ? 'Processing...' : (book.availableCopies > 0 ? 'Borrow Book' : 'Join Waitlist')}
                   </Button>
                 )}
               </>
@@ -254,60 +321,102 @@ const BookDetailPage = () => {
         </Grid>
       </Grid>
 
-      {/* Librarian Queue Management */}
-      {user?.role === 'librarian' && (
+      {/* Unified Book Queue / Waitlist Table */}
+      {isAuthenticated && (
         <Box sx={{ mt: 8 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
             <PeopleAltIcon color="primary" fontSize="large" />
-            <Typography variant="h4" fontWeight="bold">Waitlist Management</Typography>
+            <Box>
+              <Typography variant="h4" fontWeight="bold">Book Queue</Typography>
+              <Typography variant="body2" color="textSecondary">
+                First-come, first-served waitlist. We automatically assign the book to the next reader when it's returned.
+              </Typography>
+            </Box>
           </Box>
           
-          <Paper elevation={3} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+          <Paper elevation={3} sx={{ borderRadius: 4, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
             {queueLoading ? (
               <Box sx={{ p: 4, textAlign: 'center' }}><CircularProgress /></Box>
             ) : queue.length > 0 ? (
               <TableContainer>
                 <Table>
-                  <TableHead sx={{ bgcolor: 'grey.100' }}>
+                  <TableHead sx={{ bgcolor: 'grey.50' }}>
                     <TableRow>
-                      <TableCell sx={{ fontWeight: 'bold' }}>Position</TableCell>
-                      <TableCell sx={{ fontWeight: 'bold' }}>Reader Name</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold', width: 100 }}>Position</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold' }}>Reader</TableCell>
                       <TableCell sx={{ fontWeight: 'bold' }}>Email</TableCell>
+                      <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
                       <TableCell sx={{ fontWeight: 'bold' }}>Joined Date</TableCell>
-                      <TableCell sx={{ fontWeight: 'bold' }} align="right">Actions</TableCell>
+                      {user?.role === 'librarian' && (
+                        <TableCell sx={{ fontWeight: 'bold' }} align="right">Actions</TableCell>
+                      )}
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {queue.map((entry, index) => (
-                      <TableRow key={entry.id} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
-                        <TableCell>
-                          <Chip 
-                            label={`#${index + 1}`} 
-                            size="small" 
-                            color={index === 0 ? "primary" : "default"} 
-                            variant={index === 0 ? "filled" : "outlined"}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Typography fontWeight="bold">{entry.userName}</Typography>
-                        </TableCell>
-                        <TableCell>{entry.userEmail}</TableCell>
-                        <TableCell>{new Date(entry.createdAt).toLocaleDateString()}</TableCell>
-                        <TableCell align="right">
-                          <Tooltip title="Remove from Waitlist">
-                            <IconButton color="error" onClick={() => handleRemoveFromQueue(entry.id)}>
-                              <DeleteIcon />
-                            </IconButton>
-                          </Tooltip>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {queue.map((entry, index) => {
+                      const isMe = entry.userId === user?.id;
+                      return (
+                        <TableRow 
+                          key={entry.id} 
+                          sx={{ 
+                            '&:hover': { bgcolor: 'action.hover' },
+                            bgcolor: isMe ? 'primary.50' : 'inherit'
+                          }}
+                        >
+                          <TableCell>
+                            <Box sx={{ 
+                              width: 32, 
+                              height: 32, 
+                              borderRadius: '50%', 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center',
+                              bgcolor: index === 0 ? 'success.main' : 'primary.main',
+                              color: 'white',
+                              fontWeight: 'bold',
+                              fontSize: '0.875rem'
+                            }}>
+                              {index + 1}
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            <Typography fontWeight={isMe ? "bold" : "medium"}>
+                              {entry.userName} {isMe && '(You)'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell sx={{ color: 'text.secondary', fontStyle: entry.userEmail?.includes('***') ? 'italic' : 'normal' }}>
+                            {entry.userEmail}
+                          </TableCell>
+                          <TableCell>
+                            <Chip 
+                              label={index === 0 ? "Priority" : "Waiting"} 
+                              size="small" 
+                              variant="outlined"
+                              color={index === 0 ? "success" : "primary"}
+                            />
+                          </TableCell>
+                          <TableCell sx={{ color: 'text.secondary' }}>
+                            {new Date(entry.createdAt).toLocaleDateString()}
+                          </TableCell>
+                          {user?.role === 'librarian' && (
+                            <TableCell align="right">
+                              <Tooltip title="Remove from Waitlist">
+                                <IconButton color="error" size="small" onClick={() => handleRemoveFromQueue(entry.id)}>
+                                  <DeleteIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </TableCell>
+                          )}
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </TableContainer>
             ) : (
-              <Box sx={{ p: 6, textAlign: 'center' }}>
-                <Typography color="textSecondary">No readers are currently in the waitlist for this book.</Typography>
+              <Box sx={{ p: 8, textAlign: 'center' }}>
+                <Typography variant="h6" color="textSecondary">The queue is empty.</Typography>
+                <Typography variant="body2" color="text.disabled">No one is currently waiting for a copy of this book.</Typography>
               </Box>
             )}
           </Paper>

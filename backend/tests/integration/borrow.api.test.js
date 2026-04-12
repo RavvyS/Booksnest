@@ -1,6 +1,6 @@
 const request = require("supertest");
 const mongoose = require("mongoose");
-const { MongoMemoryServer } = require("mongodb-memory-server");
+const { MongoMemoryReplSet } = require("mongodb-memory-server");
 const express = require("express");
 
 const authRoutes = require("../../src/interfaces/routes/AuthRoutes");
@@ -23,15 +23,18 @@ jest.setTimeout(30000);
 const uniqueEmail = (prefix) =>
   `${prefix}-${Date.now()}-${Math.random()}@example.com`;
 
+const TokenService = require("../../src/infrastructure/services/TokenService");
+
 const registerAndGetToken = async ({ name, email, role }) => {
-  const res = await request(app).post("/api/auth/register").send({
+  const user = new UserModel({
     name,
     email,
     password: "StrongPass123!",
     role,
+    isApproved: true
   });
-
-  return res.body.token;
+  await user.save();
+  return TokenService.generate(user);
 };
 
 const createBook = async (overrides = {}) => {
@@ -39,6 +42,8 @@ const createBook = async (overrides = {}) => {
     title: "Test Book",
     author: "Author",
     isbn: `ISBN-${Date.now()}-${Math.random()}`,
+    type: "book",
+    uploadedBy: new mongoose.Types.ObjectId(),
     totalCopies: 1,
     availableCopies: 1,
   };
@@ -48,8 +53,8 @@ const createBook = async (overrides = {}) => {
 
 beforeAll(async () => {
   process.env.JWT_SECRET = process.env.JWT_SECRET || "test-secret-key";
-  mongoServer = await MongoMemoryServer.create({
-    instance: { ip: "127.0.0.1" },
+  mongoServer = await MongoMemoryReplSet.create({
+    replSet: { count: 1 }
   });
   await mongoose.connect(mongoServer.getUri());
 });
@@ -183,6 +188,56 @@ describe("Queue API integration (borrow system)", () => {
 
     expect(updateRes.status).toBe(200);
     expect(updateRes.body.note).toBe("Updated note");
+  });
+
+  test("reader can delete their queue request", async () => {
+    const token = await registerAndGetToken({
+      name: "Reader",
+      email: uniqueEmail("reader-delete"),
+      role: "reader",
+    });
+    const book = await createBook({ totalCopies: 0, availableCopies: 0 });
+
+    const createRes = await request(app)
+      .post(`/api/borrows/queue/${book.id}`)
+      .set("Authorization", `Bearer ${token}`);
+
+    const queueId = createRes.body.id || createRes.body._id;
+
+    const deleteRes = await request(app)
+      .delete(`/api/borrows/queue/${queueId}`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(deleteRes.status).toBe(200);
+    expect(deleteRes.body.message).toBe("Queue request cancelled");
+  });
+
+  test("auto-assignment: returning a book fulfills the next queue request", async () => {
+    // 1. User A borrows the only copy
+    const tokenA = await registerAndGetToken({ name: "User A", email: uniqueEmail("userA"), role: "reader" });
+    const book = await createBook({ totalCopies: 1, availableCopies: 1 });
+    
+    await request(app).post(`/api/borrows/borrow/${book.id}`).set("Authorization", `Bearer ${tokenA}`);
+
+    // 2. User B joins the queue
+    const tokenB = await registerAndGetToken({ name: "User B", email: uniqueEmail("userB"), role: "reader" });
+    await request(app).post(`/api/borrows/queue/${book.id}`).set("Authorization", `Bearer ${tokenB}`);
+
+    // 3. User A returns the book
+    const returnRes = await request(app)
+      .post(`/api/borrows/return/${book.id}`)
+      .set("Authorization", `Bearer ${tokenA}`);
+
+    expect(returnRes.status).toBe(200);
+    expect(returnRes.body.autoAssigned).toBeDefined();
+    
+    // 4. Verify User B now has the book
+    const historyResB = await request(app)
+      .get("/api/borrows/my-borrows")
+      .set("Authorization", `Bearer ${tokenB}`);
+
+    expect(historyResB.body.length).toBe(1);
+    expect(historyResB.body[0].returned).toBe(false);
   });
 });
 

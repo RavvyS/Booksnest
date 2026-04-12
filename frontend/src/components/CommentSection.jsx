@@ -45,7 +45,10 @@ const CommentSection = ({ materialId, bookId }) => {
       const data = materialId 
         ? await commentsApi.getByMaterial(materialId)
         : await commentsApi.getByBook(bookId);
-      setComments(data);
+      
+      // Filter out comments where the user has been deleted (Unknown User)
+      const validComments = data.filter(c => c.userId);
+      setComments(validComments);
     } catch (err) {
       console.error('Failed to fetch comments', err);
     }

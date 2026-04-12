@@ -41,7 +41,7 @@ class CreateBook {
       author: bookData.author,
       isbn: bookData.isbn,
       type: bookData.type,
-      status: "pending",
+      status: bookData.status || "pending",
       uploadedBy: bookData.uploadedBy,
       categoryId: bookData.categoryId || null,
       description: bookData.description || "",

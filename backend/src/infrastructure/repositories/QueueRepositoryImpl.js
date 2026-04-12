@@ -7,6 +7,7 @@ const QueueRequest = require("../../domain/entities/QueueRequest");
 
 class QueueRepositoryImpl extends QueueRepository {
   _toEntity(doc) {
+    if (!doc) return null;
     return new QueueRequest({
       id: doc._id.toString(),
       userId: doc.userId.toString(),

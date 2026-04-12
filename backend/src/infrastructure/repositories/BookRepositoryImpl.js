@@ -43,7 +43,7 @@ class BookRepositoryImpl extends BookRepository {
       author: book.author,
       isbn: book.isbn,
       type: book.type,
-      status: "pending",
+      status: book.status || "pending",
       uploadedBy: book.uploadedBy,
       categoryId: book.categoryId || undefined,
       description: book.description,
@@ -110,9 +110,15 @@ class BookRepositoryImpl extends BookRepository {
       title: bookData.title,
       author: bookData.author,
       isbn: bookData.isbn,
-      categoryId: bookData.categoryId || undefined,
+      categoryId: bookData.categoryId === "" ? null : (bookData.categoryId || undefined),
       description: bookData.description,
     };
+    if (bookData.totalCopies !== undefined) {
+      updateFields.totalCopies = bookData.totalCopies;
+    }
+    if (bookData.availableCopies !== undefined) {
+      updateFields.availableCopies = bookData.availableCopies;
+    }
     if (bookData.filePath !== undefined) {
       const pathValue = bookData.filePath;
       updateFields.filePath = (pathValue && pathValue.includes("uploads"))

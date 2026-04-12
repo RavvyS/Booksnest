@@ -193,7 +193,8 @@ const ManageBooksPage = () => {
       setOpen(false);
       fetchBooks();
     } catch (err) {
-      setMessage({ text: 'Action failed.', type: 'error' });
+      console.error(err);
+      setMessage({ text: err.response?.data?.message || 'Action failed.', type: 'error' });
     }
   };
 
