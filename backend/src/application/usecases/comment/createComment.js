@@ -15,15 +15,19 @@ class CreateComment {
       throw new Error("Content is required");
     }
 
-    if (!data.materialId) {
-      throw new Error("materialId is required");
+    if (!data.materialId && !data.bookId) {
+      throw new Error("materialId or bookId is required");
     }
 
-    const comment = new Comment({
+    const commentData = {
       content: data.content.trim(),
       userId: data.userId,
-      materialId: data.materialId,
-    });
+    };
+
+    if (data.materialId) commentData.materialId = data.materialId;
+    if (data.bookId) commentData.bookId = data.bookId;
+
+    const comment = new Comment(commentData);
 
     return await this.commentRepository.save(comment);
   }

@@ -19,7 +19,7 @@ const Footer = () => {
     >
       <Container maxWidth="lg">
         <Grid container spacing={4}>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
               <AutoStoriesIcon color="primary" />
               <Typography variant="h5" color="white" fontWeight="bold">
@@ -45,7 +45,7 @@ const Footer = () => {
             </Box>
           </Grid>
           
-          <Grid item xs={12} sm={6} md={2.6}>
+          <Grid size={{ xs: 12, sm: 6, md: 2.6 }}>
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
               Explore
             </Typography>
@@ -60,7 +60,7 @@ const Footer = () => {
             </Link>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={2.6}>
+          <Grid size={{ xs: 12, sm: 6, md: 2.6 }}>
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
               Community
             </Typography>
@@ -75,7 +75,7 @@ const Footer = () => {
             </Link>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={2.8}>
+          <Grid size={{ xs: 12, sm: 6, md: 2.8 }}>
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
               Contact Us
             </Typography>

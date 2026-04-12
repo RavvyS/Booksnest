@@ -54,7 +54,7 @@ const ManageCategoriesPage = () => {
 
   const handleOpen = (cat = null) => {
     if (cat) {
-      setEditId(cat._id);
+      setEditId(cat.id);
       setName(cat.name);
       setDescription(cat.description || '');
     } else {
@@ -125,14 +125,14 @@ const ManageCategoriesPage = () => {
           </TableHead>
           <TableBody>
             {categories.map((cat) => (
-              <TableRow key={cat._id} sx={{ '&:hover': { bgcolor: '#fdfdfd' } }}>
+              <TableRow key={cat.id} sx={{ '&:hover': { bgcolor: '#fdfdfd' } }}>
                 <TableCell fontWeight="bold">{cat.name}</TableCell>
                 <TableCell>{cat.description || '-'}</TableCell>
                 <TableCell align="right">
                   <IconButton size="small" color="primary" onClick={() => handleOpen(cat)}>
                     <EditIcon />
                   </IconButton>
-                  <IconButton size="small" color="error" onClick={() => handleDelete(cat._id)}>
+                  <IconButton size="small" color="error" onClick={() => handleDelete(cat.id)}>
                     <DeleteIcon />
                   </IconButton>
                 </TableCell>

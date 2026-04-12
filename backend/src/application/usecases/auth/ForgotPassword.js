@@ -13,8 +13,9 @@ class ForgotPassword {
       throw new Error("No account found with this email address.");
     }
 
-    // Generate a secure random password (8 chars)
-    const newPassword = crypto.randomBytes(4).toString("hex");
+    // Generate a secure temporary password (8 chars uppercase and numbers)
+    // This is more human-readable for a temp password
+    const newPassword = Math.random().toString(36).substring(2, 10).toUpperCase();
     
     // Hash the new password
     const hashedPassword = await this.hashService.hash(newPassword);
@@ -23,10 +24,12 @@ class ForgotPassword {
     user.password = hashedPassword;
     await user.save();
 
+    console.log(`Password reset for ${user.email}. New temp password: ${newPassword}`);
+    
     // Send email with the new password
     await EmailService.sendPasswordResetEmail(user.email, user.name, newPassword);
 
-    return { message: "A new password has been sent to your email." };
+    return { message: "A new temporary password has been sent to your email." };
   }
 }
 

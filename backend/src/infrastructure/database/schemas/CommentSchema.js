@@ -17,7 +17,12 @@ const commentSchema = new mongoose.Schema(
     },
     materialId: {
       type: String,
-      required: true,
+      required: false,
+      index: true,
+    },
+    bookId: {
+      type: String,
+      required: false,
       index: true,
     },
   },

@@ -44,7 +44,9 @@ const Home = () => {
           throw new Error('Google Books API error');
         }
         const data = await response.json();
-        const books = (data.items || []).map((item) => {
+        const books = (data.items || [])
+          .filter((item) => item && item.volumeInfo)   // guard against missing volumeInfo
+          .map((item) => {
           const info = item.volumeInfo;
           return {
             id: item.id,
@@ -219,7 +221,7 @@ const Home = () => {
           <Grid container spacing={3} sx={{ mb: 8 }}>
             {books.length > 0 ? (
               books.map((book) => (
-                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={book._id || book.id}>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={book.id}>
                   <BookCard book={book} />
                 </Grid>
               ))

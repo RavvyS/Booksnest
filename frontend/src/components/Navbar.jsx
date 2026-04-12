@@ -41,6 +41,7 @@ function ResponsiveAppBar() {
   };
 
   const getNavLinks = () => {
+    // Base links for guests and readers
     const links = [
       { label: "Home", path: "/home" },
       { label: "Materials", path: "/materials" },
@@ -54,18 +55,27 @@ function ResponsiveAppBar() {
         { label: "Bookmarks", path: "/reader/bookmarks" },
         { label: "Borrows", path: "/reader/borrows" }
       );
-    } else if (user.role === "author") {
+      return links;
+    } 
+    
+    if (user.role === "author") {
       links.push(
         { label: "Dashboard", path: "/author/dashboard" },
         { label: "My Materials", path: "/author/materials" }
       );
-    } else if (user.role === "librarian") {
-      links.push(
+      return links;
+    } 
+    
+    if (user.role === "librarian") {
+      // Librarians only need CRUD/Management links
+      return [
         { label: "Dashboard", path: "/librarian/dashboard" },
-        { label: "Pending Review", path: "/librarian/pending" },
         { label: "Manage Books", path: "/librarian/books" },
+        { label: "Manage Materials", path: "/librarian/materials" },
+        { label: "Pending Review", path: "/librarian/pending" },
+        { label: "User Approvals", path: "/librarian/users" },
         { label: "Manage Categories", path: "/librarian/categories" }
-      );
+      ];
     }
 
     return links;

@@ -48,14 +48,22 @@ exports.register = async (req, res) => {
 
     const user = await registerUseCase.execute(req.body);
 
-    const token = TokenService.generate(user);
+    // Only generate token if the user is auto-approved (e.g. Librarian)
+    let token = null;
+    if (user.isApproved) {
+      token = TokenService.generate(user);
+    }
 
-    res.status(201).json({ user: sanitizeUser(user), token });
+    res.status(201).json({ 
+      user: sanitizeUser(user), 
+      token, 
+      message: user.isApproved ? "Registration successful" : "Registration successful, pending approval."
+    });
 
   } catch (error) {
 
     console.error("Registration Error:", error.message);
-    res.status(400).json({ message: error.message });
+    res.status(401).json({ message: error.message });
 
   }
 
@@ -75,7 +83,7 @@ exports.login = async (req, res) => {
 
   } catch (error) {
 
-    res.status(400).json({ message: error.message });
+    res.status(401).json({ message: error.message });
 
   }
 
@@ -96,7 +104,7 @@ exports.profile = async (req, res) => {
 
   } catch (error) {
 
-    res.status(400).json({ message: error.message });
+    res.status(401).json({ message: error.message });
 
   }
 

@@ -28,7 +28,8 @@ exports.createBook = async (req, res) => {
       title: req.body.title,
       author: req.body.author,
       isbn: req.body.isbn,
-      type: req.body.type,
+      type: req.body.type || "book",
+      status: req.user.role === "librarian" ? "approved" : "pending",
       uploadedBy: req.user.id,
       categoryId: req.body.categoryId,
       description: req.body.description,
@@ -73,6 +74,8 @@ exports.updateBook = async (req, res) => {
       isbn: req.body.isbn,
       categoryId: req.body.categoryId,
       description: req.body.description,
+      totalCopies: req.body.totalCopies !== undefined ? Number(req.body.totalCopies) : undefined,
+      availableCopies: req.body.availableCopies !== undefined ? Number(req.body.availableCopies) : undefined,
     });
 
     res.json(result);

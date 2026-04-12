@@ -90,7 +90,7 @@ const PendingMaterialsPage = () => {
             </TableHead>
             <TableBody>
               {materials.map((m) => (
-                <TableRow key={m._id} sx={{ '&:hover': { bgcolor: '#fdfdfd' } }}>
+                <TableRow key={m.id} sx={{ '&:hover': { bgcolor: '#fdfdfd' } }}>
                   <TableCell fontWeight="bold">{m.title}</TableCell>
                   <TableCell>{m.author}</TableCell>
                   <TableCell>{m.category || 'General'}</TableCell>
@@ -105,7 +105,7 @@ const PendingMaterialsPage = () => {
                         variant="contained" 
                         color="success" 
                         startIcon={<CheckCircleIcon />}
-                        onClick={() => handleReview(m._id, 'approved')}
+                        onClick={() => handleReview(m.id, 'approved')}
                       >
                         Approve
                       </Button>
@@ -114,7 +114,7 @@ const PendingMaterialsPage = () => {
                         variant="outlined" 
                         color="error" 
                         startIcon={<CancelIcon />}
-                        onClick={() => handleReview(m._id, 'rejected')}
+                        onClick={() => handleReview(m.id, 'rejected')}
                       >
                         Reject
                       </Button>

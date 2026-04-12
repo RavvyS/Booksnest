@@ -34,6 +34,8 @@ class CreateMaterial {
             contentUrl: data.contentUrl.trim(),
             type: data.type,
             category: data.category || "",
+            categoryId: data.categoryId,
+            categoryName: data.categoryName,
             author: data.author.trim(),
             createdBy: data.createdBy,
             status: "pending",

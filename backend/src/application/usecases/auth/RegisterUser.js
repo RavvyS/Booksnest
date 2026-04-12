@@ -28,6 +28,9 @@ class RegisterUser {
       throw new Error("Invalid role selection");
     }
 
+    // Readers and Authors require approval. In a real system, the first librarian 
+    // would be created via seed or an admin panel. For this implementation, 
+    // we allow librarians to be auto-approved to manage the system.
     const isApproved = requestedRole === "librarian";
 
     const newUser = await this.userRepository.create({

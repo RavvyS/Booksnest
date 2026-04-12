@@ -59,12 +59,14 @@ class CategoryRepositoryImpl extends CategoryRepository {
   }
 
   async update(id, categoryData) {
+    const updateData = {};
+    if (categoryData.name !== undefined) updateData.name = categoryData.name;
+    if (categoryData.description !== undefined)
+      updateData.description = categoryData.description;
+
     const updatedCategory = await CategoryModel.findByIdAndUpdate(
       id,
-      {
-        name: categoryData.name,
-        description: categoryData.description,
-      },
+      { $set: updateData },
       { new: true, runValidators: true },
     );
     if (!updatedCategory) return null;
@@ -76,6 +78,7 @@ class CategoryRepositoryImpl extends CategoryRepository {
       updatedAt: updatedCategory.updatedAt,
     });
   }
+
 
   async delete(id) {
     const deletedCategory = await CategoryModel.findByIdAndDelete(id);

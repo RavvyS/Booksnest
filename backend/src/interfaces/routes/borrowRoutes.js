@@ -15,26 +15,45 @@ router.get("/my-borrows", AuthMiddleware, BorrowController.getMyBorrows);
 router.post(
   "/queue/:bookId",
   AuthMiddleware,
-  RoleMiddleware("reader"),
+  RoleMiddleware("reader", "author"),
   BorrowController.createQueueRequest,
 );
 router.get(
   "/queue/my",
   AuthMiddleware,
-  RoleMiddleware("reader"),
+  RoleMiddleware("reader", "author"),
   BorrowController.getMyQueueRequests,
+);
+router.get(
+  "/queue/book/:bookId/status",
+  AuthMiddleware,
+  RoleMiddleware("reader", "author"),
+  BorrowController.getQueueStatus,
 );
 router.put(
   "/queue/:requestId",
   AuthMiddleware,
-  RoleMiddleware("reader"),
+  RoleMiddleware("reader", "author"),
   BorrowController.updateQueueRequest,
 );
 router.delete(
   "/queue/:requestId",
   AuthMiddleware,
-  RoleMiddleware("reader"),
+  RoleMiddleware("reader", "author"),
   BorrowController.cancelQueueRequest,
+);
+
+// Librarian management routes
+router.get(
+  "/queue/book/:bookId",
+  AuthMiddleware,
+  BorrowController.getBookQueue,
+);
+router.delete(
+  "/queue/admin/:requestId",
+  AuthMiddleware,
+  RoleMiddleware("librarian"),
+  BorrowController.librarianCancelQueue,
 );
 
 module.exports = router;

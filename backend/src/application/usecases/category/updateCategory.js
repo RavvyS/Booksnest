@@ -7,12 +7,13 @@ class UpdateCategory {
   }
 
   async execute(id, categoryData) {
-    // Validate input
+    // Validate input ID
     if (!id) {
       throw new Error("Category ID is required");
     }
 
-    if (!categoryData.name || categoryData.name.trim() === "") {
+    // Validate input name if provided (must happen before findById for tests)
+    if (categoryData.name !== undefined && categoryData.name.trim() === "") {
       throw new Error("Category name is required");
     }
 
@@ -22,8 +23,11 @@ class UpdateCategory {
       throw new Error("Category not found");
     }
 
-    // Check if new name conflicts with another category
-    if (categoryData.name !== existingCategory.name) {
+    // Check for duplicate name if a new name is provided
+    if (
+      categoryData.name !== undefined &&
+      categoryData.name !== existingCategory.name
+    ) {
       const duplicateCategory = await this.categoryRepository.findByName(
         categoryData.name,
       );
@@ -35,6 +39,8 @@ class UpdateCategory {
     // Update category
     return await this.categoryRepository.update(id, categoryData);
   }
+
+
 }
 
 module.exports = UpdateCategory;

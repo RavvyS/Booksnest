@@ -1,11 +1,13 @@
 //  Implements persistence operations against MongoDB models.
 
+const mongoose = require("mongoose");
 const QueueRepository = require("../../domain/repositories/QueueRepository");
 const QueueRequestModel = require("../database/schemas/QueueRequestSchema");
 const QueueRequest = require("../../domain/entities/QueueRequest");
 
 class QueueRepositoryImpl extends QueueRepository {
   _toEntity(doc) {
+    if (!doc) return null;
     return new QueueRequest({
       id: doc._id.toString(),
       userId: doc.userId.toString(),
@@ -43,10 +45,43 @@ class QueueRepositoryImpl extends QueueRepository {
   }
 
   async findByUser(userId) {
-    const requests = await QueueRequestModel.find({ userId }).sort({
-      createdAt: -1,
-    });
-    return requests.map((req) => this._toEntity(req));
+    // Aggregation to join with books collection for title/author
+    const requests = await QueueRequestModel.aggregate([
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      { $sort: { createdAt: -1 } },
+      {
+        $lookup: {
+          from: "books",
+          localField: "bookId",
+          foreignField: "_id",
+          as: "bookDetails",
+        },
+      },
+      { $unwind: "$bookDetails" },
+      {
+        $project: {
+          _id: 1,
+          userId: 1,
+          bookId: 1,
+          note: 1,
+          status: 1,
+          fulfilledBorrowId: 1,
+          cancellationReason: 1,
+          cancelledAt: 1,
+          fulfilledAt: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          bookTitle: "$bookDetails.title",
+          bookAuthor: "$bookDetails.author",
+        },
+      },
+    ]);
+
+    return requests.map((req) => ({
+      ...this._toEntity(req),
+      bookTitle: req.bookTitle,
+      bookAuthor: req.bookAuthor,
+    }));
   }
 
   async findActiveRequestByUserAndBook(userId, bookId) {
@@ -174,6 +209,88 @@ class QueueRepositoryImpl extends QueueRepository {
 
     if (!updated) return null;
     return this._toEntity(updated);
+  }
+
+  async findActiveByBook(bookId) {
+    const requests = await QueueRequestModel.aggregate([
+      {
+        $match: {
+          bookId: new mongoose.Types.ObjectId(bookId),
+          status: { $in: ["pending", "processing"] },
+        },
+      },
+      { $sort: { createdAt: 1 } }, // FIFO order
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      { $unwind: "$userDetails" },
+      {
+        $project: {
+          _id: 1,
+          userId: 1,
+          bookId: 1,
+          note: 1,
+          status: 1,
+          createdAt: 1,
+          userName: "$userDetails.name",
+          userEmail: "$userDetails.email",
+        },
+      },
+    ]);
+
+    return requests.map((req) => ({
+      ...this._toEntity(req),
+      userName: req.userName,
+      userEmail: req.userEmail,
+    }));
+  }
+
+  async cancelByLibrarian(requestId) {
+    const updated = await QueueRequestModel.findByIdAndUpdate(
+      requestId,
+      {
+        $set: {
+          status: "cancelled",
+          cancellationReason: "Removed by librarian",
+          cancelledAt: new Date(),
+        },
+      },
+      { new: true, runValidators: true },
+    );
+    if (!updated) return null;
+    return this._toEntity(updated);
+  }
+
+  async getUserPosition(bookId, userId) {
+    const userRequest = await QueueRequestModel.findOne({
+      userId,
+      bookId,
+      status: { $in: ["pending", "processing"] },
+    });
+
+    if (!userRequest) return null;
+
+    const countAhead = await QueueRequestModel.countDocuments({
+      bookId,
+      status: "pending",
+      createdAt: { $lt: userRequest.createdAt },
+    });
+
+    const totalWaiting = await QueueRequestModel.countDocuments({
+      bookId,
+      status: { $in: ["pending", "processing"] },
+    });
+
+    return {
+      position: countAhead + 1,
+      totalWaiting,
+      status: userRequest.status,
+    };
   }
 }
 

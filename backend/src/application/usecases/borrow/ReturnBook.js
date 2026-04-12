@@ -48,15 +48,21 @@ class ReturnBook {
       }
 
       // Step 3: Atomic stock increment within the transaction
-      const updatedBook = await this.bookRepository.atomicIncrementStock(
+      const stockIncremented = await this.bookRepository.atomicIncrementStock(
         bookId,
         session,
       );
-      if (!updatedBook) {
-        throw new Error("Failed to increment book stock");
+      
+      if (!stockIncremented) {
+        console.warn(`[ReturnBook] Data Integrity Warning: Could not increment availableCopies for book=${bookId}. It is already at totalCopies (${book.totalCopies}). Continuing return anyway.`);
+      } else {
+        console.log(`[ReturnBook] Stock incremented for book=${bookId}. New avail=${stockIncremented.availableCopies}`);
       }
 
       const autoAssigned = await this.assignNextQueuedBorrow(bookId, session);
+      if (autoAssigned) {
+        console.log(`[Auto-Assign] Successfully assigned book=${bookId} to user=${autoAssigned.userId} from queue`);
+      }
 
       // Step 4: Commit transaction
       await session.commitTransaction();
@@ -83,7 +89,12 @@ class ReturnBook {
         bookId,
         session,
       );
-      if (!nextQueueRequest) return null;
+      if (!nextQueueRequest) {
+        console.log(`[Auto-Assign] No more pending queue requests for book=${bookId}`);
+        return null;
+      }
+      
+      console.log(`[Auto-Assign] Attempting to fulfill request=${nextQueueRequest.id} for user=${nextQueueRequest.userId}`);
 
       const existingBorrow = await this.borrowRepository.findActiveBorrow(
         nextQueueRequest.userId,

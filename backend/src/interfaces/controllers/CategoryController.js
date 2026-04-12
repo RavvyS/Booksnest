@@ -6,7 +6,10 @@ const GetCategories = require("../../application/usecases/category/getCategories
 const UpdateCategory = require("../../application/usecases/category/updateCategory");
 const DeleteCategory = require("../../application/usecases/category/deleteCategory");
 
+const BookRepositoryImpl = require("../../infrastructure/repositories/BookRepositoryImpl");
+
 const repository = new CategoryRepositoryImpl();
+const bookRepository = new BookRepositoryImpl();
 const createUseCase = new CreateCategory(repository);
 const getUseCase = new GetCategories(repository);
 const updateUseCase = new UpdateCategory(repository);
@@ -58,7 +61,14 @@ exports.updateCategory = async (req, res) => {
 
 exports.deleteCategory = async (req, res) => {
   try {
-    const result = await deleteUseCase.execute(req.params.categoryId);
+    const categoryId = req.params.categoryId;
+    const result = await deleteUseCase.execute(categoryId);
+    
+    if (result) {
+      // Clean up books in this category
+      await bookRepository.removeCategoryFromBooks(categoryId);
+    }
+
     res.json(result);
   } catch (error) {
     res.status(400).json({ message: error.message });

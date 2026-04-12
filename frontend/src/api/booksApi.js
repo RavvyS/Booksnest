@@ -10,7 +10,9 @@ const booksApi = {
     return response.data;
   },
   read: async (id) => {
-    const response = await apiClient.get(`/books/${id}/read`);
+    const response = await apiClient.get(`/books/${id}/read`, {
+      responseType: 'blob'
+    });
     return response.data;
   },
   create: async (formData) => {

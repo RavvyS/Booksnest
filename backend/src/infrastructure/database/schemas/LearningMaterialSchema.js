@@ -27,6 +27,15 @@ const learningMaterialSchema = new mongoose.Schema(
             type: String,
             trim: true,
         },
+        categoryId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Category",
+            required: false,
+        },
+        categoryName: {
+            type: String,
+            trim: true,
+        },
         author: {
             type: String,
             required: [true, "Author is required"],

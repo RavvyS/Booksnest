@@ -18,10 +18,10 @@ exports.createBookmark = async (req, res) => {
     try {
         const result = await createUseCase.execute({
             userId: req.user.id,
-            materialId: req.body.materialId,
-            materialTitle: req.body.materialTitle,
-            materialContentUrl: req.body.materialContentUrl,
-            note: req.body.note
+            materialId: req.body?.materialId,
+            materialTitle: req.body?.materialTitle,
+            materialContentUrl: req.body?.materialContentUrl,
+            note: req.body?.note || ""
         });
         res.status(201).json(result);
     } catch (error) {
@@ -48,10 +48,10 @@ exports.updateBookmark = async (req, res) => {
         const result = await updateUseCase.execute({
             id: req.params.id,
             userId: req.user.id,
-            note: req.body.note,
-            isFavorite: req.body.isFavorite,
-            isCompleted: req.body.isCompleted,
-            lastViewed: req.body.lastViewed
+            note: req.body?.note,
+            isFavorite: req.body?.isFavorite,
+            isCompleted: req.body?.isCompleted,
+            lastViewed: req.body?.lastViewed
         });
         res.json(result);
     } catch (error) {
