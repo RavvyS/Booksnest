@@ -9,6 +9,9 @@ const authRoutes = require("../../src/interfaces/routes/AuthRoutes");
 const materialRoutes = require("../../src/interfaces/routes/materialRoutes");
 const UserModel = require("../../src/infrastructure/database/UserModel");
 const LearningMaterialModel = require("../../src/infrastructure/database/schemas/LearningMaterialSchema");
+const EmailService = require("../../src/infrastructure/services/EmailService");
+
+jest.mock("../../src/infrastructure/services/EmailService");
 
 const app = express();
 app.use(express.json());
@@ -28,7 +31,16 @@ const registerAndGetToken = async ({ name, email, role }) => {
     role,
   });
 
-  return registerRes.body.token;
+  // Manually approve the user in DB so they get a token from login/register response
+  await UserModel.findOneAndUpdate({ email }, { isApproved: true });
+  
+  // Re-login to get a valid token since the initial register might not have returned one for non-librarians
+  const loginRes = await request(app).post("/api/auth/login").send({
+    email,
+    password: "StrongPass123!",
+  });
+
+  return loginRes.body.token;
 };
 
 beforeAll(async () => {
@@ -87,6 +99,7 @@ describe("Learning Materials API integration", () => {
         title: "Introduction to Node.js",
         description: "Basics of Node",
         contentUrl: "http://example.com/node.pdf",
+        type: "video",
         category: "Programming",
         author: "Alice",
       });
@@ -102,6 +115,7 @@ describe("Learning Materials API integration", () => {
         title: "Librarian Upload",
         description: "Manual upload",
         contentUrl: "http://example.com/manual.pdf",
+        type: "audio",
         category: "Manuals",
         author: "Bob",
       });
@@ -122,11 +136,12 @@ describe("Learning Materials API integration", () => {
       .send({
         title: "Reader Material",
         contentUrl: "http://example.com/reader.pdf",
+        type: "video",
         author: "Charlie",
       });
 
     expect(res.status).toBe(403);
-    expect(res.body.message).toBe("Forbidden: insufficient role");
+    expect(res.body.message).toBe("Access denied. Required role: author or librarian");
   });
 
   test("Librarian can approve materials", async () => {
@@ -141,8 +156,9 @@ describe("Learning Materials API integration", () => {
       title: "Review Me",
       contentUrl: "http://test.com/review",
       author: "Alice",
-      status: "pending",
-      uploadedBy: new mongoose.Types.ObjectId()
+      type: "video",
+      createdBy: "TestAdmin",
+      status: "pending"
     });
 
     const approveRes = await request(app)
@@ -165,8 +181,9 @@ describe("Learning Materials API integration", () => {
       title: "Wait for it",
       contentUrl: "http://test.com/wait",
       author: "Alice",
-      status: "pending",
-      uploadedBy: new mongoose.Types.ObjectId()
+      type: "audio",
+      createdBy: "TestAuthor",
+      status: "pending"
     });
 
     const approveRes = await request(app)
@@ -188,8 +205,9 @@ describe("Learning Materials API integration", () => {
       title: "Pending Item",
       contentUrl: "http://test.com/pending",
       author: "Alice",
-      status: "pending",
-      uploadedBy: new mongoose.Types.ObjectId()
+      type: "video",
+      createdBy: "TestAdmin",
+      status: "pending"
     });
 
     const res = await request(app)

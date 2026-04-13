@@ -28,7 +28,16 @@ const registerAndGetToken = async ({ name, email, role }) => {
     role,
   });
 
-  return registerRes.body.token;
+  // Manually approve in DB
+  await UserModel.findOneAndUpdate({ email }, { isApproved: true });
+  
+  // Login to get token
+  const loginRes = await request(app).post("/api/auth/login").send({
+    email,
+    password: "StrongPass123!",
+  });
+
+  return loginRes.body.token;
 };
 
 beforeAll(async () => {
@@ -113,10 +122,10 @@ describe("Comments API integration", () => {
       email: uniqueEmail("reader"),
       role: "reader",
     });
-    const authorToken = await registerAndGetToken({
-      name: "Author",
-      email: uniqueEmail("author"),
-      role: "author",
+    const unauthorizedReaderToken = await registerAndGetToken({
+      name: "Unauthorized Reader",
+      email: uniqueEmail("unauth-reader"),
+      role: "reader",
     });
 
     const createRes = await request(app)
@@ -131,7 +140,7 @@ describe("Comments API integration", () => {
 
     const updateRes = await request(app)
       .put(`/api/comments/${commentId}`)
-      .set("Authorization", `Bearer ${authorToken}`)
+      .set("Authorization", `Bearer ${unauthorizedReaderToken}`)
       .send({ content: "Unauthorized update attempt" });
 
     expect(updateRes.status).toBe(403);

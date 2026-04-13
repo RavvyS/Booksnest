@@ -61,32 +61,21 @@ exports.register = async (req, res) => {
     });
 
   } catch (error) {
-
     console.error("Registration Error:", error.message);
-    res.status(401).json({ message: error.message });
-
+    res.status(400).json({ message: error.message });
   }
-
 };
 
-
 exports.login = async (req, res) => {
-
   try {
-
     const result = await loginUseCase.execute(req.body);
-
     res.json({
       user: sanitizeUser(result.user),
       token: result.token,
     });
-
   } catch (error) {
-
-    res.status(401).json({ message: error.message });
-
+    res.status(400).json({ message: error.message });
   }
-
 };
 
 

@@ -25,22 +25,38 @@ beforeAll(async () => {
     await mongoose.connect(mongoServer.getUri());
 
     // Register an author
-    const authorRes = await request(app).post("/api/auth/register").send({
+    await request(app).post("/api/auth/register").send({
         name: "Test Author",
         email: "author@test.com",
         password: "Password123!",
         role: "author",
     });
-    authorToken = authorRes.body.token;
+    // Manually approve
+    const UserModel = mongoose.model("User");
+    await UserModel.findOneAndUpdate({ email: "author@test.com" }, { isApproved: true });
+    
+    // Login to get token
+    const authorLogin = await request(app).post("/api/auth/login").send({
+        email: "author@test.com",
+        password: "Password123!",
+    });
+    authorToken = authorLogin.body.token;
 
     // Register a librarian
-    const librarianRes = await request(app).post("/api/auth/register").send({
+    await request(app).post("/api/auth/register").send({
         name: "Test Librarian",
         email: "librarian@test.com",
         password: "Password123!",
         role: "librarian",
     });
-    librarianToken = librarianRes.body.token;
+    // Manually approve
+    await UserModel.findOneAndUpdate({ email: "librarian@test.com" }, { isApproved: true });
+    
+    const librarianLogin = await request(app).post("/api/auth/login").send({
+        email: "librarian@test.com",
+        password: "Password123!",
+    });
+    librarianToken = librarianLogin.body.token;
 });
 
 afterEach(async () => {
@@ -132,7 +148,8 @@ describe("Materials API — type field refactor", () => {
                 type: "video",
             });
 
-        const id = createRes.body._id;
+        const id = createRes.body.id || createRes.body._id;
+
 
         const getRes = await request(app).get(`/api/materials/${id}`);
 
@@ -164,7 +181,8 @@ describe("Materials API — type field refactor", () => {
                 type: "video",
             });
 
-        const id = createRes.body._id;
+        const id = createRes.body.id || createRes.body._id;
+
 
         const approveRes = await request(app)
             .patch(`/api/materials/${id}/approve`)

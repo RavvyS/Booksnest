@@ -11,6 +11,9 @@ const userRoutes = require("../../src/interfaces/routes/userRoutes");
 const authRoutes = require("../../src/interfaces/routes/AuthRoutes");
 const UserModel = require("../../src/infrastructure/database/UserModel");
 const TokenService = require("../../src/infrastructure/services/TokenService");
+const EmailService = require("../../src/infrastructure/services/EmailService");
+
+jest.mock("../../src/infrastructure/services/EmailService");
 
 const app = express();
 app.use(express.json());

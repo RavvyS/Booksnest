@@ -41,26 +41,32 @@ afterAll(async () => {
 });
 
 describe("Auth API integration", () => {
-  test("POST /api/auth/register creates user and returns token", async () => {
+  test("POST /api/auth/register returns 201 and token for librarian", async () => {
+    // Manually approve in DB for tests that expect token (for non-auto-approved roles)
+    // Actually, Librarian is auto-approved, so we can test that directly.
     const res = await request(app).post("/api/auth/register").send({
       name: "Integration User",
       email: "integration@example.com",
       password: "StrongPass123!",
-      role: "reader",
+      role: "librarian", // Auto-approved
     });
 
     expect(res.status).toBe(201);
     expect(res.body).toHaveProperty("token");
+    expect(res.body.token).not.toBeNull();
     expect(res.body.user.email).toBe("integration@example.com");
   });
 
-  test("POST /api/auth/login authenticates existing user", async () => {
+  test("POST /api/auth/login returns 200 and token for approved user", async () => {
     await request(app).post("/api/auth/register").send({
       name: "Login User",
       email: "login@example.com",
       password: "StrongPass123!",
       role: "reader",
     });
+    
+    // Manually approve
+    await UserModel.findOneAndUpdate({ email: "login@example.com" }, { isApproved: true });
 
     const res = await request(app).post("/api/auth/login").send({
       email: "login@example.com",
@@ -79,12 +85,12 @@ describe("Auth API integration", () => {
     expect(res.body.message).toBe("No token provided");
   });
 
-  test("GET /api/auth/profile returns profile with valid token", async () => {
+  test("GET /api/auth/profile returns 200 with valid token", async () => {
     const registerRes = await request(app).post("/api/auth/register").send({
       name: "Profile User",
       email: "profile@example.com",
       password: "StrongPass123!",
-      role: "reader",
+      role: "librarian", // Librarian gets token automatically
     });
 
     const token = registerRes.body.token;

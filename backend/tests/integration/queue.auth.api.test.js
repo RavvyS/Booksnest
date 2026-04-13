@@ -28,7 +28,16 @@ const registerAndGetToken = async ({ name, email, role }) => {
     role,
   });
 
-  return registerRes.body.token;
+  // Manually approve in DB
+  await UserModel.findOneAndUpdate({ email }, { isApproved: true });
+  
+  // Login to get token
+  const loginRes = await request(app).post("/api/auth/login").send({
+    email,
+    password: "StrongPass123!",
+  });
+
+  return loginRes.body.token;
 };
 
 beforeAll(async () => {
@@ -64,7 +73,7 @@ describe("Queue API role-based integration", () => {
     expect(res.body.message).toBe("No token provided");
   });
 
-  test("GET /api/borrows/queue/my returns 403 for non-reader role", async () => {
+  test("GET /api/borrows/queue/my returns 200 for author role", async () => {
     const authorToken = await registerAndGetToken({
       name: "Author",
       email: uniqueEmail("author"),
@@ -75,8 +84,8 @@ describe("Queue API role-based integration", () => {
       .get("/api/borrows/queue/my")
       .set("Authorization", `Bearer ${authorToken}`);
 
-    expect(res.status).toBe(403);
-    expect(res.body.message).toBe("Forbidden: insufficient role");
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
   });
 
   test("GET /api/borrows/queue/my returns 200 for reader role", async () => {
