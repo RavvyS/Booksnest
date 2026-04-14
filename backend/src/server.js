@@ -1,5 +1,5 @@
 
-//  Bootstraps database connection and starts the HTTP server.
+//  Bootstraps database connection and starts the HTTP server. [Deploy Trigger]
 
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
