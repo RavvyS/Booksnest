@@ -28,6 +28,7 @@ const approveUseCase = new ApproveBook(bookRepository);
  * Creates a new book entry.
  * Authors' uploads start as 'pending', while Librarians' are 'approved' by default.
  */
+exports.createBook = async (req, res) => {
   try {
     const result = await createUseCase.execute({
       title: req.body.title,
