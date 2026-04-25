@@ -33,9 +33,9 @@ router.get(
 
 // Public routes
 router.get("/", BookController.getAllBooks);
-router.get("/:bookId", BookController.getBookById);
 router.get("/external/free", BookController.getFreeExternalBooks);
 router.get("/search-external", AuthMiddleware, RoleMiddleware("author", "librarian"), BookController.searchExternal);
+router.get("/:bookId", BookController.getBookById);
 
 // Secure read route (any authenticated user with valid borrow)
 router.get("/:bookId/read", AuthMiddleware, BookController.readBook);

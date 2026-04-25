@@ -7,8 +7,12 @@ const BookModel = require("../database/schemas/BookSchema");
 const Book = require("../../domain/entities/Book");
 
 class BookRepositoryImpl extends BookRepository {
+  /**
+   * Internal mapper to convert MongoDB documents to Domain Entities.
+   * Handles ID stringification and category field normalization.
+   */
   _toEntity(doc) {
-    // categoryId might be an ID string/ObjectId or a populated object
+    // Normalize categoryId: Handle both ObjectIDs and populated objects
     const catId = doc.categoryId && doc.categoryId._id 
       ? doc.categoryId._id.toString() 
       : (doc.categoryId ? doc.categoryId.toString() : null);

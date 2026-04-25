@@ -23,7 +23,7 @@ const Footer = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
               <AutoStoriesIcon color="primary" />
               <Typography variant="h5" color="white" fontWeight="bold">
-                Book Nest
+                Booksnest
               </Typography>
             </Box>
             <Typography variant="body2" sx={{ color: '#94A3B8', mb: 2, pr: 4 }}>
@@ -95,7 +95,7 @@ const Footer = () => {
         
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#94A3B8' }}>
           <Typography variant="caption">
-            &copy; {new Date().getFullYear()} Book Nest Digital Library. All rights reserved.
+            &copy; {new Date().getFullYear()} Booksnest Digital Library. All rights reserved.
           </Typography>
           <Box sx={{ display: 'flex', gap: 3 }}>
             <Link href="#" color="inherit" variant="caption" underline="hover">Privacy Policy</Link>

@@ -192,4 +192,22 @@ describe("Materials API — type field refactor", () => {
         expect(approveRes.status).toBe(200);
         expect(approveRes.body).toHaveProperty("status", "approved");
     });
+
+    test("GET /api/materials/pending returns only pending materials for librarian", async () => {
+        const res = await request(app)
+            .get("/api/materials/pending")
+            .set("Authorization", `Bearer ${librarianToken}`);
+        
+        expect(res.status).toBe(200);
+        expect(Array.isArray(res.body)).toBe(true);
+    });
+
+    test("GET /api/materials/my returns materials uploaded by current author", async () => {
+        const res = await request(app)
+            .get("/api/materials/my")
+            .set("Authorization", `Bearer ${authorToken}`);
+        
+        expect(res.status).toBe(200);
+        expect(Array.isArray(res.body)).toBe(true);
+    });
 });

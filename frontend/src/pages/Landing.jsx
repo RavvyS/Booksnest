@@ -89,7 +89,7 @@ export default function Landing() {
                 variant="h6"
                 sx={{ color: 'rgba(255,255,255,0.82)', maxWidth: 620, lineHeight: 1.7, mb: 3.5 }}
               >
-                Book Nest brings free books, approved learning materials, and a contribution workflow together in one digital library built for students, educators, and librarians.
+                Booksnest brings free books, approved learning materials, and a contribution workflow together in one digital library built for students, educators, and librarians.
               </Typography>
 
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 4 }}>
@@ -185,7 +185,7 @@ export default function Landing() {
                   <Box
                     component="img"
                     src={headerImage}
-                    alt="Book Nest digital library hero"
+                    alt="Booksnest digital library hero"
                     sx={{
                       width: '100%',
                       display: 'block',
@@ -277,12 +277,12 @@ export default function Landing() {
             />
           </Grid>
           <Grid size={{ xs: 12, md: 7 }}>
-            <Chip label="Why Book Nest" color="primary" variant="outlined" sx={{ mb: 2 }} />
+            <Chip label="Why Booksnest" color="primary" variant="outlined" sx={{ mb: 2 }} />
             <Typography variant="h3" sx={{ mb: 2 }}>
               A better front door for free knowledge.
             </Typography>
             <Typography color="text.secondary" sx={{ lineHeight: 1.9, mb: 2.5 }}>
-              Instead of scattering resources across random links and folders, Book Nest organizes books, learning materials, categories, comments, and bookmarks into one clear platform. It gives students an easy place to learn while preserving a proper review flow for contributed content.
+              Instead of scattering resources across random links and folders, Booksnest organizes books, learning materials, categories, comments, and bookmarks into one clear platform. It gives students an easy place to learn while preserving a proper review flow for contributed content.
             </Typography>
             <Typography color="text.secondary" sx={{ lineHeight: 1.9, mb: 3.5 }}>
               That means guests can explore freely, readers can engage with trusted content, authors can contribute meaningfully, and librarians can keep the system clean, structured, and safe.
@@ -331,7 +331,7 @@ export default function Landing() {
                 Start exploring the library today.
               </Typography>
               <Typography color="text.secondary" sx={{ maxWidth: 700, lineHeight: 1.8 }}>
-                Browse featured books, discover learning materials, or create an account to bookmark resources and be part of the Book Nest learning community.
+                Browse featured books, discover learning materials, or create an account to bookmark resources and be part of the Booksnest learning community.
               </Typography>
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>

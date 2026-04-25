@@ -13,8 +13,10 @@ const ReadBook = require("../../application/usecases/book/ReadBook");
 const ApproveBook = require("../../application/usecases/book/ApproveBook");
 const bookSearchService = require("../../infrastructure/services/BookSearchService");
 
+// Dependency injection: Use cases are initialized with required repositories
 const bookRepository = new BookRepositoryImpl();
 const borrowRepository = new BorrowRepositoryImpl();
+
 const createUseCase = new CreateBook(bookRepository);
 const getUseCase = new GetBooks(bookRepository);
 const updateUseCase = new UpdateBook(bookRepository);
@@ -22,7 +24,10 @@ const deleteUseCase = new DeleteBook(bookRepository);
 const readUseCase = new ReadBook(borrowRepository, bookRepository);
 const approveUseCase = new ApproveBook(bookRepository);
 
-exports.createBook = async (req, res) => {
+/**
+ * Creates a new book entry.
+ * Authors' uploads start as 'pending', while Librarians' are 'approved' by default.
+ */
   try {
     const result = await createUseCase.execute({
       title: req.body.title,
@@ -48,6 +53,9 @@ exports.createBook = async (req, res) => {
   }
 };
 
+/**
+ * Retrieves all approved books for public browsing.
+ */
 exports.getAllBooks = async (req, res) => {
   try {
     const result = await getUseCase.execute();
@@ -166,6 +174,10 @@ exports.approveBook = async (req, res) => {
   }
 };
 
+/**
+ * AI-Powered External Search (Google Books API).
+ * Used for auto-filling book metadata in the dashboard.
+ */
 exports.searchExternal = async (req, res) => {
   try {
     const { q } = req.query;

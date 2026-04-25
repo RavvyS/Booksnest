@@ -1,217 +1,154 @@
-## Additional Testing Requirements (Backend Only)
+# Booksnest Backend API Documentation
 
-### 1. Unit Testing
-- Implement unit tests for individual components and functions to validate behavior in isolation.
-- Recommended scope in this codebase:
-  - Application use cases in `src/application/usecases/*`
-  - Pure utility/service logic without DB/network dependencies
-- Test location: `tests/unit/`
-- Command: `npm run test:unit`
+This document provides a full reference for the Booksnest backend API.
 
-### 2. Integration Testing
-- Conduct integration tests to ensure different parts of the backend work together seamlessly.
-- Must include interactions between:
-  - Routes/controllers
-  - Services/middleware
-  - MongoDB (using in-memory Mongo for automated test runs)
-- Test API endpoints for success and error scenarios (invalid payloads, auth failures, not found, invalid credentials).
-- Test location: `tests/integration/`
-- Command: `npm run test:integration`
+## Base URL
+`http://localhost:8070`
 
-### 3. Performance Testing
-- Evaluate API performance under varying load to ensure concurrent requests are handled with acceptable latency.
-- Use Artillery for Express API load testing.
-- Config location: `artillery/auth-load.yml`
-- Command: `npm run test:performance`
+## Authentication
+Most protected routes require a Bearer Token in the `Authorization` header:
+`Authorization: Bearer <your_jwt_token>`
 
-### Quick Run Summary
-- `npm test` → run full Jest test suite
-- `npm run test:all` → run unit + integration tests
+---
 
-# Booksnest Backend API (Postman)
-
-## Files
-
-- Collection: `backend/postman/Booksnest-Backend.postman_collection.json`
-- Collection (Auth + Comments): `backend/postman/Booksnest-Backend.postman_collection.json`
-- Collection (Learning Materials): `backend/postman/learning-materials.json`
-- Environment: `backend/postman/Booksnest-Backend.postman_environment.json`
-
-## Import Into Postman
-
-1. Open Postman.
-2. Click **Import**.
-3. Import both JSON files above.
-4. Select environment **Booksnest Backend Local**.
-
-## Start Backend
-
-```bash
-cd backend
-npm start
-```
-
-Base URL in env is `http://localhost:8070`.
-
-## Recommended Run Order (Collection)
-
-### Auth & Comments
-1. `Auth/Register Reader`
-2. `Auth/Register Author`
-3. `Auth/Register Librarian`
-4. `Auth/Login Reader`
-5. `Auth/Login Librarian`
-6. `Auth/Get Profile (Reader)`
-7. `Categories/Get All Categories (Public)`
-8. `Categories/Create Category (Librarian)`
-9. `Categories/Get Category By ID (Public)`
-10. `Categories/Update Category (Librarian)`
-11. `Categories/Create Category (Reader, expect 403)`
-12. `Books/Create Book with PDF (Librarian)` — uses form-data, attach a PDF file, saves `bookId`
-13. `Books/Get All Books (Public)`
-14. `Books/Get Book By ID (Public)`
-15. `Books/Create Book (Reader, expect 403)`
-16. `Borrows/Borrow Book (Reader)` — creates borrow, decrements stock
-17. `Books/Read Book PDF (Reader, valid borrow)` — streams PDF ✅
-18. `Borrows/Borrow Same Book Again (Reader, expect 400)` — duplicate prevention
-19. `Borrows/Get My Borrows (Reader)`
-20. `Borrows/Return Book (Reader)` — marks returned, increments stock
-21. `Books/Read Book PDF (Reader, after return)` — should return 403 ❌
-22. `Books/Read Book PDF (No borrow, expect 403)` — author has no borrow
-23. `Borrows/Return Book Again (Reader, expect 400)` — no active borrow
-24. `Comments/Create Comment (Reader)`
-25. `Comments/Get Comments By Material`
-26. `Comments/Update Comment (Owner Reader)`
-27. `Comments/Update Comment (Non-Owner Author, expect 403)`
-28. `Comments/Delete Comment (Librarian override)`
-29. `Categories/Delete Category (Librarian)`
-
-### Learning Materials (use `learning-materials.json` collection)
-12. `Auth/Register Author` *(skip if already done)*
-13. `Auth/Register Librarian` *(skip if already done)*
-14. `Auth/Login Author` → saves `authorToken` automatically
-15. `Auth/Login Librarian` → saves `librarianToken` automatically
-16. `Learning Materials/POST - Create Material (Author)` → saves `materialId` automatically
-17. `Learning Materials/GET - Pending Materials (Librarian only)` → confirms pending status
-18. `Learning Materials/PATCH - Approve Material (Librarian only)` → status becomes `"approved"`
-19. `Learning Materials/GET - All Approved Materials (Public)` → material now appears
-20. `Learning Materials/GET - Filter by Category (Public)` → `?category=Education`
-21. `Learning Materials/GET - Material by ID (Public)`
-22. `Learning Materials/PATCH - Approve as Author (expect 403)` → role protection test
-23. `Learning Materials/PUT - Update Material (Author)`
-24. `Learning Materials/DELETE - Delete Material (Author)`
-
-## Environment Variables Used
-
-- `baseUrl`
-- `readerEmail`, `authorEmail`, `librarianEmail`
-- `password`
-- `readerToken`, `authorToken`, `librarianToken`
-- `materialId`
-- `commentId`
-- `categoryId`
-- `bookId`
-
-## Endpoint Summary
-
-### Auth
-
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/auth/profile` (Bearer token)
-
-### Categories
-
-- `GET /api/categories` (public)
-- `GET /api/categories/:categoryId` (public)
-- `POST /api/categories` (librarian only)
-- `PUT /api/categories/:categoryId` (librarian only)
-- `DELETE /api/categories/:categoryId` (librarian only)
-
-### Books
-
-- `GET /api/books` (public)
-- `GET /api/books/:bookId` (public)
-- `POST /api/books` (librarian only, **form-data** with optional PDF `file` field)
-- `PUT /api/books/:bookId` (librarian only)
-- `DELETE /api/books/:bookId` (librarian only)
-- `GET /api/books/:bookId/read` (authenticated, **requires valid borrow**) — streams PDF
-
-### Borrows
-
-- `POST /api/borrows/borrow/:bookId` (any authenticated user)
-- `POST /api/borrows/return/:bookId` (any authenticated user)
-- `GET /api/borrows/my-borrows` (any authenticated user)
-- `POST /api/borrows/queue/:bookId` (reader only, create queue request when no copies remain)
-- `GET /api/borrows/queue/my` (reader only, list my queue requests)
-- `PUT /api/borrows/queue/:requestId` (reader only, update pending queue request)
-- `DELETE /api/borrows/queue/:requestId` (reader only, cancel pending queue request)
-
-### Comments
-
-- `GET /api/comments` (public)
-- `GET /api/comments?materialId=...` (public)
-- `POST /api/comments` (reader/author/librarian)
-- `PUT /api/comments/:commentId` (owner or librarian)
-- `DELETE /api/comments/:commentId` (owner or librarian)
-
-## Secure Read Access Control
-
-The `/api/books/:bookId/read` endpoint enforces:
-- User must have an **active borrow** (`returned = false`)
-- Borrow must **not be expired** (`dueDate > current time`)
-- Files are stored privately (not static-served)
-- PDF is streamed directly — no file URL is ever exposed
-
-Access automatically expires when `dueDate` passes, with no cron job needed.
-### Learning Materials
-- `GET /api/materials` — Public. Returns all **approved** materials. Optional: `?category=Education`
-- `GET /api/materials/pending` — Librarian only. Returns all **pending** materials awaiting review.
-- `GET /api/materials/:id` — Public. Returns a single material by ID. Returns `404` if not found.
-- `POST /api/materials` — Author/Librarian only. Creates a new material. Status defaults to `"pending"`.
-- `PUT /api/materials/:id` — Author/Librarian only. Updates material fields (status change blocked here).
-- `DELETE /api/materials/:id` — Author/Librarian only. Deletes a material by ID.
-- `PATCH /api/materials/:id/approve` — Librarian only. Approves or rejects a material.
-
-#### POST /api/materials — Request Body
-```json
-{
-  "title": "Introduction to SDG 4",
-  "description": "A learning resource about quality education.",
-  "contentUrl": "https://example.com/sdg4-intro",
-  "category": "Education",
-  "author": "Test Author"
-}
-```
-
-#### PATCH /api/materials/:id/approve — Request Body
-```json
-{
-  "status": "approved"
-}
-```
-> Valid values: `"approved"` or `"rejected"`
-
-#### Role Summary
-| Endpoint | Reader | Author | Librarian |
+## 🔐 Authentication & User Profile
+| Endpoint | Method | Role | Description |
 |---|---|---|---|
-| GET /api/materials | ✅ | ✅ | ✅ |
-| GET /api/materials/:id | ✅ | ✅ | ✅ |
-| GET /api/materials/pending | ❌ | ❌ | ✅ |
-| POST /api/materials | ❌ | ✅ | ✅ |
-| PUT /api/materials/:id | ❌ | ✅ | ✅ |
-| DELETE /api/materials/:id | ❌ | ✅ | ✅ |
-| PATCH /api/materials/:id/approve | ❌ | ❌ | ✅ |
+| `/api/auth/register` | POST | Public | Register a new user (reader, author, librarian) |
+| `/api/auth/login` | POST | Public | Login and receive JWT token |
+| `/api/auth/profile` | GET | Auth | Get current user's profile |
+| `/api/auth/forgot-password` | POST | Public | Request a password reset |
+| `/api/auth/change-password` | PUT | Auth | Change password while logged in |
 
-## Notes
+### Registration Roles
+- **Reader/Author:** Requires Librarian approval before login.
+- **Librarian:** Auto-approved for administrative access.
 
-- Register requests save returned tokens into environment automatically.
-- Create Book saves `id` into `bookId` automatically.
-- Create Comment saves `_id` into `commentId` automatically.
-- Create Category saves `id` into `categoryId` automatically.
-- Non-owner update by author should return `403`.
-- Borrow/Return operations use MongoDB transactions for atomicity.
-- Only one active borrow per user per book is allowed.
-- Queue requests are FIFO by creation time; when a book is returned and a queue exists, the next reader is auto-assigned.
-- All protected routes require `Authorization: Bearer <token>` header.
-- Materials are only publicly visible after a librarian sets `status: "approved"`.
+---
+
+## 🛠️ User Management (Librarian Only)
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/users/pending` | GET | List users awaiting approval |
+| `/api/users/approve/:id` | POST | Approve a pending user account |
+| `/api/users/:id` | DELETE | Delete a user account |
+
+---
+
+## 📚 Books
+| Endpoint | Method | Role | Description |
+|---|---|---|---|
+| `/api/books` | GET | Public | List all approved books |
+| `/api/books/:bookId` | GET | Public | Get book details by ID |
+| `/api/books` | POST | Librarian | Create a new book (form-data) |
+| `/api/books/:bookId` | PUT | Librarian | Update book details |
+| `/api/books/:bookId` | DELETE | Librarian | Delete a book |
+| `/api/books/:bookId/read` | GET | Auth | Securely stream book PDF (requires active borrow) |
+| `/api/books/search/external` | GET | Public | Search external books (Google Books API) |
+| `/api/books/free-books` | GET | Public | Fetch free external books |
+
+---
+
+## 🔄 Borrowing & Queue
+| Endpoint | Method | Role | Description |
+|---|---|---|---|
+| `/api/borrows/borrow/:bookId` | POST | Auth | Borrow a book |
+| `/api/borrows/return/:bookId` | POST | Auth | Return a borrowed book |
+| `/api/borrows/my-borrows` | GET | Auth | Get my borrowing history |
+| `/api/borrows/queue/:bookId` | POST | Reader/Author | Join waitlist for a book |
+| `/api/borrows/queue/my` | GET | Reader/Author | List my waitlist requests |
+| `/api/borrows/queue/book/:bookId/status` | GET | Reader/Author | Get my position in queue |
+| `/api/borrows/queue/:requestId` | PUT | Reader/Author | Update queue request |
+| `/api/borrows/queue/:requestId` | DELETE | Reader/Author | Cancel queue request |
+
+---
+
+## 🎓 Learning Materials (SDG 4)
+| Endpoint | Method | Role | Description |
+|---|---|---|---|
+| `/api/materials` | GET | Public | List all approved materials |
+| `/api/materials/pending` | GET | Librarian | List materials awaiting approval |
+| `/api/materials/my` | GET | Author | List my submitted materials |
+| `/api/materials/:id` | GET | Public | Get material details |
+| `/api/materials` | POST | Author/Librarian | Create new material |
+| `/api/materials/:id` | PUT | Author/Librarian | Update material |
+| `/api/materials/:id` | DELETE | Author/Librarian | Delete material |
+| `/api/materials/:id/approve` | PATCH | Librarian | Approve or reject material |
+
+---
+
+## 💬 Comments
+| Endpoint | Method | Role | Description |
+|---|---|---|---|
+| `/api/comments` | GET | Public | Get comments (use `?bookId=` or `?materialId=`) |
+| `/api/comments` | POST | Auth | Post a new comment |
+| `/api/comments/:commentId` | PUT | Owner/Librarian | Update a comment |
+| `/api/comments/:commentId` | DELETE | Owner/Librarian | Delete a comment |
+
+---
+
+## 🔖 Bookmarks
+| Endpoint | Method | Role | Description |
+|---|---|---|---|
+| `/api/bookmarks` | GET | Auth | List all my bookmarks |
+| `/api/bookmarks` | POST | Reader | Create a new bookmark |
+| `/api/bookmarks/:id` | PUT | Reader | Update a bookmark |
+| `/api/bookmarks/:id` | DELETE | Reader | Delete a bookmark |
+
+---
+
+## 📁 Categories
+| Endpoint | Method | Role | Description |
+|---|---|---|---|
+| `/api/categories` | GET | Public | List all categories |
+| `/api/categories/:id` | GET | Public | Get category details |
+| `/api/categories` | POST | Librarian | Create a new category |
+| `/api/categories/:id` | PUT | Librarian | Update category |
+| `/api/categories/:id` | DELETE | Librarian | Delete category |
+
+---
+
+## 🤖 AI & External Integrations (AI Books Fetch)
+Booksnest leverages external APIs to provide automated metadata and discoverability.
+
+### AI External Search (Auto-fill)
+`GET /api/books/search-external?q=keyword`
+- **Auth:** Author or Librarian Only
+- **Description:** Searches the Google Books API and returns structured metadata (Title, Author, ISBN, Description, Thumbnail). 
+- **Use Case:** Powers the "Auto-fill from Google Books" feature in the librarian dashboard to minimize manual entry.
+
+### Free Collection Discovery
+`GET /api/books/external/free?subject=fiction`
+- **Auth:** Public
+- **Description:** Fetches a curated list of free open-access ebooks from external sources.
+- **Use Case:** Displays the "Free Collection" on the landing page for immediate reader engagement.
+
+---
+
+## 📧 Nodemailer (Email Service)
+The system uses Nodemailer to send automated notifications. These are triggered by specific administrative or security actions.
+
+### 1. Account Approval Email
+- **Trigger:** `POST /api/users/approve/:id`
+- **Recipient:** The registered user (`reader` or `author`).
+- **Content:** Notifies the user that their account is now active and provides a login link.
+
+### 2. Password Reset Email
+- **Trigger:** `POST /api/auth/forgot-password`
+- **Recipient:** The user who requested the reset.
+- **Content:** Sends a system-generated, temporary password that allows the user to regain access and change their password in profile settings.
+
+### Configuration (Environment Variables)
+To enable email notifications, the following must be set in the `.env` file:
+- `EMAIL_USER`: Gmail address (or other SMTP user).
+- `EMAIL_PASS`: App-specific password.
+- `EMAIL_FROM`: The display name and email shown to recipients.
+
+---
+
+## 🔐 Secure Access Control (PDF Streaming)
+The `/api/books/:bookId/read` endpoint implements high-security streaming:
+1. **Validation:** Checks for an active borrow (`returned: false`) and that the due date has not passed.
+2. **Privacy:** Files are stored in a non-public `uploads/` directory.
+3. **Streaming:** The file is piped directly to the response with `Content-Type: application/pdf`. No direct file URLs are ever exposed to the client.
+

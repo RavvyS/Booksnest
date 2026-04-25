@@ -156,7 +156,7 @@ const Home = () => {
             }}
           />
           <Typography variant="h2" component="h1" gutterBottom fontWeight="bold">
-            Welcome to Book Nest
+            Welcome to Booksnest
           </Typography>
           <Typography variant="h5" sx={{ mb: 4, opacity: 0.9 }}>
             Your digital gateway to knowledge. Explore our curated collection of books and learning materials.
@@ -204,7 +204,7 @@ const Home = () => {
                 Featured Books
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                Hand-picked library titles available inside Book Nest.
+                Hand-picked library titles available inside Booksnest.
               </Typography>
             </Box>
             <Button component={Link} to="/books" variant="outlined">

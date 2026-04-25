@@ -1,5 +1,13 @@
 //  Covers API integration behavior across routes, middleware, and data layer.
 
+/**
+ * Auth API Integration Tests
+ * 
+ * Scope: Validates end-to-end authentication flows including registration, login, 
+ * profile management, forgot-password, and password changes.
+ * 
+ * Setup: Uses mongodb-memory-server for isolated state.
+ */
 const request = require("supertest");
 const mongoose = require("mongoose");
 const { MongoMemoryServer } = require("mongodb-memory-server");
@@ -119,5 +127,53 @@ describe("Auth API integration", () => {
 
     expect(res.status).toBe(400);
     expect(res.body).toHaveProperty("message");
+  });
+
+  test("POST /api/auth/forgot-password returns 200 on valid email", async () => {
+    // Mock EmailService to avoid real SMTP calls
+    const EmailService = require("../../src/infrastructure/services/EmailService");
+    jest.spyOn(EmailService, "sendPasswordResetEmail").mockImplementation(() => Promise.resolve());
+
+    await request(app).post("/api/auth/register").send({
+      name: "Reset User",
+      email: "reset@example.com",
+      password: "OldPassword123!",
+      role: "reader",
+    });
+
+    const res = await request(app).post("/api/auth/forgot-password").send({
+      email: "reset@example.com",
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/temporary password has been sent/i);
+    
+    // Verify password was actually changed in DB
+    const user = await UserModel.findOne({ email: "reset@example.com" });
+    expect(user.password).not.toBe("OldPassword123!");
+    
+    EmailService.sendPasswordResetEmail.mockRestore();
+  });
+
+  test("POST /api/auth/change-password returns 200 and updates password", async () => {
+    const registerRes = await request(app).post("/api/auth/register").send({
+      name: "Change Pass User",
+      email: "changepass@example.com",
+      password: "OldPassword123!",
+      role: "librarian",
+    });
+
+    const token = registerRes.body.token;
+
+    const res = await request(app)
+      .post("/api/auth/change-password")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        oldPassword: "OldPassword123!",
+        newPassword: "NewSuperPassword456!",
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/password updated successfully/i);
   });
 });

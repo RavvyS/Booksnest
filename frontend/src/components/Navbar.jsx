@@ -111,7 +111,7 @@ function ResponsiveAppBar() {
                 color: "#0653B8",
               }}
             >
-              Book Nest
+              Booksnest
             </Typography>
           </Box>
 
